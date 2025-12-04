@@ -17,6 +17,8 @@ require (
 	github.com/andybalholm/brotli v1.0.6 // indirect
 	github.com/botscommunity/botsgo v1.1.1 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
+	github.com/fogleman/gg v1.3.0 // indirect
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
@@ -29,6 +31,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pires/go-proxyproto v0.8.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/quic-go/quic-go v0.55.0 // indirect
 	github.com/refraction-networking/utls v1.8.1 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
@@ -36,8 +39,13 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xtls/reality v0.0.0-20251014195629-e4eec4520535 // indirect
+	github.com/yeqown/go-qrcode/v2 v2.2.5 // indirect
+	github.com/yeqown/go-qrcode/writer/file v1.0.0 // indirect
+	github.com/yeqown/go-qrcode/writer/standard v1.3.0 // indirect
+	github.com/yeqown/reedsolomon v1.0.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/crypto v0.43.0 // indirect
+	golang.org/x/image v0.10.0 // indirect
 	golang.org/x/mod v0.28.0 // indirect
 	golang.org/x/net v0.46.1-0.20251013234738-63d1a5100f82 // indirect
 	golang.org/x/sync v0.17.0 // indirect

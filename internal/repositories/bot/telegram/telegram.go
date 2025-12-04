@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"io"
 	"time"
 
 	"github.com/go-telegram/bot"
@@ -33,15 +34,23 @@ func (a *Adapter) GetPlatform() consts.Platform {
 }
 
 func (a *Adapter) SendMessage(chatID update.ChatInterface, text string, opts ...any) (err error) {
-	var photo string
+	var photoURL string
+	var photoData io.Reader
 
 	for _, param := range opts {
 		switch val := param.(type) {
 		case *types.Attachments:
 			if attachments := val; attachments != nil {
-				for _, attachment := range *attachments {
-					photo = attachment
-					break
+				if len(attachments.Urls) > 0 {
+					for _, attachment := range attachments.Urls {
+						photoURL = attachment
+						break
+					}
+				} else if len(attachments.Files) > 0 {
+					for _, attachment := range attachments.Files {
+						photoData = attachment
+						break
+					}
 				}
 			}
 		}
@@ -50,43 +59,50 @@ func (a *Adapter) SendMessage(chatID update.ChatInterface, text string, opts ...
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
-	if photo != "" {
-		_, err = a.bot.SendPhoto(ctx, &bot.SendPhotoParams{
-			ChatID: chatID.GetID(),
-			Photo:  &models.InputFileString{photo},
-		})
-	} else {
-		sendMessage := &bot.SendMessageParams{
-			ChatID:          chatID.GetID(),
-			MessageThreadID: chatID.GetThreadID(),
-			Text:            text,
-			ParseMode:       models.ParseModeHTML,
+	var isPhoto bool
+	if photoURL != "" || photoData != nil {
+		isPhoto = true
+	}
+
+	if isPhoto {
+		sendPhoto := &bot.SendPhotoParams{
+			ChatID:    chatID.GetID(),
+			Caption:   text,
+			ParseMode: models.ParseModeHTML,
+		}
+
+		if photoURL != "" {
+			sendPhoto.Photo = &models.InputFileString{Data: photoURL}
+		} else if photoData != nil {
+			sendPhoto.Photo = &models.InputFileUpload{Filename: "photo.png", Data: photoData}
 		}
 
 		for _, param := range opts {
 			switch val := param.(type) {
 			case *types.Keyboard:
-				inlineKeyboardButtons := [][]models.InlineKeyboardButton{}
-				if keyboard := val; keyboard != nil {
-					for _, buttonRow := range keyboard.ButtonRows {
-						inlineKeyboardButtons = append(inlineKeyboardButtons, []models.InlineKeyboardButton{})
-						for _, button := range buttonRow {
-							inlineKeyboardButtons[len(inlineKeyboardButtons)-1] = append(inlineKeyboardButtons[len(inlineKeyboardButtons)-1], models.InlineKeyboardButton{
-								Text:         button.Text,
-								CallbackData: button.Data,
-							})
-						}
-					}
-
-					sendMessage.ReplyMarkup = &models.InlineKeyboardMarkup{
-						InlineKeyboard: inlineKeyboardButtons,
-					}
-				}
+				sendPhoto.ReplyMarkup = inlineKeyboardMarkup(val)
 			}
 		}
 
-		_, err = a.bot.SendMessage(ctx, sendMessage)
+		_, err = a.bot.SendPhoto(ctx, sendPhoto)
+		return err
 	}
+
+	sendMessage := &bot.SendMessageParams{
+		ChatID:          chatID.GetID(),
+		MessageThreadID: chatID.GetThreadID(),
+		Text:            text,
+		ParseMode:       models.ParseModeHTML,
+	}
+
+	for _, param := range opts {
+		switch val := param.(type) {
+		case *types.Keyboard:
+			sendMessage.ReplyMarkup = inlineKeyboardMarkup(val)
+		}
+	}
+
+	_, err = a.bot.SendMessage(ctx, sendMessage)
 
 	return err
 }

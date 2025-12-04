@@ -41,8 +41,8 @@ func (a *adapter) SendMessage(chatID update.ChatInterface, text string, opts ...
 			sendMessage.DisableMentions = bool(val)
 		case *types.Attachments:
 			if attachments := val; attachments != nil {
-				for _, attachment := range *attachments {
-					sendMessage.Attachments = append(sendMessage.Attachments, attachment)
+				for _, url := range attachments.Urls {
+					sendMessage.Attachments = append(sendMessage.Attachments, url)
 				}
 			}
 		case *types.Keyboard:
