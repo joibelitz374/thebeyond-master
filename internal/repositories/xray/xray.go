@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/quickpowered/frilly/internal/repositories/xray/dto"
@@ -15,6 +16,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
+
+var configMu sync.Mutex
 
 type Interface interface {
 	AddUser(email, id string) error
@@ -52,10 +55,28 @@ func (s client) AddUser(email, id string) error {
 			},
 		}),
 	}); err != nil {
-		return fmt.Errorf("AlterInbound failed: %w", err)
+		return fmt.Errorf("runtime API failed: %w", err)
 	}
 
-	rewriteConfig(s.configPath, s.inboundTag, email, id)
+	err := updateConfigJSON(s.configPath, s.inboundTag, func(clients []interface{}) []interface{} {
+		for _, c := range clients {
+			if cmap, ok := c.(map[string]any); ok {
+				if e, ok := cmap["email"].(string); ok && e == email {
+					return clients
+				}
+			}
+		}
+
+		return append(clients, dto.Client{
+			Email: email,
+			Id:    id,
+			Level: 0,
+		})
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to save config: %w", err)
+	}
 
 	return nil
 }
@@ -70,77 +91,100 @@ func (s client) RemoveUser(email string) error {
 			Email: email,
 		}),
 	}); err != nil {
-		return fmt.Errorf("AlterInbound failed: %w", err)
+		fmt.Printf("Warning: runtime user removal failed for %s: %v\n", email, err)
 	}
 
-	removeFromConfig(s.configPath, s.inboundTag, email)
+	err := updateConfigJSON(s.configPath, s.inboundTag, func(clients []any) []any {
+		var newClients []any
+
+		for _, c := range clients {
+			if cmap, ok := c.(map[string]any); ok {
+				if e, ok := cmap["email"].(string); ok && e == email {
+					continue
+				}
+			}
+			newClients = append(newClients, c)
+		}
+
+		return newClients
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to save config after user removal: %w", err)
+	}
 
 	return nil
 }
 
-func rewriteConfig(path, inboundTag, email, id string) error {
+func updateConfigJSON(path, inboundTag string, modifier func([]interface{}) []interface{}) error {
+	configMu.Lock()
+	defer configMu.Unlock()
+
+	f, err := os.OpenFile(path, os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
 
-	cfg := dto.Config{}
+	var cfg map[string]any
 	if err := json.Unmarshal(raw, &cfg); err != nil {
-		return err
+		return fmt.Errorf("invalid json: %w", err)
 	}
 
-	for i := range cfg.Inbounds {
-		if cfg.Inbounds[i].Tag == inboundTag {
-			clients := cfg.Inbounds[i].Settings.Clients
-			clients = append(clients, dto.Client{
-				Email: email,
-				Id:    id,
-				Level: 2,
-			})
-			cfg.Inbounds[i].Settings.Clients = clients
+	inbounds, ok := cfg["inbounds"].([]any)
+	if !ok {
+		return fmt.Errorf("no inbounds found")
+	}
+
+	found := false
+	for i, ib := range inbounds {
+		inboundMap, ok := ib.(map[string]any)
+		if !ok {
+			continue
 		}
-	}
 
-	tmpFile := path + ".tmp"
-
-	data, _ := json.MarshalIndent(cfg, "", "  ")
-	if err := os.WriteFile(tmpFile, data, 0644); err != nil {
-		return err
-	}
-
-	return os.Rename(tmpFile, path)
-}
-
-func removeFromConfig(path, inboundTag, email string) error {
-	raw, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
-	cfg := dto.Config{}
-	if err := json.Unmarshal(raw, &cfg); err != nil {
-		return err
-	}
-
-	for i := range cfg.Inbounds {
-		if cfg.Inbounds[i].Tag == inboundTag {
-			clients := cfg.Inbounds[i].Settings.Clients
-			var newClients []dto.Client
-			for _, client := range clients {
-				if client.Email != email {
-					newClients = append(newClients, client)
-				}
+		if tag, ok := inboundMap["tag"].(string); ok && tag == inboundTag {
+			found = true
+			settings, ok := inboundMap["settings"].(map[string]any)
+			if !ok {
+				settings = make(map[string]any)
+				inboundMap["settings"] = settings
 			}
-			cfg.Inbounds[i].Settings.Clients = newClients
+
+			var currentClients []any
+			if c, ok := settings["clients"].([]any); ok {
+				currentClients = c
+			}
+
+			settings["clients"] = modifier(currentClients)
+			inbounds[i] = inboundMap
+			break
 		}
 	}
 
-	tmpFile := path + ".tmp"
+	if !found {
+		return fmt.Errorf("inbound not found")
+	}
 
-	data, _ := json.MarshalIndent(cfg, "", "  ")
-	if err := os.WriteFile(tmpFile, data, 0644); err != nil {
+	cfg["inbounds"] = inbounds
+
+	if err := f.Truncate(0); err != nil {
+		return err
+	}
+	if _, err := f.Seek(0, 0); err != nil {
 		return err
 	}
 
-	return os.Rename(tmpFile, path)
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(cfg); err != nil {
+		return err
+	}
+
+	return f.Sync()
 }

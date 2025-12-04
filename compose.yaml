@@ -12,19 +12,18 @@ services:
     volumes:
       - ./data:/data/postgres
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U root" ]
+      test: [ "CMD-SHELL", "pg_isready -U root -d beyondsecure" ]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 5s
 
   beyondsecure-migrator:
-    image: rust:1.90.0-alpine3.22
+    build:
+      context: .
+      dockerfile: Dockerfile.migrator
     container_name: beyondsecure-migrator
-    command: >
-      sh -c "apk add --no-cache musl-dev pkgconfig libressl-dev &&
-             cargo install sqlx-cli --no-default-features --features rustls,postgres &&
-             sqlx migrate run --database-url $${DATABASE_URL} --source /migrations"
+    command: migrate run --source /migrations
     environment:
       DATABASE_URL: postgres://root:zoW6rZF274ufQHtJMhdCMbBoICv6KGWG@beyondsecure-db:5432/beyondsecure
     volumes:
@@ -67,8 +66,6 @@ services:
         condition: service_healthy
       beyondsecure-migrator:
         condition: service_completed_successfully
-      beyondsecure-warp-proxy:
-        condition: service_healthy
     environment:
       XRAY_API_ADDR: beyondsecure-xray:32768
       DATABASE_URL: postgres://root:zoW6rZF274ufQHtJMhdCMbBoICv6KGWG@beyondsecure-db:5432/beyondsecure

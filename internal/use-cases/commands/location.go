@@ -13,7 +13,7 @@ const LOCATION_CMD = "location"
 var locations = map[string]domain.Location{
 	"de": {
 		Flag: "🩷",
-		Name: "Vienna 🇦🇹",
+		Name: "Frankfurt 🇩🇪",
 		IP:   "77.221.157.159:443",
 	},
 }
