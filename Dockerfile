@@ -1,0 +1,16 @@
+FROM golang:1.25-alpine3.22 AS builder
+
+WORKDIR /usr/src/app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN go build -v -o /usr/local/bin/app -ldflags '-s -w' ./cmd/main.go
+
+FROM alpine:3.22
+
+WORKDIR /usr/local/bin/app
+COPY --from=builder /usr/local/bin/app .
+
+ENTRYPOINT ["./app"]

@@ -1,0 +1,76 @@
+services:
+  beyondsecure-db:
+    image: postgres:18.0-alpine3.22
+    container_name: beyondsecure-db
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_DB: beyondsecure
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: zoW6rZF274ufQHtJMhdCMbBoICv6KGWG
+      PGDATA: /data/postgres
+    volumes:
+      - ./data:/data/postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U root" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  beyondsecure-migrator:
+    image: rust:1.90.0-alpine3.22
+    container_name: beyondsecure-migrator
+    command: >
+      sh -c "apk add --no-cache musl-dev pkgconfig libressl-dev &&
+             cargo install sqlx-cli --no-default-features --features rustls,postgres &&
+             sqlx migrate run --database-url $${DATABASE_URL} --source /migrations"
+    environment:
+      DATABASE_URL: postgres://root:zoW6rZF274ufQHtJMhdCMbBoICv6KGWG@beyondsecure-db:5432/beyondsecure
+    volumes:
+      - ./migrations:/migrations:ro
+    depends_on:
+      beyondsecure-db:
+        condition: service_healthy
+    restart: no
+
+  beyondsecure-warp-proxy:
+    container_name: beyondsecure-warp-proxy
+    build:
+      dockerfile: ./warp-proxy/Dockerfile.warp
+    ports:
+      - "40000:40000"
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+
+  beyondsecure-xray:
+    image: teddysun/xray
+    container_name: beyondsecure-xray
+    restart: always
+    ports:
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - /etc/xray/config.json:/etc/xray/config.json:rw
+
+  beyondsecure-bot:
+    image: cr.yandex/crpon6vsi4chaca55ctd/beyondsecure-bot:latest
+    container_name: beyondsecure-bot
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      beyondsecure-db:
+        condition: service_healthy
+      beyondsecure-migrator:
+        condition: service_completed_successfully
+      beyondsecure-warp-proxy:
+        condition: service_healthy
+    environment:
+      XRAY_API_ADDR: beyondsecure-xray:32768
+      DATABASE_URL: postgres://root:zoW6rZF274ufQHtJMhdCMbBoICv6KGWG@beyondsecure-db:5432/beyondsecure
+    volumes:
+      - /etc/xray/config.json:/shared/xray/config.json:rw

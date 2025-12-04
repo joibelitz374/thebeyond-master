@@ -1,0 +1,221 @@
+{
+  "api": {
+    "services": [
+      "HandlerService",
+      "LoggerService",
+      "StatsService"
+    ],
+    "tag": "api"
+  },
+  "log": {
+    "access": "/var/log/xray/access.log",
+    "error": "/var/log/xray/error.log",
+    "loglevel": "debug"
+  },
+  "policy": {
+    "levels": {
+      "0": {
+        "handshake": 1,
+        "statsUserDownlink": true,
+        "statsUserUplink": true
+      },
+      "1": {
+        "handshake": 3,
+        "statsUserDownlink": true,
+        "statsUserUplink": true
+      },
+      "2": {
+        "handshake": 5,
+        "statsUserDownlink": true,
+        "statsUserUplink": true
+      }
+    },
+    "system": {
+      "statsInboundDownlink": true,
+      "statsInboundUplink": true,
+      "statsOutboundDownlink": true,
+      "statsOutboundUplink": true
+    }
+  },
+  "routing": {
+    "rules": [
+      {
+        "inboundTag": [
+          "api"
+        ],
+        "outboundTag": "api",
+        "ruleTag": "api"
+      },
+      {
+        "outboundTag": "block",
+        "protocol": [
+          "bittorrent"
+        ],
+        "ruleTag": "bt"
+      },
+      {
+        "ip": [
+          "geoip:private"
+        ],
+        "outboundTag": "block",
+        "ruleTag": "private-ip"
+      },
+      {
+        "domain": [
+          "geosite:category-ads-all"
+        ],
+        "outboundTag": "block",
+        "ruleTag": "ad-domain"
+      },
+      {
+        "network": "udp,tcp",
+        "outboundTag": "warp",
+        "type": "field"
+      }
+    ]
+  },
+  "inbounds": [
+    {
+      "listen": "0.0.0.0",
+      "port": 32768,
+      "protocol": "dokodemo-door",
+      "settings": {
+        "address": "127.0.0.1"
+      },
+      "sniffing": null,
+      "tag": "api"
+    },
+    {
+      "listen": "0.0.0.0",
+      "port": 443,
+      "protocol": "vless",
+      "settings": {
+        "capability": {
+          "dynamicConfig": true
+        },
+        "clients": [],
+        "decryption": "none",
+        "default": {
+          "level": 0
+        }
+      },
+      "sniffing": {
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "enabled": true,
+        "routeOnly": true
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "realitySettings": {
+          "privateKey": "kKB40StdDHBNKz2Hj7MPuJD7xhKiEiSMfSSOGOcjlXs",
+          "serverNames": [
+            "web.max.ru"
+          ],
+          "shortIds": [
+            "5b1dfe412efc2771",
+            "7999f9d76c1d23e9",
+            "fcdbcaa7e7509f23",
+            "fa5f579c59366802",
+            "52ed2dc4a6b5d10d",
+            "a512407aed873209",
+            "8068965626ae7cd6",
+            "2b3c11a2b9690748",
+            "7b859c0575df15dc",
+            "f6630ba96e15aa45",
+            "ddd1dfbd60fe6af1",
+            "f319249e1743676d",
+            "d21fe3ac144a142a",
+            "85dc472351f343a4",
+            "b0f9d1c547e6fca0",
+            "34fe26d8b2c0f884",
+            "19312acdfa44db5e",
+            "b0404ba5fae1137c",
+            "e1d7cc945b21bfba",
+            "d1363d6f3f037122",
+            "c2fb392ba35d2c65",
+            "c62f3419a2a950d2",
+            "558b4fa271c0d436",
+            "270ca2e85e8e29eb",
+            "8da370bfdec064a2",
+            "17607f02f5d6d84b",
+            "d6108bd60b09fd5b",
+            "9c942bb69ddfad96",
+            "93b053a18da834ae",
+            "07ecda46c3cd03af",
+            "bb143ea99a1c4b80",
+            "eead6bb2906e7298",
+            "693b5b92dc261a01",
+            "8cc1bea93c0f2064",
+            "6797ba477f3cde77",
+            "a954bac65d7119ec",
+            "b399c7cd4bdb1e94",
+            "5c0db91b13d28008",
+            "87ae4b9d7b510e8d",
+            "cad5328d0d0ccb78",
+            "12fd0be40047d285",
+            "42b55b518655bb89",
+            "3b8d0dd48035d1ef",
+            "fbff0aac9deae178",
+            "2a58b119e1d7aa27",
+            "df69704230196008",
+            "1c84f35204dd1591",
+            "fd0e11f3dbf55012",
+            "99e78cfe02f8ea64",
+            "4b7228df4d6dd790",
+            "491d52bd5af32b37",
+            "d7bfd6a6aabf61ad",
+            "ad46cd172c3b54b0",
+            "25de1f8e42f09457",
+            "3ae1241252fc82e5",
+            "818ba348d36909a4",
+            "f17c58369ad1c8ed",
+            "182c6ade9fecce82",
+            "34e4226ce46e292e",
+            "92035ee2f21ccbd9",
+            "2d2503d36c289dfc",
+            "0562e65514fd7038",
+            "04fdc68f237a0416",
+            "6ef2ea1f20677b39"
+          ],
+          "show": false,
+          "target": "web.max.ru:443",
+          "xver": 0
+        },
+        "security": "reality",
+        "xhttpSettings": {
+          "host": "",
+          "mode": "auto",
+          "path": "/"
+        }
+      },
+      "tag": "VLESS-XHTTP-REALITY"
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "tag": "warp",
+      "protocol": "socks",
+      "settings": {
+        "servers": [
+          {
+            "address": "beyondsecure-warp-proxy",
+            "port": 40000
+          }
+        ]
+      }
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "block"
+    }
+  ],
+  "stats": {}
+}
