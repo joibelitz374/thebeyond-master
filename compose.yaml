@@ -44,6 +44,10 @@ services:
       driver: json-file
       options:
         max-size: 1m
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    tmpfs:
+      - /var/lib/cloudflare-warp:size=10M
 
   beyondsecure-xray:
     image: teddysun/xray
@@ -54,6 +58,7 @@ services:
       - "443:443/udp"
     volumes:
       - /etc/xray/config.json:/etc/xray/config.json:rw
+      - /var/log/xray:/var/log/xray
 
   beyondsecure-bot:
     image: cr.yandex/crpon6vsi4chaca55ctd/beyondsecure-bot:latest
@@ -69,6 +74,10 @@ services:
     environment:
       XRAY_API_ADDR: beyondsecure-xray:32768
       DATABASE_URL: postgres://root:zoW6rZF274ufQHtJMhdCMbBoICv6KGWG@beyondsecure-db:5432/beyondsecure
+      SUBSCRIPTIONS_PATH: /etc/beyondsecure/subscriptions.yaml
+      HOWTOUSE_INSTRUCTION_PATH: /shared/assets/instruction.png
+      PROJECT_AVATAR_PATH: /shared/assets/avatar.png
     volumes:
       - /etc/xray/config.json:/shared/xray/config.json:rw
-      - /shared/assets/avatar.png:/shared/assets/avatar.png
+      - ./config:/etc/beyondsecure:rw
+      - ./assets:/shared/assets:rw

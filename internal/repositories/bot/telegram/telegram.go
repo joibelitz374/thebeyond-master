@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 
@@ -104,6 +105,20 @@ func (a *Adapter) SendMessage(chatID update.ChatInterface, text string, opts ...
 
 	_, err = a.bot.SendMessage(ctx, sendMessage)
 
+	return err
+}
+
+func (a *Adapter) ForwardMessage(chatID update.ChatInterface, fromChatID, fromMessageID int) error {
+	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+	defer cancel()
+
+	fmt.Println(chatID.GetID(), fromChatID, fromMessageID)
+	_, err := a.bot.ForwardMessage(ctx, &bot.ForwardMessageParams{
+		ChatID:              chatID.GetID(),
+		FromChatID:          fromChatID,
+		MessageID:           fromMessageID,
+		DisableNotification: true,
+	})
 	return err
 }
 

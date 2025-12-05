@@ -12,18 +12,17 @@ import (
 	"github.com/quickpowered/frilly/internal/repositories/bot/bin"
 	"github.com/quickpowered/frilly/internal/types/update"
 	"github.com/quickpowered/frilly/internal/use-cases/commands"
-	"github.com/quickpowered/frilly/internal/use-cases/commands/tools"
 	"github.com/quickpowered/frilly/pkg/consts"
 	"go.uber.org/zap"
 )
 
 type delivery struct {
 	bot      bin.Interface
-	commands commands.Commands
+	commands commands.UseCase
 	Logger   *zap.Logger
 }
 
-func New(bot bin.Interface, commands commands.Commands, logger *zap.Logger) *delivery {
+func New(bot bin.Interface, commands commands.UseCase, logger *zap.Logger) *delivery {
 	return &delivery{bot, commands, logger}
 }
 
@@ -65,18 +64,18 @@ func (s *delivery) handler(session *discordgo.Session, message *discordgo.Messag
 
 		refSenderID, _ := strconv.Atoi(originalMsg.Author.ID)
 
-		replyMessage = &update.Message{
-			ID: messageID,
-			Chat: update.Chat{
-				ID:       guildID,
-				ThreadID: channelID,
-			},
-			SenderID: refSenderID,
-			Text:     originalMsg.Content,
-		}
+		message := update.NewMessage(
+			consts.PlatformTelegram,
+			int(messageID),
+			update.Chat{ID: int(guildID), ThreadID: int(channelID)},
+			refSenderID,
+			originalMsg.Content,
+			nil,
+		)
+		replyMessage = &message
 	}
 
-	err := s.commands.Run(s.bot, &domain.Payload{
+	if err := s.commands.Run(s.bot, &domain.Payload{
 		Message: update.NewMessage(
 			consts.PlatformTelegram,
 			messageID,
@@ -88,19 +87,7 @@ func (s *delivery) handler(session *discordgo.Session, message *discordgo.Messag
 			message.Content,
 			replyMessage,
 		),
-	})
-	if err != nil {
-		if cerr, ok := err.(tools.CommandError); ok {
-			s.Logger.Error("command failed",
-				zap.String("cmd", cerr.Command),
-				zap.String("service", cerr.Service),
-				zap.String("method", cerr.Method),
-				zap.String("chat_id", cerr.ChatID),
-				zap.Int("member_id", cerr.MemberID),
-				zap.Error(err),
-			)
-		} else {
-			s.Logger.Error("command failed", zap.Error(err))
-		}
+	}); err != nil {
+		s.Logger.Error("command failed", zap.Error(err))
 	}
 }

@@ -12,10 +12,16 @@ import (
 )
 
 type Interface interface {
+	GetAllByPlatform(ctx context.Context, platform consts.Platform) (accounts []int, err error)
 	Get(ctx context.Context, platform consts.Platform, platformAccountID int) (domain.Account, error)
-	GetExpiredUsers(ctx context.Context) ([]domain.Account, error)
-	Create(ctx context.Context, platform consts.Platform, platformAccountID int, expiresAt time.Time) (int, string, error)
-	SetSubscriptionExpiresAt(ctx context.Context, accountID int, expiresAt *time.Time) error
+	GetByAccountID(ctx context.Context, accountID int) (account domain.Account, err error)
+	GetPlatformUserID(ctx context.Context, accountID int) (externalAccountID int, err error)
+	GetExpiredUsers(ctx context.Context) ([]int, error)
+	Create(ctx context.Context, platform consts.Platform, platformAccountID int, expiresAt time.Time, promo *string, discount int) (int, string, error)
+	AddSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error
+	RemoveSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error
+	CancelSubscriptions(ctx context.Context, accountID int) error
+	SetDiscount(ctx context.Context, accountID int, discount int) error
 	RegenerateKey(ctx context.Context, accountID int) (string, error)
 	SetRegion(ctx context.Context, accountID int, region string) error
 	SetLanguage(ctx context.Context, accountID int, language string) error
@@ -32,15 +38,27 @@ func NewService(repo db.AccountInterface) Interface {
 	return service{repo}
 }
 
+func (s service) GetAllByPlatform(ctx context.Context, platform consts.Platform) (accounts []int, err error) {
+	return s.repo.GetAllByPlatform(ctx, platform)
+}
+
 func (s service) Get(ctx context.Context, platform consts.Platform, platformAccountID int) (domain.Account, error) {
 	return s.repo.Get(ctx, platform, platformAccountID)
 }
 
-func (s service) GetExpiredUsers(ctx context.Context) ([]domain.Account, error) {
+func (s service) GetByAccountID(ctx context.Context, accountID int) (account domain.Account, err error) {
+	return s.repo.GetByAccountID(ctx, accountID)
+}
+
+func (s service) GetPlatformUserID(ctx context.Context, accountID int) (externalAccountID int, err error) {
+	return s.repo.GetPlatformUserID(ctx, accountID)
+}
+
+func (s service) GetExpiredUsers(ctx context.Context) ([]int, error) {
 	return s.repo.GetExpiredUsers(ctx)
 }
 
-func (s service) Create(ctx context.Context, platform consts.Platform, platformAccountID int, expiresAt time.Time) (int, string, error) {
+func (s service) Create(ctx context.Context, platform consts.Platform, platformAccountID int, expiresAt time.Time, promo *string, discount int) (int, string, error) {
 	keyID, err := gonanoid.Generate(consts.NANOID_ALPHABET, consts.NANOID_LENGTH)
 	if err != nil {
 		return 0, "", err
@@ -48,12 +66,24 @@ func (s service) Create(ctx context.Context, platform consts.Platform, platformA
 
 	shortID := values.RandomShortId()
 
-	accountID, err := s.repo.Create(ctx, platform, platformAccountID, keyID, shortID, expiresAt)
+	accountID, err := s.repo.Create(ctx, platform, platformAccountID, keyID, shortID, expiresAt, promo, discount)
 	return accountID, keyID, err
 }
 
-func (s service) SetSubscriptionExpiresAt(ctx context.Context, accountID int, expiresAt *time.Time) error {
-	return s.repo.SetSubscriptionExpiresAt(ctx, accountID, expiresAt)
+func (s service) AddSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error {
+	return s.repo.AddSubscriptionExpiresAt(ctx, accountID, duration)
+}
+
+func (s service) RemoveSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error {
+	return s.repo.RemoveSubscriptionExpiresAt(ctx, accountID, duration)
+}
+
+func (s service) CancelSubscriptions(ctx context.Context, accountID int) error {
+	return s.repo.CancelSubscriptions(ctx, accountID)
+}
+
+func (s service) SetDiscount(ctx context.Context, accountID int, discount int) error {
+	return s.repo.SetDiscount(ctx, accountID, discount)
 }
 
 func (s service) RegenerateKey(ctx context.Context, accountID int) (string, error) {

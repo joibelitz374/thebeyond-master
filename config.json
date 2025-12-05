@@ -15,17 +15,7 @@
   "policy": {
     "levels": {
       "0": {
-        "handshake": 1,
-        "statsUserDownlink": true,
-        "statsUserUplink": true
-      },
-      "1": {
         "handshake": 3,
-        "statsUserDownlink": true,
-        "statsUserUplink": true
-      },
-      "2": {
-        "handshake": 5,
         "statsUserDownlink": true,
         "statsUserUplink": true
       }

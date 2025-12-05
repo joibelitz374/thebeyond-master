@@ -3,9 +3,7 @@ package commands
 import (
 	"github.com/quickpowered/frilly/internal/domain"
 	"github.com/quickpowered/frilly/internal/repositories/bot/bin"
-	"github.com/quickpowered/frilly/internal/types"
-	"github.com/quickpowered/frilly/internal/use-cases/commands/tools"
-	"github.com/quickpowered/frilly/pkg/consts"
+	"github.com/quickpowered/frilly/internal/use-cases/commands/deps"
 )
 
 const LOCATION_CMD = "location"
@@ -22,30 +20,25 @@ var locationsOrder = [][]string{
 	{"de"},
 }
 
-type LocationCmd struct {
-	tools.Modules
+type locationHandler struct {
+	deps.Dependencies
 }
 
-func NewLocationCmd(modules tools.Modules) *LocationCmd {
-	return &LocationCmd{modules}
+func NewLocationCmd(deps deps.Dependencies) locationHandler {
+	return locationHandler{deps}
 }
 
-func (c *LocationCmd) Execute(bot bin.Interface, payload *domain.Payload) error {
-	opts := []any{tools.ToForward(bot, payload)}
+func (h locationHandler) Execute(bot bin.Interface, p *domain.Payload) error {
+	opts := []any{deps.ToForward(bot, p)}
 
-	buttonRows, err := getButtons(bot, 0, "location", [][][]string{locationsOrder}, locationsOrder, func(code string) string {
+	keyboard, err := buildKeyboardList(bot.GetPlatform(), 0, LOCATION_CMD, [][][]string{locationsOrder}, locationsOrder, func(code string) string {
 		location := locations[code]
 		return location.Flag + " " + location.Name
 	})
 	if err != nil {
-		bot.SendMessage(payload.Message.GetChat(), "Invalid location code", opts...)
 		return err
 	}
 
-	if bot.GetPlatform() != consts.PlatformTelegram {
-		buttonRows = append(buttonRows, addNavigationButtons(bot, 0)...)
-	}
-
-	opts = append(opts, &types.Keyboard{ButtonRows: buttonRows})
-	return bot.SendMessage(payload.Message.GetChat(), "Choose location:", opts...)
+	opts = append(opts, keyboard)
+	return bot.SendMessage(p.Message.Chat(), "Choose location:", opts...)
 }

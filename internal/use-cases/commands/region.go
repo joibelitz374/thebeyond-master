@@ -4,8 +4,7 @@ import (
 	"github.com/quickpowered/frilly/internal/domain"
 	"github.com/quickpowered/frilly/internal/repositories/bot/bin"
 	"github.com/quickpowered/frilly/internal/types"
-	"github.com/quickpowered/frilly/internal/use-cases/commands/tools"
-	"github.com/quickpowered/frilly/internal/use-cases/components"
+	"github.com/quickpowered/frilly/internal/use-cases/commands/deps"
 )
 
 const REGION_CMD = "region"
@@ -21,30 +20,16 @@ var regionsOrder = [][]string{
 	{"ir"},
 }
 
-type RegionCmd struct {
-	tools.Modules
-	component components.Component
+type regionHandler struct {
+	deps.Dependencies
 }
 
-func NewRegionCmd(modules tools.Modules) *RegionCmd {
-	return &RegionCmd{modules, components.NewRegionComponent()}
+func NewRegionHandler(deps deps.Dependencies) regionHandler {
+	return regionHandler{deps}
 }
 
-func (c *RegionCmd) Execute(bot bin.Interface, payload *domain.Payload) error {
-	componentText := c.component.Text("en")
-	opts := []any{tools.ToForward(bot, payload), types.DisableMentions}
-
-	if len(payload.NodeRoute) >= 2 {
-		// ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
-		// defer cancel()
-
-		region := payload.NodeRoute[1]
-		// if err := c.UserService.SetRegion(ctx, payload.User.ID, region); err != nil {
-		// 	return err
-		// }
-
-		return bot.SendMessage(payload.Message.GetChat(), componentText[1]+" "+region, opts...)
-	}
+func (h regionHandler) Execute(bot bin.Interface, p *domain.Payload) error {
+	opts := []any{deps.ToForward(bot, p), types.DisableMentions}
 
 	var idx int
 	buttonRows := make([][]types.Button, len(regionsOrder))
@@ -59,5 +44,5 @@ func (c *RegionCmd) Execute(bot bin.Interface, payload *domain.Payload) error {
 	}
 
 	opts = append(opts, &types.Keyboard{ButtonRows: buttonRows})
-	return bot.SendMessage(payload.Message.GetChat(), componentText[0]+":", opts...)
+	return bot.SendMessage(p.Message.Chat(), "Choose your region:", opts...)
 }
