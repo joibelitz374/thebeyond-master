@@ -61,7 +61,7 @@ func (c *AccountCmd) Execute(bot bin.Interface, payload *domain.Payload) error {
 			standard.WithQRWidth(8),
 			standard.WithBorderWidth(10),
 			standard.WithBuiltinImageEncoder(standard.PNG_FORMAT),
-			standard.WithLogoImageFilePNG("./assets/avatar.png"),
+			standard.WithLogoImageFilePNG("/shared/assets/avatar.png"),
 		}
 
 		w := standard.NewWithWriter(wr, options...)

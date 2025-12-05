@@ -11,6 +11,7 @@ import (
 	"github.com/quickpowered/frilly/internal/domain"
 	"github.com/quickpowered/frilly/internal/repositories/bot/bin"
 	"github.com/quickpowered/frilly/internal/repositories/web"
+	"github.com/quickpowered/frilly/internal/types/update"
 	"github.com/quickpowered/frilly/internal/use-cases/commands/tools"
 	"go.uber.org/zap"
 )
@@ -60,7 +61,7 @@ func (c *UseCase) Run(bot bin.Interface, payload *domain.Payload) (err error) {
 			ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
 			defer cancel()
 
-			newAccountID, keyID, err := c.AccountService.Create(ctx, platform, sender, time.Now().Add(time.Hour*24))
+			newAccountID, keyID, err := c.AccountService.Create(ctx, platform, sender, time.Now().Add(time.Hour*336))
 			if err != nil {
 				c.Logger.Error("failed to create account", zap.Error(err))
 				return err
@@ -71,6 +72,10 @@ func (c *UseCase) Run(bot bin.Interface, payload *domain.Payload) (err error) {
 
 			if err := c.XRayClient.AddUser(fmt.Sprintf("id%d@user", payload.Account.ID), payload.Account.KeyID); err != nil {
 				c.Logger.Error("failed to add user", zap.Error(err))
+				return err
+			}
+
+			if err := bot.SendMessage(update.Chat{ID: 924536264}, fmt.Sprintf("<b>Новый пользователь зарегистрирован:</b> tg://user?id=%d", payload.Message.GetSender())); err != nil {
 				return err
 			}
 

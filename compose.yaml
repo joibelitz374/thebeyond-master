@@ -71,3 +71,4 @@ services:
       DATABASE_URL: postgres://root:zoW6rZF274ufQHtJMhdCMbBoICv6KGWG@beyondsecure-db:5432/beyondsecure
     volumes:
       - /etc/xray/config.json:/shared/xray/config.json:rw
+      - /shared/assets/avatar.png:/shared/assets/avatar.png

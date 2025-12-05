@@ -23,7 +23,7 @@ func NewExchangeRates() *exchangeRates {
 }
 
 func (e *exchangeRates) Get() (map[string]float64, error) {
-	res, err := e.httpClient.Get("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json")
+	res, err := e.httpClient.Get("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/rub.json")
 	if err != nil {
 		return nil, err
 	}
@@ -39,5 +39,5 @@ func (e *exchangeRates) Get() (map[string]float64, error) {
 		return nil, err
 	}
 
-	return data.USD, nil
+	return data.RUB, nil
 }

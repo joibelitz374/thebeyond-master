@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"log"
 	"math"
 
 	"github.com/quickpowered/frilly/internal/domain"
@@ -26,7 +27,7 @@ func updatePrices(subs map[string]*subscriptionPeriod, exchangeRates web.Exchang
 	for _, period := range subs {
 		p := period.prices
 		for currency := range values.GetCurrencies() {
-			p[currency] = round(period.prices["usd"]*rates[currency], 2)
+			p[currency] = round(period.prices["rub"]*rates[currency], 2)
 		}
 
 		period.prices = p
@@ -48,91 +49,124 @@ type subscriptionPeriod struct {
 }
 
 var SubscriptionPeriods = map[string]*subscriptionPeriod{
-	"3": {
-		index: 0,
-		emoji: "💊",
-		prices: map[string]float64{
-			"stars": 25,
-			"usd":   0.36,
-		},
-	},
 	"7": {
 		index: 1,
 		emoji: "🍿",
 		prices: map[string]float64{
-			"stars": 57,
-			"usd":   0.81,
+			"stars": 24,
+			"rub":   44,
 		},
 	},
 	"14": {
 		index: 2,
 		emoji: "💖",
 		prices: map[string]float64{
-			"stars": 109,
-			"usd":   1.57,
+			"stars": 48,
+			"rub":   88,
 		},
 	},
 	"30": {
 		index: 3,
 		emoji: "🌕",
 		prices: map[string]float64{
-			"stars": 230,
-			"usd":   3.29, // 2.99
+			"stars": 100,
+			"rub":   179,
 		},
 	},
 	"90": {
 		index: 4,
 		emoji: "🌷",
 		prices: map[string]float64{
-			"stars": 576,
-			"usd":   8.99, // 7.49
+			"stars": 250,
+			"rub":   424,
 		},
-		discount: 9,
-		// discount: 16,
 	},
 	"180": {
 		index: 5,
-		emoji: "🍀",
+		emoji: "🌈", // 🍀
 		prices: map[string]float64{
-			"stars": 999,
-			"usd":   17.49, // 12.99
+			"stars": 500,
+			"rub":   829,
 		},
-		discount: 11,
-		// discount: 28,
 	},
 	"365": {
 		index: 6,
-		emoji: "🌈",
-		prices: map[string]float64{
-			"stars": 1538,
-			"usd":   31.49, // 19.99
-		},
-		discount: 20,
-		// discount: 44,
-	},
-	"730": {
-		index: 7,
 		emoji: "⭐️",
 		prices: map[string]float64{
-			"stars": 2307,
-			"usd":   54.99, // 29.99
+			"stars": 1000,
+			"rub":   1649,
 		},
-		discount: 30,
-		// discount: 58,
 	},
 }
+
+// func applyDiscounts() error {
+// 	monthly, ok := SubscriptionPeriods["30"]
+// 	if !ok {
+// 		return fmt.Errorf("нет месячного периода (ключ \"30\")")
+// 	}
+
+// 	monthlyPrice, ok := monthly.prices["rub"]
+// 	if !ok {
+// 		return fmt.Errorf("в месячном периоде нет цены в рублях (ключ \"rub\")")
+// 	}
+
+// 	type item struct {
+// 		days string
+// 		sp   *subscriptionPeriod
+// 	}
+// 	var list []item
+// 	for days, sp := range SubscriptionPeriods {
+// 		list = append(list, item{days: days, sp: sp})
+// 	}
+// 	sort.Slice(list, func(i, j int) bool {
+// 		return list[i].sp.index < list[j].sp.index
+// 	})
+
+// 	fmt.Printf("%6s | %10s | %16s | %12s | %9s | %16s\n", "Days", "Price (RUB)", "Month-equiv (RUB)", "Discount (RUB)", "Disc %", "Eff. month (RUB)")
+// 	fmt.Println("------+------------+------------------+--------------+-----------+------------------")
+
+// 	for _, it := range list {
+// 		var daysFloat float64
+// 		_, err := fmt.Sscanf(it.days, "%f", &daysFloat)
+// 		if err != nil || daysFloat <= 0 {
+// 			continue
+// 		}
+
+// 		price, ok := it.sp.prices["rub"]
+// 		if !ok {
+// 			continue
+// 		}
+
+// 		fullEquiv := monthlyPrice * (daysFloat / 30.0)
+// 		discountRub := fullEquiv - price
+
+// 		var discountPct float64
+// 		if fullEquiv != 0 {
+// 			discountPct = discountRub / fullEquiv * 100.0
+// 		} else {
+// 			discountPct = 0
+// 		}
+
+// 		it.sp.discount = int(math.Round(discountPct))
+
+// 		effMonth := price * (30.0 / daysFloat)
+
+// 		fmt.Printf("%6s | %10.2f | %16.2f | %12.2f | %8.2f%% | %16.2f\n",
+// 			it.days, price, fullEquiv, discountRub, discountPct, effMonth)
+// 	}
+
+// 	return nil
+// }
 
 func (period *subscriptionPeriod) GetPrice(currency string) float64 {
 	return period.prices[currency]
 }
 
 var periodsOrder = [][]string{
-	{"3"},
 	{"7", "14"},
 	{"30", "90"},
 	{"180"},
 	{"365"},
-	{"730"},
 }
 
 type RenewCmd struct {
@@ -143,8 +177,12 @@ type RenewCmd struct {
 
 func NewRenewCmd(modules tools.Modules, exchangeRates web.ExchangeRatesInterface) *RenewCmd {
 	if err := updatePrices(SubscriptionPeriods, exchangeRates); err != nil {
-		// log.Fatalf("Ошибка обновления курсов: %v", err)
+		log.Fatalf("Ошибка обновления курсов: %v", err)
 	}
+
+	// if err := applyDiscounts(); err != nil {
+	// 	log.Fatalf("Ошибка применения скидок: %v", err)
+	// }
 
 	return &RenewCmd{modules, components.NewRenewComponent(), exchangeRates}
 }

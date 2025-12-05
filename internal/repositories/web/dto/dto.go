@@ -1,5 +1,5 @@
 package dto
 
 type ExchangeRatesResponse struct {
-	USD map[string]float64 `json:"usd"`
+	RUB map[string]float64 `json:"rub"`
 }
