@@ -75,7 +75,7 @@ func (c *UseCase) Run(bot bin.Interface, payload *domain.Payload) (err error) {
 				return err
 			}
 
-			if err := bot.SendMessage(update.Chat{ID: 924536264}, fmt.Sprintf("<b>Новый пользователь зарегистрирован:</b> tg://user?id=%d", payload.Message.GetSender())); err != nil {
+			if err := bot.SendMessage(update.Chat{ID: 924536264}, fmt.Sprintf("<b>Зарегистрирован</b> <a href=\"tg://user?id=%d\">новый пользователь</a>", payload.Message.GetSender())); err != nil {
 				return err
 			}
 

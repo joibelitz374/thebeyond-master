@@ -61,7 +61,7 @@ func (c *RefundCmd) Execute(bot bin.Interface, payload *domain.Payload) error {
 				}
 			}
 
-			if err := bot.SendMessage(update.Chat{ID: 924536264}, fmt.Sprintf("<b>Заявка на возврат</b> от tg://user?id=%d\n<b>Сумма</b>: %.2f\n<b>Дата истечения</b>: %s", payload.Message.GetSender(), refundAmount, payload.Account.SubscriptionExpiresAt.Format("02/01/2006 15:04"))); err != nil {
+			if err := bot.SendMessage(update.Chat{ID: 924536264}, fmt.Sprintf("<b>Заявка на возврат</b> от <a href=\"tg://user?id=%d\">пользователя</a>\n<b>Сумма</b>: %.2f\n<b>Дата истечения</b>: %s", payload.Message.GetSender(), refundAmount, payload.Account.SubscriptionExpiresAt.Format("02/01/2006 15:04"))); err != nil {
 				return err
 			}
 
