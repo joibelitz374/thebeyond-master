@@ -5,79 +5,97 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/quickpowered/frilly/config/language"
 	"github.com/quickpowered/frilly/internal/domain"
+	"github.com/quickpowered/frilly/internal/i18n"
 	"github.com/quickpowered/frilly/internal/repositories/bot/bin"
 	"github.com/quickpowered/frilly/internal/types"
 	"github.com/quickpowered/frilly/internal/types/update"
-	"github.com/quickpowered/frilly/internal/use-cases/commands/tools"
-	"github.com/quickpowered/frilly/internal/use-cases/components"
+	"github.com/quickpowered/frilly/internal/use-cases/commands/deps"
 	"go.uber.org/zap"
 )
 
 const REFUND_CMD = "refund"
 
-type RefundCmd struct {
-	tools.Modules
-	component components.Component
+type refundHandler struct {
+	deps.Dependencies
 }
 
-func NewRefundCmd(modules tools.Modules) *RefundCmd {
-	return &RefundCmd{modules, components.NewRefundComponent()}
+func NewRefundHandler(deps deps.Dependencies) refundHandler {
+	return refundHandler{deps}
 }
 
-func (c *RefundCmd) Execute(bot bin.Interface, payload *domain.Payload) error {
-	componentText := c.component.Text(payload.Account.Language)
-	opts := []any{tools.ToForward(bot, payload), types.DisableMentions}
+func (h refundHandler) Execute(bot bin.Interface, p *domain.Payload) error {
+	msg := i18n.RefundMessages[language.Language(p.Account.Language)]
+	opts := []any{deps.ToForward(bot, p), types.DisableMentions}
 
-	if len(payload.NodeRoute) >= 2 {
-		if payload.NodeRoute[1] == "confirm" {
-			// now := time.Now()
-			// expiresAt := payload.Account.SubscriptionExpiresAt.In(now.Location())
-
+	if len(p.Args) >= 2 {
+		if p.Args[1] == "confirm" {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			payments, err := c.PaymentService.Get(ctx, payload.Account.ID, time.Now())
+			payments, err := h.PaymentService.Get(ctx, p.Account.ID, time.Now())
 			if err != nil {
-				c.Logger.Error("failed to get payment", zap.Error(err))
+				h.Logger.Error("failed to get payment", zap.Error(err))
 				return err
 			}
 
 			if len(payments) == 0 {
-				return bot.SendMessage(payload.Message.GetChat(), "Payments not found", opts...)
+				return bot.SendMessage(p.Message.Chat(), msg.NoPayments, opts...)
 			}
 
 			refundAmount := 0.0
 			now := time.Now()
-			for _, p := range payments {
-				if p.ExpiresAt.After(now) {
-					totalDuration := p.ExpiresAt.Sub(p.CreatedAt)
-					remainingDuration := p.ExpiresAt.Sub(now)
+			for _, payment := range payments {
+				if payment.ExpiresAt.After(now) {
+					totalDuration := payment.ExpiresAt.Sub(payment.CreatedAt)
+					remainingDuration := payment.ExpiresAt.Sub(now)
 
 					if totalDuration > 0 {
 						ratio := float64(remainingDuration) / float64(totalDuration)
-						refundAmount += float64(p.Amount) * ratio
+						refundAmount += float64(payment.Amount) * ratio
 					}
 				}
 			}
 
-			if err := bot.SendMessage(update.Chat{ID: 924536264}, fmt.Sprintf("<b>Заявка на возврат</b> от <a href=\"tg://user?id=%d\">пользователя</a>\n<b>Сумма</b>: %.2f\n<b>Дата истечения</b>: %s", payload.Message.GetSender(), refundAmount, payload.Account.SubscriptionExpiresAt.Format("02/01/2006 15:04"))); err != nil {
+			var durationToRemove time.Duration
+			for _, payment := range payments {
+				if payment.ExpiresAt.After(now) {
+					remaining := payment.ExpiresAt.Sub(now)
+					if remaining > 0 {
+						durationToRemove += remaining
+					}
+				}
+			}
+
+			remaining := time.Until(*p.Account.SubscriptionExpiresAt)
+			if remaining < 0 {
+				remaining = 0
+			}
+
+			if durationToRemove > remaining {
+				durationToRemove = remaining
+			}
+
+			if durationToRemove > 0 {
+				if err := h.AccountService.RemoveSubscriptionExpiresAt(ctx, p.Account.ID, durationToRemove); err != nil {
+					return err
+				}
+			}
+
+			if err := h.PaymentService.Delete(ctx, p.Account.ID); err != nil {
 				return err
 			}
 
-			if err := c.AccountService.SetSubscriptionExpiresAt(ctx, payload.Account.ID, nil); err != nil {
+			if err := h.XRayClient.RemoveUser(fmt.Sprintf("id%d@user", p.Account.ID)); err != nil {
 				return err
 			}
 
-			if err := c.PaymentService.Delete(ctx, payload.Account.ID); err != nil {
+			if err := bot.SendMessage(update.Chat{ID: 924536264}, fmt.Sprintf("<b>Заявка на возврат</b> от <a href=\"tg://user?id=%d\">пользователя</a>\n<b>Сумма</b>: %.2f\n<b>Дата истечения</b>: %s", p.Message.Sender(), refundAmount, p.Account.SubscriptionExpiresAt.Format("02/01/2006 15:04"))); err != nil {
 				return err
 			}
 
-			if err := c.XRayClient.RemoveUser(fmt.Sprintf("id%d@user", payload.Account.ID)); err != nil {
-				return err
-			}
-
-			return bot.SendMessage(payload.Message.GetChat(), componentText[1], opts...)
+			return bot.SendMessage(p.Message.Chat(), msg.SuccessMessage, opts...)
 		}
 	}
 
@@ -87,5 +105,5 @@ func (c *RefundCmd) Execute(bot bin.Interface, payload *domain.Payload) error {
 		},
 	})
 
-	return bot.SendMessage(payload.Message.GetChat(), componentText[0], opts...)
+	return bot.SendMessage(p.Message.Chat(), msg.InfoText, opts...)
 }

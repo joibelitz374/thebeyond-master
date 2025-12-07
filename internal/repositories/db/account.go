@@ -10,10 +10,16 @@ import (
 )
 
 type AccountInterface interface {
+	GetAllByPlatform(ctx context.Context, platform consts.Platform) (accounts []int, err error)
 	Get(ctx context.Context, platform consts.Platform, platformAccountID int) (domain.Account, error)
-	GetExpiredUsers(ctx context.Context) ([]domain.Account, error)
-	Create(ctx context.Context, platform consts.Platform, platformAccountID int, keyID, shortID string, expiresAt time.Time) (int, error)
-	SetSubscriptionExpiresAt(ctx context.Context, accountID int, expiresAt *time.Time) error
+	GetByAccountID(ctx context.Context, accountID int) (account domain.Account, err error)
+	GetPlatformUserID(ctx context.Context, accountID int) (externalAccountID int, err error)
+	GetExpiredUsers(ctx context.Context) ([]int, error)
+	Create(ctx context.Context, platform consts.Platform, platformAccountID int, keyID, shortID string, expiresAt time.Time, promo *string, discount int) (int, error)
+	AddSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error
+	RemoveSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error
+	CancelSubscriptions(ctx context.Context, accountID int) error
+	SetDiscount(ctx context.Context, accountID int, discount int) error
 	RegenerateKey(ctx context.Context, accountID int, keyID string) error
 	SetRegion(ctx context.Context, accountID int, region string) error
 	SetLanguage(ctx context.Context, accountID int, language string) error
@@ -28,6 +34,25 @@ type accountDB struct {
 
 func NewAccount(pool *pgxpool.Pool) AccountInterface {
 	return accountDB{pool}
+}
+
+func (db accountDB) GetAllByPlatform(ctx context.Context, platform consts.Platform) (accounts []int, err error) {
+	rows, err := db.pool.Query(ctx, GET_ALL_ACCOUNTS_SQL, platform)
+	if err != nil {
+		return accounts, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var accountID int
+		if err := rows.Scan(&accountID); err != nil {
+			return accounts, err
+		}
+		accounts = append(accounts, accountID)
+	}
+
+	return accounts, nil
 }
 
 func (db accountDB) Get(ctx context.Context, platform consts.Platform, platformAccountID int) (account domain.Account, err error) {
@@ -54,6 +79,8 @@ func (db accountDB) Get(ctx context.Context, platform consts.Platform, platformA
 		&account.Protocol,
 		&account.ServerLocation,
 		&account.LastKeyRefreshAt,
+		&account.Promo,
+		&account.Discount,
 	); err != nil {
 		return account, err
 	}
@@ -61,27 +88,51 @@ func (db accountDB) Get(ctx context.Context, platform consts.Platform, platformA
 	return account, txn.Commit(ctx)
 }
 
-func (db accountDB) GetExpiredUsers(ctx context.Context) (accounts []domain.Account, err error) {
-	rows, err := db.pool.Query(ctx, GET_EXPIRED_USERS_SQL)
+func (db accountDB) GetByAccountID(ctx context.Context, accountID int) (account domain.Account, err error) {
+	if err := db.pool.QueryRow(ctx, GET_ACCOUNT_BY_ID_SQL, accountID).Scan(
+		&account.ID,
+		&account.KeyID,
+		&account.ShortID,
+		&account.SubscriptionExpiresAt,
+		&account.Region,
+		&account.Language,
+		&account.Currency,
+		&account.Protocol,
+		&account.ServerLocation,
+		&account.LastKeyRefreshAt,
+		&account.Promo,
+		&account.Discount,
+	); err != nil {
+		return account, err
+	}
+	return account, nil
+}
+
+func (db accountDB) GetPlatformUserID(ctx context.Context, accountID int) (externalAccountID int, err error) {
+	return externalAccountID, db.pool.QueryRow(ctx, GET_PLATFORM_USER_ID_SQL, accountID).
+		Scan(&externalAccountID)
+}
+
+func (db accountDB) GetExpiredUsers(ctx context.Context) (accounts []int, err error) {
+	rows, err := db.pool.Query(ctx, GET_EXPIRED_ACCOUNTS_SQL)
 	if err != nil {
 		return accounts, err
 	}
 
 	defer rows.Close()
 
-	accounts = []domain.Account{}
 	for rows.Next() {
-		account := domain.Account{}
-		if err := rows.Scan(&account.ID); err != nil {
+		var accountID int
+		if err := rows.Scan(&accountID); err != nil {
 			return accounts, err
 		}
-		accounts = append(accounts, account)
+		accounts = append(accounts, accountID)
 	}
 
 	return accounts, nil
 }
 
-func (db accountDB) Create(ctx context.Context, platform consts.Platform, platformAccountID int, keyID, shortID string, expiresAt time.Time) (int, error) {
+func (db accountDB) Create(ctx context.Context, platform consts.Platform, platformAccountID int, keyID, shortID string, expiresAt time.Time, promo *string, discount int) (int, error) {
 	txn, err := db.pool.Begin(ctx)
 	if err != nil {
 		return 0, err
@@ -90,7 +141,7 @@ func (db accountDB) Create(ctx context.Context, platform consts.Platform, platfo
 	defer txn.Rollback(ctx)
 
 	var newAccountID int
-	if err := txn.QueryRow(ctx, INSERT_ACCOUNT_SQL, keyID, shortID, expiresAt).Scan(&newAccountID); err != nil {
+	if err := txn.QueryRow(ctx, INSERT_ACCOUNT_SQL, keyID, shortID, expiresAt, promo, discount).Scan(&newAccountID); err != nil {
 		return 0, err
 	}
 
@@ -101,8 +152,23 @@ func (db accountDB) Create(ctx context.Context, platform consts.Platform, platfo
 	return newAccountID, txn.Commit(ctx)
 }
 
-func (db accountDB) SetSubscriptionExpiresAt(ctx context.Context, accountID int, expiresAt *time.Time) error {
-	_, err := db.pool.Exec(ctx, SET_SUBSCRIPTION_EXPIRES_AT_SQL, expiresAt, accountID)
+func (db accountDB) AddSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error {
+	_, err := db.pool.Exec(ctx, ADD_SUBSCRIPTION_EXPIRES_AT_SQL, duration.Seconds(), accountID)
+	return err
+}
+
+func (db accountDB) RemoveSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error {
+	_, err := db.pool.Exec(ctx, REMOVE_SUBSCRIPTION_EXPIRES_AT_SQL, duration.Seconds(), accountID)
+	return err
+}
+
+func (db accountDB) CancelSubscriptions(ctx context.Context, accountID int) error {
+	_, err := db.pool.Exec(ctx, CANCEL_SUBSCRIPTIONS_SQL, accountID)
+	return err
+}
+
+func (db accountDB) SetDiscount(ctx context.Context, accountID int, discount int) error {
+	_, err := db.pool.Exec(ctx, SET_DISCOUNT_SQL, discount, accountID)
 	return err
 }
 

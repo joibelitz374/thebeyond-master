@@ -11,11 +11,11 @@ import (
 
 type delivery struct {
 	bot      bin.Interface
-	commands commands.Commands
+	commands commands.UseCase
 	Logger   *zap.Logger
 }
 
-func New(bot bin.Interface, commands commands.Commands, logger *zap.Logger) *delivery {
+func New(bot bin.Interface, commands commands.UseCase, logger *zap.Logger) *delivery {
 	return &delivery{bot, commands, logger}
 }
 

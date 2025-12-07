@@ -1,0 +1,1 @@
+ALTER TABLE account ADD COLUMN discount INTEGER DEFAULT 0;

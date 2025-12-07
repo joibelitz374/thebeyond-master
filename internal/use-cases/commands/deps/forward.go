@@ -1,4 +1,4 @@
-package tools
+package deps
 
 import (
 	"github.com/quickpowered/frilly/internal/domain"
@@ -9,8 +9,8 @@ import (
 
 func ToForward(bot bin.Interface, payload *domain.Payload) any {
 	if platform := bot.GetPlatform(); platform == consts.PlatformDiscord {
-		return types.NewForward(payload.Message.GetChat().GetThreadID(), payload.Message.GetID())
+		return types.NewForward(payload.Message.Chat().GetThreadID(), payload.Message.ID())
 	}
 
-	return types.NewForward(payload.Message.GetChat().GetID(), payload.Message.GetID())
+	return types.NewForward(payload.Message.Chat().GetID(), payload.Message.ID())
 }

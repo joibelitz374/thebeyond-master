@@ -5,52 +5,51 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/quickpowered/frilly/config/language"
 	"github.com/quickpowered/frilly/internal/domain"
+	"github.com/quickpowered/frilly/internal/i18n"
 	"github.com/quickpowered/frilly/internal/repositories/bot/bin"
 	"github.com/quickpowered/frilly/internal/types"
-	"github.com/quickpowered/frilly/internal/use-cases/commands/tools"
-	"github.com/quickpowered/frilly/internal/use-cases/components"
+	"github.com/quickpowered/frilly/internal/use-cases/commands/deps"
 )
 
 const NEWKEY_CMD = "newkey"
 
-type NewKeyCmd struct {
-	tools.Modules
-	component components.Component
+type newKeyHandler struct {
+	deps.Dependencies
 }
 
-func NewNewKeyCmd(modules tools.Modules) *NewKeyCmd {
-	return &NewKeyCmd{modules, components.NewNewKeyComponent()}
+func NewNewKeyHandler(deps deps.Dependencies) newKeyHandler {
+	return newKeyHandler{deps}
 }
 
-func (c *NewKeyCmd) Execute(bot bin.Interface, payload *domain.Payload) error {
-	componentText := c.component.Text(payload.Account.Language)
-	opts := []any{tools.ToForward(bot, payload)}
+func (h newKeyHandler) Execute(bot bin.Interface, p *domain.Payload) error {
+	msg := i18n.NewKeyMessages[language.Language(p.Account.Language)]
+	opts := []any{deps.ToForward(bot, p)}
 
-	if len(payload.NodeRoute) >= 2 {
-		if payload.NodeRoute[1] == "confirm" {
-			if payload.Account.SubscriptionExpiresAt != nil && payload.Account.SubscriptionExpiresAt.Before(time.Now()) {
-				return bot.SendMessage(payload.Message.GetChat(), "You don't have a subscription", opts...)
+	if len(p.Args) >= 2 {
+		if p.Args[1] == "confirm" {
+			if !p.Account.IsActive() {
+				return bot.SendMessage(p.Message.Chat(), "You don't have a subscription", opts...)
 			}
 
 			ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
 			defer cancel()
 
-			if err := c.XRayClient.RemoveUser(fmt.Sprintf("id%d@user", payload.Account.ID)); err != nil {
+			if err := h.XRayClient.RemoveUser(fmt.Sprintf("id%d@user", p.Account.ID)); err != nil {
 				return err
 			}
 
-			keyID, err := c.AccountService.RegenerateKey(ctx, payload.Account.ID)
+			keyID, err := h.AccountService.RegenerateKey(ctx, p.Account.ID)
 			if err != nil {
 				return err
 			}
 
-			fmt.Println("keyID", keyID)
-			if err := c.XRayClient.AddUser(fmt.Sprintf("id%d@user", payload.Account.ID), keyID); err != nil {
+			if err := h.XRayClient.AddUser(fmt.Sprintf("id%d@user", p.Account.ID), keyID); err != nil {
 				return err
 			}
 
-			return bot.SendMessage(payload.Message.GetChat(), componentText[1], opts...)
+			return bot.SendMessage(p.Message.Chat(), msg.SuccessMessage, opts...)
 		}
 	}
 
@@ -60,5 +59,5 @@ func (c *NewKeyCmd) Execute(bot bin.Interface, payload *domain.Payload) error {
 		},
 	})
 
-	return bot.SendMessage(payload.Message.GetChat(), componentText[0], opts...)
+	return bot.SendMessage(p.Message.Chat(), msg.ConfirmPrompt, opts...)
 }

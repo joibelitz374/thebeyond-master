@@ -1,16 +1,6 @@
 package domain
 
-import (
-	"time"
-
-	"github.com/quickpowered/frilly/internal/types/update"
-)
-
-type Payload struct {
-	NodeRoute []string
-	Message   update.NewMessageInterface
-	Account   Account
-}
+import "time"
 
 type Account struct {
 	ID                    int
@@ -23,16 +13,20 @@ type Account struct {
 	Protocol              string
 	ServerLocation        string
 	LastKeyRefreshAt      *time.Time
+	Promo                 *string
+	Discount              int
 }
 
-type Location struct {
-	Flag string
-	Name string
-	IP   string
+func (a Account) IsActive() (active bool) {
+	if a.SubscriptionExpiresAt != nil && a.SubscriptionExpiresAt.After(time.Now()) {
+		active = true
+	}
+	return
 }
 
-type Payment struct {
-	Amount    int
-	CreatedAt time.Time
-	ExpiresAt time.Time
+func (a Account) IsNewcomer() (newcomer bool) {
+	if a.Language == "" || a.Currency == "" {
+		newcomer = true
+	}
+	return
 }

@@ -6,21 +6,21 @@ import (
 )
 
 type NewMessageInterface interface {
-	GetID() int
-	GetChat() ChatInterface
-	GetSender() int
-	GetText() string
-	GetReply() *Message
+	ID() int
+	Chat() ChatInterface
+	Sender() int
+	Text() string
+	Reply() *Message
 }
 
 type Message struct {
-	platform consts.Platform
-	vkBot    *api.API
-	ID       int
-	Chat     ChatInterface
-	SenderID int
-	Text     string
-	Reply    *Message
+	platform  consts.Platform
+	vkBot     *api.API
+	messageID int
+	chat      ChatInterface
+	senderID  int
+	text      string
+	reply     *Message
 }
 
 func NewMessage(
@@ -33,12 +33,12 @@ func NewMessage(
 	bots ...any,
 ) Message {
 	message := Message{
-		platform: platform,
-		ID:       id,
-		Chat:     chat,
-		SenderID: senderID,
-		Text:     text,
-		Reply:    reply,
+		platform:  platform,
+		messageID: id,
+		chat:      chat,
+		senderID:  senderID,
+		text:      text,
+		reply:     reply,
 	}
 
 	for _, bot := range bots {
@@ -51,22 +51,22 @@ func NewMessage(
 	return message
 }
 
-func (m Message) GetID() int {
-	return m.ID
+func (m Message) ID() int {
+	return m.messageID
 }
 
-func (m Message) GetChat() ChatInterface {
-	return m.Chat
+func (m Message) Chat() ChatInterface {
+	return m.chat
 }
 
-func (m Message) GetSender() int {
-	return m.SenderID
+func (m Message) Sender() int {
+	return m.senderID
 }
 
-func (m Message) GetText() string {
-	return m.Text
+func (m Message) Text() string {
+	return m.text
 }
 
-func (m Message) GetReply() *Message {
-	return m.Reply
+func (m Message) Reply() *Message {
+	return m.reply
 }

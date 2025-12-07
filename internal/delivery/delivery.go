@@ -15,7 +15,7 @@ type Interface interface {
 	Listen() error
 }
 
-func New(bot bin.Interface, commands commands.Commands, invoices invoices.Interface, logger *zap.Logger) Interface {
+func New(bot bin.Interface, commands commands.UseCase, invoices invoices.UseCase, logger *zap.Logger) Interface {
 	switch bot.GetPlatform() {
 	case consts.PlatformTelegram:
 		return telegram.New(bot, commands, invoices, logger)

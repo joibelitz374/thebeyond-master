@@ -4,15 +4,13 @@ import (
 	"context"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 	"github.com/quickpowered/frilly/internal/domain"
 	"github.com/quickpowered/frilly/internal/repositories/bot/bin"
-	"github.com/quickpowered/frilly/internal/types/update"
+	sharedUpdate "github.com/quickpowered/frilly/internal/types/update"
 	"github.com/quickpowered/frilly/internal/use-cases/commands"
-	"github.com/quickpowered/frilly/internal/use-cases/commands/tools"
 	"github.com/quickpowered/frilly/internal/use-cases/invoices"
 	"github.com/quickpowered/frilly/pkg/consts"
 	"go.uber.org/zap"
@@ -20,12 +18,12 @@ import (
 
 type delivery struct {
 	bot      bin.Interface
-	commands commands.Commands
-	invoices invoices.Interface
+	commands commands.UseCase
+	invoices invoices.UseCase
 	Logger   *zap.Logger
 }
 
-func New(bot bin.Interface, commands commands.Commands, invoices invoices.Interface, logger *zap.Logger) *delivery {
+func New(bot bin.Interface, commands commands.UseCase, invoices invoices.UseCase, logger *zap.Logger) *delivery {
 	return &delivery{bot, commands, invoices, logger}
 }
 
@@ -34,6 +32,7 @@ func (s *delivery) Listen() error {
 	defer cancel()
 
 	matchFunc := func(update *models.Update) bool {
+		s.Logger.Debug("new update", zap.Any("update", update))
 		return true
 	}
 
@@ -44,55 +43,63 @@ func (s *delivery) Listen() error {
 	return nil
 }
 
-func (s *delivery) handler(ctx context.Context, tgBot *bot.Bot, tgUpdate *models.Update) {
-	var userID, chatID, threadID int
+func (s *delivery) handler(ctx context.Context, tgBot *bot.Bot, update *models.Update) {
+	var typ models.ChatType
+	var chatID, threadID, userID int
 	var text string
 
 	switch {
-	case tgUpdate.PreCheckoutQuery != nil:
-		ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
-		defer cancel()
-
-		if err := s.invoices.HandlePreCheckoutQuery(ctx, tgBot, tgUpdate); err != nil {
+	case update.PreCheckoutQuery != nil:
+		typ = models.ChatTypePrivate
+		if err := s.invoices.HandlePreCheckoutQuery(tgBot, update); err != nil {
 			s.Logger.Error("pre checkout query failed", zap.Error(err))
 		}
 		return
-	case tgUpdate.Message != nil:
-		userID = int(tgUpdate.Message.From.ID)
-		chatID = int(tgUpdate.Message.Chat.ID)
-		threadID = int(tgUpdate.Message.MessageThreadID)
-		text = tgUpdate.Message.Text
-	case tgUpdate.CallbackQuery != nil:
-		userID = int(tgUpdate.CallbackQuery.From.ID)
-		chatID = int(tgUpdate.CallbackQuery.Message.Message.Chat.ID)
-		threadID = int(tgUpdate.CallbackQuery.Message.Message.MessageThreadID)
-		text = tgUpdate.CallbackQuery.Data
+	case update.Message != nil:
+		typ = update.Message.Chat.Type
+		userID = int(update.Message.From.ID)
+		chatID = int(update.Message.Chat.ID)
+		threadID = int(update.Message.MessageThreadID)
+		text = update.Message.Text
+	case update.CallbackQuery != nil:
+		message := update.CallbackQuery.Message.Message
+		if message == nil {
+			return
+		}
+		typ = message.Chat.Type
+		userID = int(update.CallbackQuery.From.ID)
+		chatID = int(message.Chat.ID)
+		threadID = int(message.MessageThreadID)
+		text = update.CallbackQuery.Data
 	default:
 		return
 	}
 
-	err := s.commands.Run(s.bot, &domain.Payload{
-		Message: update.NewMessage(
+	if typ != models.ChatTypePrivate {
+		s.Logger.Debug("not private chat",
+			zap.String("type", string(typ)),
+			zap.Int("chat_id", chatID),
+			zap.Int("thread_id", threadID),
+			zap.Int("user_id", userID))
+		return
+	}
+
+	if err := s.commands.Run(s.bot, &domain.Payload{
+		Message: sharedUpdate.NewMessage(
 			consts.PlatformTelegram,
-			int(tgUpdate.ID),
-			update.Chat{ID: int(chatID), ThreadID: int(threadID)},
+			int(update.ID),
+			sharedUpdate.Chat{
+				ID:       int(chatID),
+				ThreadID: int(threadID),
+			},
 			userID,
 			text,
 			nil,
 		),
-	})
-	if err != nil {
-		if cerr, ok := err.(tools.CommandError); ok {
-			s.Logger.Error("command failed",
-				zap.String("cmd", cerr.Command),
-				zap.String("service", cerr.Service),
-				zap.String("method", cerr.Method),
-				zap.String("chat_id", cerr.ChatID),
-				zap.Int("member_id", cerr.MemberID),
-				zap.Error(err),
-			)
-		} else {
-			s.Logger.Error("command failed", zap.Error(err))
-		}
+	}); err != nil {
+		s.Logger.Error("command failed", zap.Error(err),
+			zap.Int("chat_id", chatID),
+			zap.Int("user_id", userID),
+			zap.String("text", text))
 	}
 }
