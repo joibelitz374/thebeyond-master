@@ -7,7 +7,7 @@ const (
 
 func GenerateVLESSURI(keyID string, ip, sni, sid, location string) string {
 	return VLESS_SCHEME +
-		keyID + "@" + ip +
+		keyID + "@" + ip + ":443" +
 		"?type=xhttp" +
 		"&security=reality" +
 		"&sni=" + sni +
