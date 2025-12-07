@@ -77,6 +77,7 @@ services:
       SUBSCRIPTIONS_PATH: /etc/beyondsecure/subscriptions.yaml
       HOWTOUSE_INSTRUCTION_PATH: /shared/assets/instruction.png
       PROJECT_AVATAR_PATH: /shared/assets/avatar.png
+      WELCOME_PREVIEW_PATH: /shared/assets/welcome.png
     volumes:
       - /etc/xray/config.json:/shared/xray/config.json:rw
       - ./config:/etc/beyondsecure:rw
