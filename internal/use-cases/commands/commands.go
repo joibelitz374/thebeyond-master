@@ -53,6 +53,7 @@ func NewUseCase(deps_ deps.Dependencies, promoUseCase promo.UseCase, serverLocat
 		TOP_PROMO_CMD:  NewTopHandler(deps_),
 		REPOST_CMD:     NewRepostHandler(deps_),
 		SET_PRICES_CMD: NewSetPricesHandler(deps_),
+		WELCOME_CMD:    NewWelcomeHandler(deps_),
 	}}
 }
 
