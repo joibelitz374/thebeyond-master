@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/quickpowered/frilly/internal/domain"
-	"github.com/quickpowered/frilly/internal/repositories/db"
+	"github.com/quickpowered/thebeyond-master/internal/domain"
+	"github.com/quickpowered/thebeyond-master/internal/repositories/db"
 )
 
 type Interface interface {

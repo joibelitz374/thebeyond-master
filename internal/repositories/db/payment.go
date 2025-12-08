@@ -4,48 +4,53 @@ import (
 	"context"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/quickpowered/frilly/internal/domain"
+	"github.com/quickpowered/thebeyond-master/internal/domain"
+	"github.com/quickpowered/thebeyond-master/pkg/sqlc"
 )
 
 type PaymentInterface interface {
 	Create(ctx context.Context, accountID, amount int, expiresAt time.Time) error
-	Get(ctx context.Context, accountID int, expiresAt time.Time) (payments []domain.Payment, err error)
+	Get(ctx context.Context, accountID int, expiresAt time.Time) ([]domain.Payment, error)
 	Delete(ctx context.Context, accountID int) error
 }
 
 type paymentDB struct {
-	pool *pgxpool.Pool
+	pool    *pgxpool.Pool
+	queries *sqlc.Queries
 }
 
 func NewPayment(pool *pgxpool.Pool) PaymentInterface {
-	return paymentDB{pool}
+	return paymentDB{pool, sqlc.New(pool)}
 }
 
 func (db paymentDB) Create(ctx context.Context, accountID, amount int, expiresAt time.Time) error {
-	_, err := db.pool.Exec(ctx, INSERT_PAYMENT_SQL, accountID, amount, expiresAt)
-	return err
+	return db.queries.CreatePayment(ctx, sqlc.CreatePaymentParams{
+		AccountID: int32(accountID),
+		Amount:    int32(amount),
+		ExpiresAt: pgtype.Timestamptz{Valid: true, Time: expiresAt},
+	})
 }
 
-func (db paymentDB) Get(ctx context.Context, accountID int, expiresAt time.Time) (payments []domain.Payment, err error) {
-	rows, err := db.pool.Query(ctx, GET_PAYMENTS_SQL, accountID)
+func (db paymentDB) Get(ctx context.Context, accountID int, expiresAt time.Time) ([]domain.Payment, error) {
+	rows, err := db.queries.GetPayments(ctx, int32(accountID))
 	if err != nil {
 		return nil, err
 	}
 
-	payments = make([]domain.Payment, 0)
-	for rows.Next() {
-		payment := domain.Payment{}
-		if err = rows.Scan(&payment.Amount, &payment.CreatedAt, &payment.ExpiresAt); err != nil {
-			return nil, err
+	payments := make([]domain.Payment, len(rows))
+	for i, payment := range rows {
+		payments[i] = domain.Payment{
+			Amount:    int(payment.Amount),
+			CreatedAt: payment.CreatedAt.Time,
+			ExpiresAt: payment.ExpiresAt.Time,
 		}
-		payments = append(payments, payment)
 	}
 
 	return payments, err
 }
 
 func (db paymentDB) Delete(ctx context.Context, accountID int) error {
-	_, err := db.pool.Exec(ctx, DELETE_PAYMENT_SQL, accountID)
-	return err
+	return db.queries.DeletePayment(ctx, int32(accountID))
 }
