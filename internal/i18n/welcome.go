@@ -22,7 +22,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 You've got a key for <b>3 days free</b>!
 🌳 This key will open any doors!
 
-💬 Join our chat: @quickworkshop`,
+💬 Join our chat: @quickworkshop
+🍔 Free days for inviting friends via link: /promo`,
 	},
 	language.Deutsch: {
 		Welcome: `🍀 Freue mich, Sie zu begrüßen!
@@ -39,7 +40,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Ihnen wurde ein Schlüssel für <b>3 Tage gratis</b> ausgestellt!
 🌳 Dieser Schlüssel öffnet jede Tür!
 
-💬 Kommen Sie in unseren Chat: @quickworkshop`,
+💬 Kommen Sie in unseren Chat: @quickworkshop
+🍔 Kostenlose Tage für das Einladen von Freunden über Link: /promo`,
 	},
 	language.Nederlands: {
 		Welcome: `🍀 Blij je te verwelkomen!
@@ -56,7 +58,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Je hebt een sleutel voor <b>3 dagen gratis</b> gekregen!
 🌳 Deze sleutel opent alle deuren!
 
-💬 Kom naar onze chat: @quickworkshop`,
+💬 Kom naar onze chat: @quickworkshop
+🍔 Gratis dagen voor het uitnodigen van vrienden via link: /promo`,
 	},
 	language.Svenska: {
 		Welcome: `🍀 Glad att välkomna dig!
@@ -73,7 +76,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Du har fått en nyckel för <b>3 dagar gratis</b>!
 🌳 Denna nyckel öppnar alla dörrar!
 
-💬 Välkommen till vår chatt: @quickworkshop`,
+💬 Välkommen till vår chatt: @quickworkshop
+🍔 Gratis dagar för att bjuda in vänner via länk: /promo`,
 	},
 	language.Norsk: {
 		Welcome: `🍀 Glad for å ønske deg velkommen!
@@ -90,7 +94,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Du har fått en nøkkel for <b>3 dager gratis</b>!
 🌳 Denne nøkkelen åpner alle dører!
 
-💬 Velkommen til chatten vår: @quickworkshop`,
+💬 Velkommen til chatten vår: @quickworkshop
+🍔 Gratis dager for å invitere venner via lenke: /promo`,
 	},
 	language.Dansk: {
 		Welcome: `🍀 Glad for at byde dig velkommen!
@@ -107,7 +112,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Du har fået en nøgle til <b>3 dage gratis</b>!
 🌳 Denne nøgle åbner alle døre!
 
-💬 Velkommen til vores chat: @quickworkshop`,
+💬 Velkommen til vores chat: @quickworkshop
+🍔 Gratis dage for at invitere venner via link: /promo`,
 	},
 	language.Español: {
 		Welcome: `🍀 ¡Encantado de darte la bienvenida!
@@ -124,7 +130,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 ¡Te han dado una clave por <b>3 días gratis</b>!
 🌳 ¡Esta clave abrirá cualquier puerta!
 
-💬 Te invitamos a nuestro chat: @quickworkshop`,
+💬 Te invitamos a nuestro chat: @quickworkshop
+🍔 Días gratis por invitar amigos por enlace: /promo`,
 	},
 	language.Français: {
 		Welcome: `🍀 Ravi de vous accueillir !
@@ -141,7 +148,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Vous avez reçu une clé pour <b>3 jours gratuits</b> !
 🌳 Cette clé ouvrira toutes les portes !
 
-💬 Rejoignez notre chat : @quickworkshop`,
+💬 Rejoignez notre chat : @quickworkshop
+🍔 Jours gratuits pour inviter des amis via lien: /promo`,
 	},
 	language.Português: {
 		Welcome: `🍀 Prazer em recebê-lo!
@@ -158,7 +166,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Você recebeu uma chave por <b>3 dias grátis</b>!
 🌳 Essa chave abre qualquer porta!
 
-💬 Convidados para o nosso chat: @quickworkshop`,
+💬 Convidados para o nosso chat: @quickworkshop
+🍔 Dias grátis por convidar amigos via link: /promo`,
 	},
 	language.Italiana: {
 		Welcome: `🍀 Felice di darti il benvenuto!
@@ -175,7 +184,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Ti è stata data una chiave per <b>3 giorni gratis</b>!
 🌳 Questa chiave aprirà qualsiasi porta!
 
-💬 Ti invitiamo nel nostro chat: @quickworkshop`,
+💬 Ti invitiamo nel nostro chat: @quickworkshop
+🍔 Giorni gratuiti per invitare amici tramite link: /promo`,
 	},
 	language.Русский: {
 		Welcome: `🍀 Рад приветствовать Вас!
@@ -192,7 +202,7 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Вам выдан ключ на <b>3 дня бесплатно</b>!
 🌳 Этот ключ откроет любые двери!
 
-💬 Приглашаем Вас в наш чат: @quickworkshop`,
+🍔 Бесплатные дни за приглашение друзей по ссылке: /promo`,
 	},
 	language.Українська: {
 		Welcome: `🍀 Радий вітати Вас!
@@ -209,7 +219,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Вам видано ключ на <b>3 дні безкоштовно</b>!
 🌳 Цей ключ відкриє будь-які двері!
 
-💬 Запрошуємо Вас у наш чат: @quickworkshop`,
+💬 Запрошуємо Вас у наш чат: @quickworkshop
+🍔 Безкоштовні дні за запрошення друзів за посиланням: /promo`,
 	},
 	language.Polski: {
 		Welcome: `🍀 Cieszę się, że mogę Cię powitać!
@@ -226,7 +237,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Otrzymałeś klucz na <b>3 dni za darmo</b>!
 🌳 Ten klucz otworzy każde drzwi!
 
-💬 Zapraszamy do naszego czatu: @quickworkshop`,
+💬 Zapraszamy do naszego czatu: @quickworkshop
+🍔 Darmowe dni za zaproszenie przyjaciół przez link: /promo`,
 	},
 	language.Ceština: {
 		Welcome: `🍀 Rád vás vítám!
@@ -243,7 +255,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Byl vám vydán klíč na <b>3 dny zdarma</b>!
 🌳 Tento klíč otevře všechny dveře!
 
-💬 Zveme vás do našeho chatu: @quickworkshop`,
+💬 Zveme vás do našeho chatu: @quickworkshop
+🍔 Zdarma dny za pozvání přátel přes odkaz: /promo`,
 	},
 	language.Български: {
 		Welcome: `🍀 Радвам се да ви приветствам!
@@ -260,7 +273,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Получихте ключ за <b>3 дни безплатно</b>!
 🌳 Този ключ ще отвори всякакви врати!
 
-💬 Заповядайте в нашия чат: @quickworkshop`,
+💬 Заповядайте в нашия чат: @quickworkshop
+🍔 Безплатни дни за покана на приятели чрез връзка: /promo`,
 	},
 	language.Српски: {
 		Welcome: `🍀 Рад да вас поздравим!
@@ -277,7 +291,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Добијате кључ за <b>3 дана бесплатно</b>!
 🌳 Овај кључ ће отворити било која врата!
 
-💬 Позивамо вас у наш чат: @quickworkshop`,
+💬 Позивамо вас у наш чат: @quickworkshop
+🍔 Бесплатни дани за позивање пријатеља преко линка: /promo`,
 	},
 	language.Hrvatski: {
 		Welcome: `🍀 Rad vas pozdraviti!
@@ -294,7 +309,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Dobili ste ključ za <b>3 dana besplatno</b>!
 🌳 Ovaj ključ će otvoriti bilo koja vrata!
 
-💬 Pozivamo vas u naš chat: @quickworkshop`,
+💬 Pozivamo vas u naš chat: @quickworkshop
+🍔 Besplatni dani za pozivanje prijatelja preko linka: /promo`,
 	},
 	language.Slovenčina: {
 		Welcome: `🍀 Rád vás vítam!
@@ -311,7 +327,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Bol vám vydaný kľúč na <b>3 dni zadarmo</b>!
 🌳 Tento kľúč otvorí akékoľvek dvere!
 
-💬 Pozývame vás do nášho chatu: @quickworkshop`,
+💬 Pozývame vás do nášho chatu: @quickworkshop
+🍔 Zadarmo dni za pozvanie priateľov cez odkaz: /promo`,
 	},
 	language.Slovenski: {
 		Welcome: `🍀 Vesel sem vas pozdraviti!
@@ -328,7 +345,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Prejeli ste ključ za <b>3 dni brezplačno</b>!
 🌳 Ta ključ bo odprl katerakoli vrata!
 
-💬 Vabimo vas v naš chat: @quickworkshop`,
+💬 Vabimo vas v naš chat: @quickworkshop
+🍔 Brezplačni dnevi za povabilo prijateljev prek povezave: /promo`,
 	},
 	language.Lietùvių: {
 		Welcome: `🍀 Malonu jus pasveikinti!
@@ -345,7 +363,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Jums išduotas raktas <b>3 dienoms nemokamai</b>!
 🌳 Šis raktas atidarys bet kokias duris!
 
-💬 Kviečiame jus į mūsų pokalbį: @quickworkshop`,
+💬 Kviečiame jus į mūsų pokalbį: @quickworkshop
+🍔 Nemokamos dienos už draugų pakvietimą per nuorodą: /promo`,
 	},
 	language.Latviešu: {
 		Welcome: `🍀 Priecājos jūs sveikt!
@@ -362,7 +381,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Jums izsniegts atslēga uz <b>3 dienām bez maksas</b>!
 🌳 Šī atslēga atvērs jebkuras durvis!
 
-💬 Aicinām jūs mūsu čatā: @quickworkshop`,
+💬 Aicinām jūs mūsu čatā: @quickworkshop
+🍔 Bezmaksas dienas par draugu uzaicināšanu caur saiti: /promo`,
 	},
 	language.Eesti: {
 		Welcome: `🍀 Rõõm tervitada!
@@ -379,7 +399,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Teile on antud võti <b>3 päevaks tasuta</b>!
 🌳 See võti avab kõik uksed!
 
-💬 Kutsume teid meie chatti: @quickworkshop`,
+💬 Kutsume teid meie chatti: @quickworkshop
+🍔 Tasuta päevad sõprade kutsumise eest lingi kaudu: /promo`,
 	},
 	language.Suomi: {
 		Welcome: `🍀 Ilo tervetuloa!
@@ -396,7 +417,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Sinulle on annettu avain <b>3 päiväksi ilmaiseksi</b>!
 🌳 Tämä avain avaa kaikki ovet!
 
-💬 Tervetuloa chattiimme: @quickworkshop`,
+💬 Tervetuloa chattiimme: @quickworkshop
+🍔 Ilmaiset päivät ystävien kutsumisesta linkin kautta: /promo`,
 	},
 	language.Ελληνικά: {
 		Welcome: `🍀 Χαίρομαι που σας καλωσορίζω!
@@ -413,7 +435,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Σου δόθηκε κλειδί για <b>3 μέρες δωρεάν</b>!
 🌳 Αυτό το κλειδί θα ανοίξει οποιεσδήποτε πόρτες!
 
-💬 Σας προσκαλούμε στο chat μας: @quickworkshop`,
+💬 Σας προσκαλούμε στο chat μας: @quickworkshop
+🍔 Δωρεάν ημέρες για πρόσκληση φίλων μέσω συνδέσμου: /promo`,
 	},
 	language.Română: {
 		Welcome: `🍀 Mă bucur să vă urez bun venit!
@@ -430,7 +453,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Ai primit o cheie pentru <b>3 zile gratuit</b>!
 🌳 Această cheie va deschide orice uși!
 
-💬 Te invităm în chat-ul nostru: @quickworkshop`,
+💬 Te invităm în chat-ul nostru: @quickworkshop
+🍔 Zile gratuite pentru invitarea prietenilor prin link: /promo`,
 	},
 	language.Magyar: {
 		Welcome: `🍀 Örülök, hogy üdvözölhetlek!
@@ -447,7 +471,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Kaptál egy kulcsot <b>3 napra ingyen</b>!
 🌳 Ez a kulcs kinyit bármilyen ajtót!
 
-💬 Meghívunk a chatünkbe: @quickworkshop`,
+💬 Meghívunk a chatünkbe: @quickworkshop
+🍔 Ingyenes napok barátok meghívásáért linken keresztül: /promo`,
 	},
 	language.Arabic: {
 		Welcome: `🍀 سعيد بترحيبك!
@@ -464,7 +489,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 تم إصدار مفتاح لك لـ <b>3 أيام مجانًا</b>!
 🌳 هذا المفتاح سيفتح أي أبواب!
 
-💬 ندعوك إلى دردشتنا: @quickworkshop`,
+💬 ندعوك إلى دردشتنا: @quickworkshop
+🍔 أيام مجانية لدعوة الأصدقاء عبر الرابط: /promo`,
 	},
 	language.Farsi: {
 		Welcome: `🍀 خوشحالم که خوش‌آمدگویی کنم!
@@ -481,7 +507,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 برات کلید <b>3 روز رایگان</b> صادر شده!
 🌳 این کلید هر دری رو باز می‌کنه!
 
-💬 دعوتت می‌کنیم به چتمون: @quickworkshop`,
+💬 دعوتت می‌کنیم به چتمون: @quickworkshop
+🍔 روزهای رایگان برای دعوت دوستان از طریق لینک: /promo`,
 	},
 	language.Türkçe: {
 		Welcome: `🍀 Hoş geldiniz, memnun oldum!
@@ -498,7 +525,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Size <b>3 gün ücretsiz</b> anahtar verildi!
 🌳 Bu anahtar her kapıyı açar!
 
-💬 Chatimize davetlisiniz: @quickworkshop`,
+💬 Chatimize davetlisiniz: @quickworkshop
+🍔 Arkadaşları linkle davet etmek için ücretsiz günler: /promo`,
 	},
 	language.Hebrew: {
 		Welcome: `🍀 שמח לקבל את פניך!
@@ -515,7 +543,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 קיבלת מפתח ל-<b>3 ימים חינם</b>!
 🌳 המפתח הזה יפתח כל דלת!
 
-💬 מוזמן לצ'אט שלנו: @quickworkshop`,
+💬 מוזמן לצ'אט שלנו: @quickworkshop
+🍔 ימים חינם להזמנת חברים דרך קישור: /promo`,
 	},
 	language.ZH中文: {
 		Welcome: `🍀 很高兴欢迎您！
@@ -532,7 +561,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 您获得了<b>3天免费</b>的密钥！
 🌳 这个密钥会打开任何门！
 
-💬 欢迎加入我们的聊天：@quickworkshop`,
+💬 欢迎加入我们的聊天：@quickworkshop
+🍔 通过链接邀请朋友获得免费天数: /promo`,
 	},
 	language.JA日本語: {
 		Welcome: `🍀 ようこそ！
@@ -549,7 +579,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 <b>3日間無料</b>のキーを発行しました！
 🌳 このキーはどんなドアも開く！
 
-💬 チャットへようこそ：@quickworkshop`,
+💬 チャットへようこそ：@quickworkshop
+🍔 リンク経由で友達を招待して無料の日数: /promo`,
 	},
 	language.KO한국어: {
 		Welcome: `🍀 환영합니다!
@@ -566,7 +597,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 <b>3일 무료</b> 키를 발급받았어요!
 🌳 이 키는 모든 문을 열어요!
 
-💬 우리 채팅에 초대합니다: @quickworkshop`,
+💬 우리 채팅에 초대합니다: @quickworkshop
+🍔 링크를 통해 친구 초대 시 무료 일수: /promo`,
 	},
 	language.TiếngViệt: {
 		Welcome: `🍀 Rất vui được chào đón bạn!
@@ -583,7 +615,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Bạn được cấp khóa cho <b>3 ngày miễn phí</b>!
 🌳 Khóa này sẽ mở mọi cửa!
 
-💬 Mời bạn vào chat của chúng tôi: @quickworkshop`,
+💬 Mời bạn vào chat của chúng tôi: @quickworkshop
+🍔 Ngày miễn phí cho việc mời bạn bè qua liên kết: /promo`,
 	},
 	language.THภาษาไทย: {
 		Welcome: `🍀 ยินดีต้อนรับ!
@@ -600,7 +633,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 คุณได้รับกุญแจสำหรับ <b>3 วันฟรี</b>!
 🌳 กุญแจนี้จะเปิดทุกประตู!
 
-💬 เชิญเข้าชแชทของเรา: @quickworkshop`,
+💬 เชิญเข้าชแชทของเรา: @quickworkshop
+🍔 วันฟรีสำหรับการเชิญเพื่อนผ่านลิงก์: /promo`,
 	},
 	language.BahasaIndonesia: {
 		Welcome: `🍀 Senang menyambut Anda!
@@ -617,7 +651,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Anda dapat kunci untuk <b>3 hari gratis</b>!
 🌳 Kunci ini buka segala pintu!
 
-💬 Kami undang ke chat kami: @quickworkshop`,
+💬 Kami undang ke chat kami: @quickworkshop
+🍔 Hari gratis untuk mengundang teman melalui tautan: /promo`,
 	},
 	language.BahasaMelayu: {
 		Welcome: `🍀 Gembira menyambut anda!
@@ -634,7 +669,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Anda dapat kunci untuk <b>3 hari percuma</b>!
 🌳 Kunci ini buka mana-mana pintu!
 
-💬 Kami jemput ke chat kami: @quickworkshop`,
+💬 Kami jemput ke chat kami: @quickworkshop
+🍔 Hari percuma untuk menjemput rakan melalui pautan: /promo`,
 	},
 	language.Tagalog: {
 		Welcome: `🍀 Masaya na tanggapin ka!
@@ -651,7 +687,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 Nabigyan ka ng key para sa <b>3 araw na libre</b>!
 🌳 Ang key na ito ay magbubukas ng anumang pinto!
 
-💬 Iniimbitahan ka namin sa aming chat: @quickworkshop`,
+💬 Iniimbitahan ka namin sa aming chat: @quickworkshop
+🍔 Libreng araw para sa pag-imbita ng mga kaibigan sa pamamagitan ng link: /promo`,
 	},
 	language.Hindi: {
 		Welcome: `🍀 आपको स्वागत करने में खुशी हो रही है!
@@ -668,7 +705,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 आपको <b>3 दिन मुफ्त</b> के लिए कुंजी दी गई है!
 🌳 यह कुंजी कोई भी दरवाजा खोलेगी!
 
-💬 हमारे चैट में आमंत्रित हैं: @quickworkshop`,
+💬 हमारे चैट में आमंत्रित हैं: @quickworkshop
+🍔 दोस्तों को लिंक से आमंत्रित करने के लिए मुफ्त दिन: /promo`,
 	},
 	language.URاردو: {
 		Welcome: `🍀 خوش آمدید کہنے میں خوشی ہو رہی ہے!
@@ -685,7 +723,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 آپ کو <b>3 دن مفت</b> کے لیے کلید دی گئی ہے!
 🌳 یہ کلید کوئی بھی دروازہ کھولے گی!
 
-💬 ہمارے چیٹ میں مدعو ہیں: @quickworkshop`,
+💬 ہمارے چیٹ میں مدعو ہیں: @quickworkshop
+🍔 دوستوں کو لنک کے ذریعے مدعو کرنے کے لیے مفت دن: /promo`,
 	},
 	language.Bengali: {
 		Welcome: `🍀 আপনাকে স্বাগত জানাতে খুশি!
@@ -702,7 +741,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 আপনাকে <b>3 দিন বিনামূল্যে</b> কী দেওয়া হয়েছে!
 🌳 এই কী যেকোনো দরজা খুলবে!
 
-💬 আমাদের চ্যাটে আমন্ত্রণ জানাই: @quickworkshop`,
+💬 আমাদের চ্যাটে আমন্ত্রণ জানাই: @quickworkshop
+🍔 লিঙ্কের মাধ্যমে বন্ধুদের আমন্ত্রণ জানানোর জন্য বিনামূল্যে দিন: /promo`,
 	},
 	language.Tamiḻ: {
 		Welcome: `🍀 உங்களை வரவேற்க மகிழ்ச்சி!
@@ -719,7 +759,8 @@ var WelcomeMessages = map[language.Language]WelcomeLocale{
 💖 உங்களுக்கு <b>3 நாட்கள் இலவச</b> சாவி வழங்கப்பட்டது!
 🌳 இந்த சாவி எந்த கதவையும் திறக்கும்!
 
-💬 எங்கள் சாட்டிற்கு அழைக்கிறோம்: @quickworkshop`,
+💬 எங்கள் சாட்டிற்கு அழைக்கிறோம்: @quickworkshop
+🍔 இணைப்பு வழியாக நண்பர்களை அழைக்க இலவச நாட்கள்: /promo`,
 	},
 	language.Telugu: {
 		Welcome: `🍀 మిమ్మల్ని స్వాగతించడానికి సంతోషం!
@@ -736,7 +777,8 @@ language.
 💖 మీకు <b>3 రోజులు ఉచిత</b> కీ ఇవ్వబడింది!
 🌳 ఈ కీ ఏదైనా తలుపులు తెరుస్తుంది!
 
-💬 మా చాట్ కు మిమ్మల్ని ఆహ్వానిస్తున్నాం: @quickworkshop`,
+💬 మా చాట్ కు మిమ్మల్ని ఆహ్వానిస్తున్నాం: @quickworkshop
+🍔 లింక్ ద్వారా స్నేహితులను ఆహ్వానించడానికి ఉచిత రోజులు: /promo`,
 	},
 	language.Marathi: {
 		Welcome: `🍀 तुमचे स्वागत करण्यात आनंद आहे!
@@ -753,6 +795,7 @@ language.
 💖 तुम्हाला <b>3 दिवस मोफत</b> की देण्यात आली आहे!
 🌳 ही की कोणतेही दरवाजे उघडेल!
 
-💬 आमच्या चॅटमध्ये आमंत्रित आहात: @quickworkshop`,
+💬 आमच्या चॅटमध्ये आमंत्रित आहात: @quickworkshop
+🍔 लिंकद्वारे मित्रांना आमंत्रित करण्यासाठी मोफत दिवस: /promo`,
 	},
 }
