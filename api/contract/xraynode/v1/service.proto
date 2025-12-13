@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package xraynode.v1;
+
+import "xraynode/v1/message.proto";
+
+service NodeService {
+    rpc AddClient(AddClientRequest) returns (AddClientResponse) {}
+    rpc RemoveClient(RemoveClientRequest) returns (RemoveClientResponse) {}
+}

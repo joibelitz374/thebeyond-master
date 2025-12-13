@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/quickpowered/frilly/internal/repositories/web/dto"
+	"github.com/quickpowered/thebeyond-master/internal/repositories/web/dto"
 )
 
 type ExchangeRatesInterface interface {

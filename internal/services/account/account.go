@@ -5,16 +5,17 @@ import (
 	"time"
 
 	gonanoid "github.com/matoous/go-nanoid/v2"
-	"github.com/quickpowered/frilly/internal/domain"
-	"github.com/quickpowered/frilly/internal/repositories/db"
-	"github.com/quickpowered/frilly/pkg/consts"
-	"github.com/quickpowered/frilly/pkg/values"
+	"github.com/quickpowered/thebeyond-master/internal/domain"
+	"github.com/quickpowered/thebeyond-master/internal/repositories/db"
+	"github.com/quickpowered/thebeyond-master/pkg/consts"
+	"github.com/quickpowered/thebeyond-master/pkg/values"
 )
 
 type Interface interface {
 	GetAllByPlatform(ctx context.Context, platform consts.Platform) (accounts []int, err error)
 	Get(ctx context.Context, platform consts.Platform, platformAccountID int) (domain.Account, error)
 	GetByAccountID(ctx context.Context, accountID int) (account domain.Account, err error)
+	GetByKeyID(ctx context.Context, keyID string) (domain.Account, error)
 	GetPlatformUserID(ctx context.Context, accountID int) (externalAccountID int, err error)
 	GetExpiredUsers(ctx context.Context) ([]int, error)
 	Create(ctx context.Context, platform consts.Platform, platformAccountID int, expiresAt time.Time, promo *string, discount int) (int, string, error)
@@ -22,6 +23,7 @@ type Interface interface {
 	RemoveSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error
 	CancelSubscriptions(ctx context.Context, accountID int) error
 	SetDiscount(ctx context.Context, accountID int, discount int) error
+	ResetDiscount(ctx context.Context, accountID int) error
 	RegenerateKey(ctx context.Context, accountID int) (string, error)
 	SetRegion(ctx context.Context, accountID int, region string) error
 	SetLanguage(ctx context.Context, accountID int, language string) error
@@ -38,10 +40,6 @@ func NewService(repo db.AccountInterface) Interface {
 	return service{repo}
 }
 
-func (s service) GetAllByPlatform(ctx context.Context, platform consts.Platform) (accounts []int, err error) {
-	return s.repo.GetAllByPlatform(ctx, platform)
-}
-
 func (s service) Get(ctx context.Context, platform consts.Platform, platformAccountID int) (domain.Account, error) {
 	return s.repo.Get(ctx, platform, platformAccountID)
 }
@@ -50,12 +48,20 @@ func (s service) GetByAccountID(ctx context.Context, accountID int) (account dom
 	return s.repo.GetByAccountID(ctx, accountID)
 }
 
+func (s service) GetByKeyID(ctx context.Context, keyID string) (account domain.Account, err error) {
+	return s.repo.GetByKeyID(ctx, keyID)
+}
+
 func (s service) GetPlatformUserID(ctx context.Context, accountID int) (externalAccountID int, err error) {
 	return s.repo.GetPlatformUserID(ctx, accountID)
 }
 
 func (s service) GetExpiredUsers(ctx context.Context) ([]int, error) {
 	return s.repo.GetExpiredUsers(ctx)
+}
+
+func (s service) GetAllByPlatform(ctx context.Context, platform consts.Platform) (accounts []int, err error) {
+	return s.repo.GetAllByPlatform(ctx, platform)
 }
 
 func (s service) Create(ctx context.Context, platform consts.Platform, platformAccountID int, expiresAt time.Time, promo *string, discount int) (int, string, error) {
@@ -84,6 +90,10 @@ func (s service) CancelSubscriptions(ctx context.Context, accountID int) error {
 
 func (s service) SetDiscount(ctx context.Context, accountID int, discount int) error {
 	return s.repo.SetDiscount(ctx, accountID, discount)
+}
+
+func (s service) ResetDiscount(ctx context.Context, accountID int) error {
+	return s.repo.ResetDiscount(ctx, accountID)
 }
 
 func (s service) RegenerateKey(ctx context.Context, accountID int) (string, error) {

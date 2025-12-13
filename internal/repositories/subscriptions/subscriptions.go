@@ -5,8 +5,8 @@ import (
 	"os"
 	"sort"
 
-	"github.com/quickpowered/frilly/internal/domain"
-	"github.com/quickpowered/frilly/internal/repositories/web"
+	"github.com/quickpowered/thebeyond-master/internal/domain"
+	"github.com/quickpowered/thebeyond-master/internal/repositories/web"
 	"github.com/spf13/viper"
 	"go.yaml.in/yaml/v3"
 )

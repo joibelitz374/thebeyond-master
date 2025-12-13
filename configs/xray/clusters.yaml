@@ -1,0 +1,14 @@
+1:
+  blacklists:
+    - name: Frankfurt
+      flag: 🇩🇪
+      ip: 77.221.157.159
+      port: 443
+      sni: web.max.ru
+      pbk: z8Q2qDZKKP2rNNxanKtULLFaEfe4tQQjhvDQeRlkxww
+    - name: Charlotte
+      flag: 🇺🇸
+      ip: 62.60.176.107
+      port: 443
+      sni: web.max.ru
+      pbk: 9KqBe_8dFdOquT0fbcr4lgAAOOgPL1qH1OW4xHQZKQU

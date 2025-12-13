@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/quickpowered/frilly/config/currency"
+import "github.com/quickpowered/thebeyond-master/configs/currency"
 
 type Subscription struct {
 	Emoji    string                        `mapstructure:"emoji" yaml:"emoji"`

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/quickpowered/frilly/internal/domain"
+	"github.com/quickpowered/thebeyond-master/internal/domain"
 )
 
 func (s *subscriptions) convertKeys(raw map[string]domain.Subscription) error {
