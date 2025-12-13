@@ -1,0 +1,36 @@
+services:
+  thebeyond-db:
+    container_name: thebeyond-db
+    image: postgres:18.0-alpine3.22
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_DB: thebeyond
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: zoW6rZF274ufQHtJMhdCMbBoICv6KGWG
+      PGDATA: /data/postgres
+    ports:
+      - 4568:5432
+    volumes:
+      - ./data:/data/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d thebeyond"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  thebeyond-migrator:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.migrator
+    container_name: thebeyond-migrator
+    command: migrate run --source /migrations
+    restart: no
+    environment:
+      DATABASE_URL: postgres://root:zoW6rZF274ufQHtJMhdCMbBoICv6KGWG@thebeyond-db:5432/thebeyond
+    volumes:
+      - ${MIGRATIONS_PATH:-../migrations}:/migrations:ro
+    depends_on:
+      thebeyond-db:
+        condition: service_healthy

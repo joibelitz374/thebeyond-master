@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package xraynode.v1;
+
+message AddClientRequest {
+    string id = 1;
+    string email = 2;
+    string level = 3;
+}
+
+message RemoveClientRequest {
+    string email = 1;
+}
+
+message AddClientResponse {
+    bool ok = 1;
+}
+
+message RemoveClientResponse {
+    bool ok = 1;
+}

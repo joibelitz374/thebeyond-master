@@ -4,60 +4,67 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/quickpowered/frilly/internal/domain"
+	"github.com/quickpowered/thebeyond-master/internal/domain"
+	"github.com/quickpowered/thebeyond-master/pkg/sqlc"
 	"go.uber.org/zap"
 )
 
 type PromoInterface interface {
 	Create(ctx context.Context, name string, creator int) error
-	Get(ctx context.Context, name string) (promo domain.Promo, err error)
-	GetByCreator(ctx context.Context, creator int) (promos []domain.Promo, err error)
+	Get(ctx context.Context, name string) (domain.Promo, error)
+	GetByCreator(ctx context.Context, creator int) ([]domain.Promo, error)
 	UpgradeLevel(ctx context.Context, name string) error
-	CheckBuyer(ctx context.Context, name string, buyerID int) error
-	AddBuyer(ctx context.Context, name string, buyerID int) error
 	IncreaseClients(ctx context.Context, name string) error
-	IncreaseBuyers(ctx context.Context, name string) error
 }
 
 type promoDB struct {
-	pool   *pgxpool.Pool
-	logger *zap.Logger
+	pool    *pgxpool.Pool
+	queries *sqlc.Queries
+	logger  *zap.Logger
 }
 
 func NewPromo(pool *pgxpool.Pool, logger *zap.Logger) PromoInterface {
-	return promoDB{pool, logger}
+	return promoDB{pool, sqlc.New(pool), logger}
 }
 
 func (db promoDB) Create(ctx context.Context, name string, creator int) error {
 	db.logger.Debug("creating promo",
 		zap.String("promo_name", name),
 		zap.Int("creator", creator))
-	_, err := db.pool.Exec(ctx, INSERT_PROMO_SQL, name, creator)
-	return err
+
+	return db.queries.CreatePromo(ctx, sqlc.CreatePromoParams{
+		Name:    name,
+		Creator: int32(creator),
+	})
 }
 
-func (db promoDB) Get(ctx context.Context, name string) (promo domain.Promo, err error) {
+func (db promoDB) Get(ctx context.Context, name string) (domain.Promo, error) {
 	db.logger.Debug("getting promo",
 		zap.String("promo_name", name))
 
-	err = db.pool.QueryRow(ctx, GET_PROMO_SQL, name).
-		Scan(&promo.Name, &promo.Creator, &promo.Level, &promo.Clients, &promo.Buyers)
-	return promo, err
+	promo, err := db.queries.GetPromo(ctx, name)
+	return domain.Promo{
+		Name:    promo.Name,
+		Creator: int(promo.Creator),
+		Level:   int(promo.Level),
+		Clients: int(promo.Clients),
+	}, err
 }
 
-func (db promoDB) GetByCreator(ctx context.Context, creator int) (promos []domain.Promo, err error) {
-	rows, err := db.pool.Query(ctx, GET_PROMOS_SQL, creator)
+func (db promoDB) GetByCreator(ctx context.Context, creator int) ([]domain.Promo, error) {
+	rows, err := db.queries.GetPromosByCreator(ctx, int32(creator))
 	if err != nil {
 		return nil, err
 	}
 
-	promos = make([]domain.Promo, 0)
-	for rows.Next() {
-		promo := domain.Promo{}
-		if err = rows.Scan(&promo.Name, &promo.Creator, &promo.Level, &promo.Clients, &promo.Buyers); err != nil {
-			return nil, err
+	promos := make([]domain.Promo, len(rows))
+	for i, row := range rows {
+		promos[i] = domain.Promo{
+			Name:    row.Name,
+			Creator: int(row.Creator),
+			Level:   int(row.Level),
+			Clients: int(row.Clients),
 		}
-		promos = append(promos, promo)
 	}
 
 	return promos, err
@@ -66,37 +73,11 @@ func (db promoDB) GetByCreator(ctx context.Context, creator int) (promos []domai
 func (db promoDB) UpgradeLevel(ctx context.Context, name string) error {
 	db.logger.Debug("upgrading level",
 		zap.String("promo_name", name))
-	_, err := db.pool.Exec(ctx, UPGRADE_LEVEL_SQL, name)
-	return err
-}
-
-func (db promoDB) CheckBuyer(ctx context.Context, name string, buyerID int) error {
-	var fkBuyerID int
-	db.logger.Debug("checking buyer",
-		zap.String("promo_name", name),
-		zap.Int("buyer_id", buyerID))
-	return db.pool.QueryRow(ctx, CHECK_PROMO_BUYER_SQL, name, buyerID).Scan(&fkBuyerID)
-}
-
-func (db promoDB) AddBuyer(ctx context.Context, name string, buyerID int) error {
-	db.logger.Debug("adding buyer",
-		zap.String("promo_name", name),
-		zap.Int("buyer_id", buyerID))
-
-	_, err := db.pool.Exec(ctx, INSERT_PROMO_BUYER_SQL, name, buyerID)
-	return err
+	return db.queries.UpgradePromoLevel(ctx, name)
 }
 
 func (db promoDB) IncreaseClients(ctx context.Context, name string) error {
 	db.logger.Debug("increasing clients",
 		zap.String("promo_name", name))
-	_, err := db.pool.Exec(ctx, INCREASE_PROMO_CLIENTS_SQL, name)
-	return err
-}
-
-func (db promoDB) IncreaseBuyers(ctx context.Context, name string) error {
-	db.logger.Debug("increasing buyers",
-		zap.String("promo_name", name))
-	_, err := db.pool.Exec(ctx, INCREASE_PROMO_BUYERS_SQL, name)
-	return err
+	return db.queries.IncreasePromoClients(ctx, name)
 }

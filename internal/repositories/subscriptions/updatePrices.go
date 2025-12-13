@@ -1,9 +1,9 @@
 package subscriptions
 
 import (
-	"github.com/quickpowered/frilly/config/currency"
-	"github.com/quickpowered/frilly/internal/repositories/web"
-	"github.com/quickpowered/frilly/pkg/utils"
+	"github.com/quickpowered/thebeyond-master/configs/currency"
+	"github.com/quickpowered/thebeyond-master/internal/repositories/web"
+	"github.com/quickpowered/thebeyond-master/pkg/utils"
 )
 
 func (s *subscriptions) updatePrices(exchangeRates web.ExchangeRatesInterface) error {

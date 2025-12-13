@@ -1,0 +1,1 @@
+ALTER TABLE account ADD COLUMN cluster_id SMALLINT DEFAULT 1;

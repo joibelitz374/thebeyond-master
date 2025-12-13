@@ -4,14 +4,16 @@ import "time"
 
 type Account struct {
 	ID                    int
+	ClusterID             int
 	KeyID                 string
 	ShortID               string
-	SubscriptionExpiresAt *time.Time
+	Devices               int
 	Region                string
 	Language              string
 	Currency              string
 	Protocol              string
-	ServerLocation        string
+	SubscriptionExpiresAt *time.Time
+	WhitelistExpiresAt    *time.Time
 	LastKeyRefreshAt      *time.Time
 	Promo                 *string
 	Discount              int

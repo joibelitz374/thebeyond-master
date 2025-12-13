@@ -5,5 +5,4 @@ type Promo struct {
 	Creator int
 	Level   int
 	Clients int
-	Buyers  int
 }
