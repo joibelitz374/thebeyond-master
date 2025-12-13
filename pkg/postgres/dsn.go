@@ -13,6 +13,10 @@ const (
 )
 
 func DSN() string {
+	if dsn := os.Getenv("DATABASE_URL"); dsn != "" {
+		return dsn
+	}
+
 	user := os.Getenv("POSTGRES_USER")
 	if user == "" {
 		user = DEFAULT_DB_USER
