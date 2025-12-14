@@ -54,7 +54,7 @@ services:
       CLUSTERS_PATH: /etc/thebeyond/xray/clusters.yaml
       HOWTOUSE_IMAGE_PATH: /shared/assets/instruction.png
       PROJECT_AVATAR_PATH: /shared/assets/avatar.png
-      WELCOME_PREVIEW_PATH: /shared/assets/welcome.png
+      WELCOME_IMAGE_PATH: /shared/assets/welcome.png
     volumes:
       - ./configs:/etc/thebeyond:rw
       - ./assets:/shared/assets:rw
