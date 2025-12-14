@@ -72,5 +72,10 @@ func main() {
 	api.Get("/auth", handlers.Auth)
 	api.Get("/", handlers.Get)
 
-	app.Listen(":2083")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "80"
+	}
+
+	app.Listen(":" + port)
 }
