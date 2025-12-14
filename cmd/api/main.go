@@ -79,7 +79,7 @@ func main() {
 	}
 
 	log.Fatalln(app.Listen(":"+port, fiber.ListenConfig{
-		CertFile:    "certificate.crt",
-		CertKeyFile: "certificate.key",
+		CertFile:    "/etc/ssl/certs/certificate.crt",
+		CertKeyFile: "/etc/ssl/private/certificate.key",
 	}))
 }
