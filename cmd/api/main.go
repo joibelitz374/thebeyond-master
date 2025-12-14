@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 	"time"
 
@@ -77,5 +78,8 @@ func main() {
 		port = "80"
 	}
 
-	app.Listen(":" + port)
+	log.Fatalln(app.Listen(":"+port, fiber.ListenConfig{
+		CertFile:    "certificate.crt",
+		CertKeyFile: "certificate.key",
+	}))
 }
