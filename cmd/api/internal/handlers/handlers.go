@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -12,11 +11,8 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/api/internal/domain"
 	"github.com/quickpowered/thebeyond-master/cmd/api/internal/middlewares"
 	"github.com/quickpowered/thebeyond-master/internal/repositories/xraymanager"
-	"github.com/quickpowered/thebeyond-master/internal/repositories/xraymanager/dto"
 	"github.com/quickpowered/thebeyond-master/internal/services/account"
 	"github.com/quickpowered/thebeyond-master/pkg/consts"
-	errorsvar "github.com/quickpowered/thebeyond-master/pkg/errors"
-	"github.com/quickpowered/thebeyond-master/pkg/utils"
 	initdata "github.com/telegram-mini-apps/init-data-golang"
 )
 
@@ -72,60 +68,4 @@ func (h subscription) Get(c fiber.Ctx) error {
 		Language: account.Language,
 		Currency: account.Currency,
 	})
-}
-
-func (h subscription) Info(c fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
-	defer cancel()
-
-	account, err := h.accountService.GetByKeyID(ctx, c.Params("sub_id"))
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(http.StatusNotFound).JSON(fiber.Map{
-				"message": "Subscription not found",
-			})
-		} else {
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Internal server error",
-			})
-		}
-	}
-
-	expire := int(time.Now().Unix())
-	if account.SubscriptionExpiresAt != nil {
-		subscriptionExpiresAt := *account.SubscriptionExpiresAt
-		expire = int(subscriptionExpiresAt.Unix())
-	}
-
-	subscription := "#profile-title: base64:8J+SmyBCZXlvbmQgU2VjdXJl" +
-		"\n#profile-update-interval: 12" +
-		"\n#profile-web-page-url: https://t.me/beyondsecurenews" +
-		"\n#support-url: https://t.me/beyondsecurenews?direct" +
-		"\n#notification-subs-expire: 1" +
-		"\n#announce: base64:8J+XkiDigJQgV2hpdGVsaXN0CvCfp6Ag4oCUIFNtYXJ0CvCfjZQg4oCUIFdBUlA=" +
-		fmt.Sprintf("\n#subscription-userinfo: expire=%v", expire)
-
-	lists := []dto.ListType{dto.NodeTypeBlacklist}
-	if account.WhitelistExpiresAt != nil {
-		lists = append(lists, dto.NodeTypeWhitelist)
-	}
-
-	for _, list := range lists {
-		nodes, err := h.xraymanagerRepo.GetNodes(ctx, dto.ClusterID(account.ClusterID), list)
-		if err != nil {
-			if errors.Is(err, errorsvar.ErrListNodesNotFound) {
-				continue
-			}
-
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Internal server error",
-			})
-		}
-
-		for _, node := range nodes {
-			subscription += "\n" + utils.GenerateVLESSURI(node, account.KeyID, node.PublicKey, account.ShortID)
-		}
-	}
-
-	return c.SendString(subscription)
 }

@@ -1,2 +1,4 @@
 .env
 deployments/data/
+certificate.crt
+certificate.key

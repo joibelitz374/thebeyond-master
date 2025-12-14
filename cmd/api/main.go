@@ -66,7 +66,8 @@ func main() {
 	}))
 
 	sub := app.Group("/sub")
-	sub.Get("/:sub_id", handlers.Info)
+	sub.Get("/:sub_id", handlers.Default)
+	sub.Get("/:sub_id/smart/:region", handlers.Smart)
 
 	api := app.Group("/api")
 	api.Use(authMiddleware.Init())
@@ -78,8 +79,18 @@ func main() {
 		port = "80"
 	}
 
+	certFile := os.Getenv("CERT_FILE")
+	if certFile == "" {
+		certFile = "/etc/ssl/certs/certificate.crt"
+	}
+
+	certKeyFile := os.Getenv("CERT_KEY_FILE")
+	if certKeyFile == "" {
+		certKeyFile = "/etc/ssl/private/certificate.key"
+	}
+
 	log.Fatalln(app.Listen(":"+port, fiber.ListenConfig{
-		CertFile:    "/etc/ssl/certs/certificate.crt",
-		CertKeyFile: "/etc/ssl/private/certificate.key",
+		CertFile:    certFile,
+		CertKeyFile: certKeyFile,
 	}))
 }
