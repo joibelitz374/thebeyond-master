@@ -91,7 +91,12 @@ func (h subscription) Info(c fiber.Ctx) error {
 		}
 	}
 
-	expire := time.Now().Add(32 * time.Hour).Unix()
+	expire := int(time.Now().Unix())
+	if account.SubscriptionExpiresAt != nil {
+		subscriptionExpiresAt := *account.SubscriptionExpiresAt
+		expire = int(subscriptionExpiresAt.Unix())
+	}
+
 	subscription := "#profile-title: base64:8J+SmyBCZXlvbmQgU2VjdXJl" +
 		"\n#profile-update-interval: 12" +
 		"\n#profile-web-page-url: https://t.me/beyondsecurenews" +

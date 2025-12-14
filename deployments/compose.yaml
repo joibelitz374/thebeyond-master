@@ -52,7 +52,7 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-root}:${POSTGRES_PASSWORD}@thebeyond-db:5432/${POSTGRES_DB:-thebeyond}
       SUBSCRIPTIONS_PATH: /etc/thebeyond/subscriptions/subscriptions.yaml
       CLUSTERS_PATH: /etc/thebeyond/xray/clusters.yaml
-      HOWTOUSE_INSTRUCTION_PATH: /shared/assets/instruction.png
+      HOWTOUSE_IMAGE_PATH: /shared/assets/instruction.png
       PROJECT_AVATAR_PATH: /shared/assets/avatar.png
       WELCOME_PREVIEW_PATH: /shared/assets/welcome.png
     volumes:
@@ -72,15 +72,18 @@ services:
     image: ${REGISTRY:-cr.yandex}/${YC_REGISTRY_NAME:-crpon6vsi4chaca55ctd}/${PROJECT_NAME:-thebeyond}-api:${TAG:-latest}
     restart: always
     ports:
-      - "2083:2083"
+      - "8443:8443"
     env_file:
       - ${ENV_FILE:-.env}
     environment:
+      PORT: 8443
       DATABASE_URL: postgres://${POSTGRES_USER:-root}:${POSTGRES_PASSWORD}@thebeyond-db:5432/${POSTGRES_DB:-thebeyond}
       SUBSCRIPTIONS_PATH: /etc/thebeyond/subscriptions/subscriptions.yaml
       CLUSTERS_PATH: /etc/thebeyond/xray/clusters.yaml
     volumes:
       - ./configs:/etc/thebeyond:rw
+      - ./certificate.crt:/etc/ssl/certs/certificate.crt
+      - ./certificate.key:/etc/ssl/private/certificate.key
     depends_on:
       thebeyond-db:
         condition: service_healthy
