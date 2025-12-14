@@ -48,6 +48,7 @@ services:
     env_file:
       - ${ENV_FILE:-.env}
     environment:
+      PROJECT_DOMAIN: ${PROJECT_DOMAIN:-example.com}
       DATABASE_URL: postgres://${POSTGRES_USER:-root}:${POSTGRES_PASSWORD}@thebeyond-db:5432/${POSTGRES_DB:-thebeyond}
       SUBSCRIPTIONS_PATH: /etc/thebeyond/subscriptions/subscriptions.yaml
       CLUSTERS_PATH: /etc/thebeyond/xray/clusters.yaml

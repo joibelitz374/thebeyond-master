@@ -70,7 +70,7 @@ func (h accountHandler) activeAccountInfo(bot bin.Interface, p *domain.Payload, 
 		standard.WithLogoImageFilePNG(os.Getenv("PROJECT_AVATAR_PATH")),
 	}
 
-	subscriptionURL := "https://axyvpn.online/sub/" + p.Account.KeyID
+	subscriptionURL := "https://" + os.Getenv("PROJECT_DOMAIN") + "/sub/" + p.Account.KeyID
 	qrc, err := qrcode.New(subscriptionURL)
 	if err != nil {
 		return fmt.Errorf("could not generate QRCode: %v", err)
