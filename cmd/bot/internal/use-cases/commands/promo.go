@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/domain"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/i18n"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
@@ -17,6 +18,7 @@ import (
 	"github.com/quickpowered/thebeyond-master/configs/language"
 	promoCfg "github.com/quickpowered/thebeyond-master/configs/promo"
 	sharedDomain "github.com/quickpowered/thebeyond-master/internal/domain"
+	"github.com/quickpowered/thebeyond-master/pkg/consts"
 	"github.com/quickpowered/thebeyond-master/pkg/utils"
 )
 
@@ -41,6 +43,15 @@ func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 
 	if len(p.Args) >= 2 {
 		name := strings.ToLower(p.Args[1])
+		if name == "random" {
+			random, err := gonanoid.Generate(consts.NANOID_PROMO_ALPHABET, consts.NANOID_PROMO_LENGTH)
+			if err != nil {
+				return err
+			}
+
+			name = random
+		}
+
 		if err := h.validateName(name, msg); err != nil {
 			return bot.SendMessage(p.Message.Chat(), err.Error())
 		}
@@ -79,11 +90,14 @@ func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 		idx++
 	} // 💚💜
 
+	if len(promos) < 3 {
+		buttonRows = append(buttonRows, []types.Button{{Text: "🆕 " + msg.Create, Data: "promo random"}})
+	}
+
 	opts = append(opts, &types.Keyboard{ButtonRows: buttonRows})
-	return bot.SendMessage(p.Message.Chat(), fmt.Sprintf("%s:\n\n🗒 %s: %d/3\n✏️ %s: /promo [name]",
-		msg.YourPromocodes,
-		msg.Created, len(promos),
-		msg.CreateCommand), opts...)
+	return bot.SendMessage(p.Message.Chat(), fmt.Sprintf("%s:\n\n🆘 %s\n\n🗒 %s: %d/3",
+		msg.YourPromocodes, msg.WhatIsIt,
+		msg.Created, len(promos)), opts...)
 }
 
 func (h promoHandler) validateName(name string, msg i18n.PromoInfoLocale) error {
@@ -121,7 +135,12 @@ func (h promoHandler) createPromo(bot bin.Interface, p *domain.Payload, name str
 		return err
 	}
 
-	return bot.SendMessage(p.Message.Chat(), "🎫 "+msg.PromocodeCreated)
+	if err := bot.SendMessage(p.Message.Chat(), "🎫 "+msg.PromocodeCreated); err != nil {
+		return err
+	}
+
+	p.Args = []string{PROMO_CMD, name}
+	return h.Execute(bot, p)
 }
 
 func (h promoHandler) statisticPromo(promo sharedDomain.Promo, msg i18n.PromoInfoLocale) string {

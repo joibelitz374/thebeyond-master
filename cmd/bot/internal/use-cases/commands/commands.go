@@ -41,10 +41,10 @@ type useCase struct {
 
 func NewUseCase(deps_ deps.Dependencies, promoUseCase promo.UseCase) useCase {
 	return useCase{deps_, promoUseCase, map[string]Command{
-		ACCOUNT_CMD:  NewAccountHandler(deps_),
-		HOWTOUSE_CMD: NewHowToUseHandler(deps_),
-		NEWKEY_CMD:   NewNewKeyHandler(deps_),
-		RENEW_CMD:    NewRenewHandler(deps_),
+		ACCOUNT_CMD: NewAccountHandler(deps_),
+		CONNECT_CMD: NewConnectHandler(deps_),
+		NEWKEY_CMD:  NewNewKeyHandler(deps_),
+		RENEW_CMD:   NewRenewHandler(deps_),
 		// WHITELIST_RENEW_CMD: NewWhitelistRenewHandler(deps_),
 		// PULL_CMD:       NewPullHandler(deps_),
 		// DEVICES_CMD:    NewDevicesHandler(deps_),
@@ -54,10 +54,10 @@ func NewUseCase(deps_ deps.Dependencies, promoUseCase promo.UseCase) useCase {
 		PROTOCOL_CMD:   NewProtocolHandler(deps_),
 		REFUND_CMD:     NewRefundHandler(deps_),
 		PROMO_CMD:      NewPromoCmd(deps_),
-		TOP_PROMO_CMD:  NewTopHandler(deps_),
 		REPOST_CMD:     NewRepostHandler(deps_),
 		SET_PRICES_CMD: NewSetPricesHandler(deps_),
 		WELCOME_CMD:    NewWelcomeHandler(deps_),
+		SUPPORT_CMD:    NewSupportHandler(deps_),
 	}}
 }
 
@@ -65,6 +65,28 @@ func (uc useCase) Run(bot bin.Interface, payload *domain.Payload) (err error) {
 	platform := bot.GetPlatform()
 	sender := payload.Message.Sender()
 	text := payload.Message.Text()
+
+	// bot.SendMessage(payload.Message.Chat(), "У Вас работает сервис?", &types.Keyboard{
+	// 	ButtonRows: [][]types.Button{
+	// 		{
+	// 			{
+	// 				Text: "🎾 Да, всё отлично!",
+	// 				Data: "tennis",
+	// 			},
+	// 		},
+	// 		{
+	// 			{
+	// 				Text: "🏐 Нет, нужна помощь!",
+	// 				Data: "support",
+	// 			},
+	// 		},
+	// 		{
+	// 			{
+	// 				Text: "🆘 Есть проблемы",
+	// 				Data: "support",
+	// 			},
+	// 		},
+	// 	}})
 
 	// member, err := bot.GetAPI().(*telegram.Bot).GetChatMember(context.TODO(), &telegram.GetChatMemberParams{
 	// 	ChatID: -1003309480333,
@@ -75,25 +97,20 @@ func (uc useCase) Run(bot bin.Interface, payload *domain.Payload) (err error) {
 	// }
 
 	// if member.Left != nil && member.Left.Status == models.ChatMemberTypeLeft {
-	// 	buttonRows := make([][]types.Button, 1)
-	// 	buttonRows[0] = []types.Button{
-	// 		{
-	// 			Text: "🗒 Подписаться",
-	// 			URL:  "https://t.me/beyondsecurenews",
-	// 		},
-	// 		{
-	// 			Text: "🎾 Подписался",
-	// 			Data: "check_subscription",
-	// 		},
-	// 	}
-
 	// 	attachments := types.NewAttachments()
 	// 	attachments.AddURL("https://vkplay.ru/pre_0x736_resize/hotbox/content_files/Stories/2024/03/27/cc906d2ed79d448db77d50cf47424704.jpg")
-
 	// 	return bot.SendMessage(payload.Message.Chat(),
 	// 		"Подпишитесь на канал, чтобы пользоваться ботом!",
-	// 		attachments,
-	// 		&types.Keyboard{ButtonRows: buttonRows})
+	// 		attachments, &types.Keyboard{ButtonRows: [][]types.Button{
+	// 			{{
+	// 				Text: "🗒 Подписаться",
+	// 				URL:  "https://t.me/beyondsecurebot",
+	// 			}},
+	// 			{{
+	// 				Text: "🎾 Подписался",
+	// 				Data: "check_subscription",
+	// 			}},
+	// 		}})
 	// }
 
 	if len(text) == 0 {

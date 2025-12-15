@@ -20,7 +20,12 @@ func (h subscription) Default(c fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
 	defer cancel()
 
-	account, err := h.accountService.GetByKeyID(ctx, c.Params("sub_id"))
+	subID := c.Params("sub_id")
+	if subID == "r" {
+		return c.Redirect().To(c.Query("url"))
+	}
+
+	account, err := h.accountService.GetByKeyID(ctx, subID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return c.Status(http.StatusNotFound).JSON(fiber.Map{

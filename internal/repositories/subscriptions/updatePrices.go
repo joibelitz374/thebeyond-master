@@ -17,7 +17,7 @@ func (s *subscriptions) updatePrices(exchangeRates web.ExchangeRatesInterface) e
 			subscription.Prices = make(map[currency.Currency]float64)
 		}
 
-		rub, ok := subscription.Prices["rub"]
+		rub, ok := subscription.Prices[currency.RUB]
 		if !ok {
 			continue
 		}

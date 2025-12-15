@@ -12,7 +12,6 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
 	"github.com/quickpowered/thebeyond-master/configs/language"
-	"github.com/quickpowered/thebeyond-master/pkg/consts"
 	"github.com/quickpowered/thebeyond-master/pkg/utils"
 	"github.com/yeqown/go-qrcode/v2"
 	"github.com/yeqown/go-qrcode/writer/standard"
@@ -36,6 +35,7 @@ func NewAccountHandler(deps deps.Dependencies) accountHandler {
 
 func (h accountHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	msg := i18n.AccountMessages[language.Language(p.Account.Language)]
+
 	text := msg.YourAccount + ":\n"
 	opts := []any{deps.ToForward(bot, p), h.buildKeyboard(msg)}
 
@@ -49,11 +49,16 @@ func (h accountHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 func (h accountHandler) buildKeyboard(msg i18n.AccountLocale) *types.Keyboard {
 	return &types.Keyboard{
 		ButtonRows: [][]types.Button{
-			{{Text: "🗺 " + msg.HowToUse, Data: "howtouse"}},
+			{{Text: "🛜 " + msg.Connect, Data: "connect"}},
 			{
 				{Text: "🛍 " + msg.Renew, Data: "renew"},
 				{Text: "🔄 " + msg.NewKey, Data: "newkey"},
 			},
+			// {
+			// 	{Text: "👨‍👩‍👦‍👦 " + msg.Devices, Data: "devices"},
+			// 	{Text: "💟 " + msg.Region, Data: "region"},
+			// },
+			{{Text: "🌈 " + msg.FREEDAYS + " 🔥", Data: "promo"}},
 		},
 	}
 }
@@ -62,7 +67,6 @@ func (h accountHandler) activeAccountInfo(bot bin.Interface, p *domain.Payload, 
 	buf := bytes.NewBuffer(nil)
 	wr := nopCloser{Writer: buf}
 
-	text := "\n🛜 " + msg.Key + ":"
 	options := []standard.ImageOption{
 		standard.WithQRWidth(12),
 		standard.WithBorderWidth(24),
@@ -81,20 +85,13 @@ func (h accountHandler) activeAccountInfo(bot bin.Interface, p *domain.Payload, 
 		return fmt.Errorf("could not save QRCode: %v", err)
 	}
 
-	formattedSubscriptionURI := subscriptionURL
-	if bot.GetPlatform() == consts.PlatformTelegram {
-		formattedSubscriptionURI = "<blockquote><code>" + subscriptionURL + "</code></blockquote>"
-	}
-	text += formattedSubscriptionURI
+	opts = append(opts, types.NewAttachments().
+		AddFile(bytes.NewReader(buf.Bytes())))
 
 	remaining := utils.HumanizeDuration(utils.TimeRemaining(*p.Account.SubscriptionExpiresAt))
 	if remaining == "0 minutes" {
 		remaining = "waiting prolongation"
 	}
 
-	text += "\n🕒 " + msg.Remaining + " " + remaining
-	opts = append(opts, types.NewAttachments().
-		AddFile(bytes.NewReader(buf.Bytes())))
-
-	return bot.SendMessage(p.Message.Chat(), text, opts...)
+	return bot.SendMessage(p.Message.Chat(), "🕒 "+msg.Remaining+": "+remaining, opts...)
 }

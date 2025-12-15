@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"math"
 	"strconv"
 
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/domain"
@@ -57,7 +56,17 @@ func (h renewHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 
 	var totalDiscount int
 	targets := h.SubscriptionsRepo.GetTargets()
-	buttonRows := make([][]types.Button, len(targets)+1)
+
+	indexShift := 1
+	// if p.Account.Region == "ru" {
+	// 	indexShift += 1
+	// }
+
+	buttonRows := make([][]types.Button, len(targets)+indexShift)
+	// if p.Account.Region == "ru" {
+	// 	buttonRows[0] = []types.Button{{Text: "📶 Обход глушилок", Data: "whitelist_renew"}}
+	// }
+
 	for i, children := range [][]int{targets[0:2], targets[2:4], targets[4:5], targets[5:]} {
 		for _, days := range children {
 			subscription := h.SubscriptionsRepo.GetByDays(days)
@@ -69,7 +78,7 @@ func (h renewHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 			}
 
 			price := subscription.Prices[senderCurrency]
-			price = math.Round(price - price*float64(p.Account.Discount)/100)
+			price = price - price*float64(p.Account.Discount)/100
 
 			label := fmt.Sprintf("%s %s — %.2f %s",
 				subscription.Emoji,
@@ -82,7 +91,7 @@ func (h renewHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 				label += fmt.Sprintf(" (%d)", subscription.Discount)
 			}
 
-			buttonRows[i+1] = append(buttonRows[i+1], types.Button{
+			buttonRows[i+indexShift] = append(buttonRows[i+indexShift], types.Button{
 				Text: label,
 				Data: fmt.Sprintf("renew %d", days),
 			})
