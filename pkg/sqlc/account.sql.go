@@ -55,6 +55,41 @@ func (q *Queries) CreatePlatformAccount(ctx context.Context, arg CreatePlatformA
 	return err
 }
 
+const findUsersForServiceCheck = `-- name: FindUsersForServiceCheck :many
+SELECT a.id, pa.external_account_id, a.language
+FROM account a
+JOIN platform_account pa ON pa.fk_account_id = a.id
+WHERE a.created_at BETWEEN NOW() - INTERVAL '10 minutes'
+  AND NOW() - INTERVAL '5 minutes'
+AND a.service_check_sent = 0
+`
+
+type FindUsersForServiceCheckRow struct {
+	ID                int32
+	ExternalAccountID int64
+	Language          string
+}
+
+func (q *Queries) FindUsersForServiceCheck(ctx context.Context) ([]FindUsersForServiceCheckRow, error) {
+	rows, err := q.db.Query(ctx, findUsersForServiceCheck)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FindUsersForServiceCheckRow
+	for rows.Next() {
+		var i FindUsersForServiceCheckRow
+		if err := rows.Scan(&i.ID, &i.ExternalAccountID, &i.Language); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAccountByID = `-- name: GetAccountByID :one
 SELECT
     id,
@@ -244,4 +279,15 @@ func (q *Queries) GetPlatformUserID(ctx context.Context, fkAccountID int32) (int
 	var external_account_id int64
 	err := row.Scan(&external_account_id)
 	return external_account_id, err
+}
+
+const markServiceCheckSent = `-- name: MarkServiceCheckSent :exec
+UPDATE account
+SET service_check_sent = 1
+WHERE id = $1
+`
+
+func (q *Queries) MarkServiceCheckSent(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, markServiceCheckSent, id)
+	return err
 }

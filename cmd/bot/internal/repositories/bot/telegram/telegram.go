@@ -66,30 +66,30 @@ func (a *Adapter) SendMessage(chatID update.ChatInterface, text string, opts ...
 	}
 
 	if isPhoto {
-		sendPhoto := &bot.SendPhotoParams{
+		sendPhotoParams := &bot.SendPhotoParams{
 			ChatID:    chatID.GetID(),
 			Caption:   text,
 			ParseMode: models.ParseModeHTML,
 		}
 
 		if photoURL != "" {
-			sendPhoto.Photo = &models.InputFileString{Data: photoURL}
+			sendPhotoParams.Photo = &models.InputFileString{Data: photoURL}
 		} else if photoData != nil {
-			sendPhoto.Photo = &models.InputFileUpload{Filename: "photo.png", Data: photoData}
+			sendPhotoParams.Photo = &models.InputFileUpload{Filename: "photo.png", Data: photoData}
 		}
 
 		for _, param := range opts {
 			switch val := param.(type) {
 			case *types.Keyboard:
-				sendPhoto.ReplyMarkup = inlineKeyboardMarkup(val)
+				sendPhotoParams.ReplyMarkup = inlineKeyboardMarkup(val)
 			}
 		}
 
-		_, err = a.bot.SendPhoto(ctx, sendPhoto)
+		_, err = a.bot.SendPhoto(ctx, sendPhotoParams)
 		return err
 	}
 
-	sendMessage := &bot.SendMessageParams{
+	sendMessageParams := &bot.SendMessageParams{
 		ChatID:          chatID.GetID(),
 		MessageThreadID: chatID.GetThreadID(),
 		Text:            text,
@@ -99,11 +99,11 @@ func (a *Adapter) SendMessage(chatID update.ChatInterface, text string, opts ...
 	for _, param := range opts {
 		switch val := param.(type) {
 		case *types.Keyboard:
-			sendMessage.ReplyMarkup = inlineKeyboardMarkup(val)
+			sendMessageParams.ReplyMarkup = inlineKeyboardMarkup(val)
 		}
 	}
 
-	_, err = a.bot.SendMessage(ctx, sendMessage)
+	_, err = a.bot.SendMessage(ctx, sendMessageParams)
 
 	return err
 }
@@ -122,11 +122,22 @@ func (a *Adapter) ForwardMessage(chatID update.ChatInterface, fromChatID, fromMe
 	return err
 }
 
-func (a *Adapter) SendInvoice(chatID update.ChatInterface, title, description, payload, currency string, amount int) error {
+func (a *Adapter) AnswerCallbackQuery(callbackQueryID, text string) error {
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
-	_, err := a.bot.SendInvoice(ctx, &bot.SendInvoiceParams{
+	_, err := a.bot.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
+		CallbackQueryID: callbackQueryID,
+		Text:            text,
+	})
+	return err
+}
+
+func (a *Adapter) SendInvoice(chatID update.ChatInterface, title, description, payload, currency string, amount int, opts ...any) error {
+	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+	defer cancel()
+
+	invoiceParams := &bot.SendInvoiceParams{
 		ChatID:          chatID.GetID(),
 		MessageThreadID: chatID.GetThreadID(),
 		Title:           title,
@@ -134,13 +145,11 @@ func (a *Adapter) SendInvoice(chatID update.ChatInterface, title, description, p
 		Payload:         payload,
 		Currency:        currency,
 		Prices: []models.LabeledPrice{
-			{
-				Label:  "Stars",
-				Amount: amount,
-			},
+			{Label: "Stars", Amount: amount},
 		},
-	})
+	}
 
+	_, err := a.bot.SendInvoice(ctx, invoiceParams)
 	return err
 }
 

@@ -1,8 +1,3 @@
--- name: GetAllAccountsByPlatform :many
-SELECT external_account_id
-FROM platform_account
-WHERE platform_id = $1;
-
 -- name: GetAccountIDByPlatform :one
 SELECT fk_account_id
 FROM platform_account
@@ -54,6 +49,19 @@ FROM account
 WHERE subscription_expires_at < NOW()
 AND key_id <> '';
 
+-- name: GetAllAccountsByPlatform :many
+SELECT external_account_id
+FROM platform_account
+WHERE platform_id = $1;
+
+-- name: FindUsersForServiceCheck :many
+SELECT a.id, pa.external_account_id, a.language
+FROM account a
+JOIN platform_account pa ON pa.fk_account_id = a.id
+WHERE a.created_at BETWEEN NOW() - INTERVAL '10 minutes'
+  AND NOW() - INTERVAL '5 minutes'
+AND a.service_check_sent = 0;
+
 -- name: CreateAccount :one
 INSERT INTO account(key_id, short_id, subscription_expires_at, region, promo, discount)
 VALUES($1, $2, $3, $4, $5, $6) RETURNING id;
@@ -61,3 +69,8 @@ VALUES($1, $2, $3, $4, $5, $6) RETURNING id;
 -- name: CreatePlatformAccount :exec
 INSERT INTO platform_account(platform_id, external_account_id, fk_account_id)
 VALUES ($1, $2, $3);
+
+-- name: MarkServiceCheckSent :exec
+UPDATE account
+SET service_check_sent = 1
+WHERE id = $1;

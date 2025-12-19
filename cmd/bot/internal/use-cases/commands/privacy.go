@@ -9,19 +9,19 @@ import (
 	"github.com/quickpowered/thebeyond-master/configs/language"
 )
 
-const REFUND_CMD = "refund"
+const PRIVACY_CMD = "privacy"
 
-type refundHandler struct {
+type privacyHandler struct {
 	deps.Dependencies
 }
 
-func NewRefundHandler(deps deps.Dependencies) refundHandler {
-	return refundHandler{deps}
+func NewPrivacyHandler(deps deps.Dependencies) privacyHandler {
+	return privacyHandler{deps}
 }
 
-func (h refundHandler) Execute(bot bin.Interface, p *domain.Payload) error {
+func (h privacyHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	language := language.Language(p.Account.Language)
-	msg := i18n.RefundPolicyMessages[language]
+	msg := i18n.PrivacyPolicyMessages[language]
 	controlMsg := i18n.ControlMessages[language]
 	opts := []any{deps.ToForward(bot, p), &types.Keyboard{
 		ButtonRows: [][]types.Button{{{Text: "◀️ " + controlMsg.Back, Data: ABOUT_CMD}}},

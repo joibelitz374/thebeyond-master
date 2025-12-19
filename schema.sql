@@ -44,7 +44,8 @@ CREATE TABLE public.account (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     promo text,
     discount integer DEFAULT 0,
-    cluster_id smallint DEFAULT 1
+    cluster_id smallint DEFAULT 1,
+    service_check_sent smallint DEFAULT 0
 );
 
 

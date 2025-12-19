@@ -45,8 +45,8 @@ func (s *delivery) Listen() error {
 
 func (s *delivery) handler(ctx context.Context, tgBot *bot.Bot, update *models.Update) {
 	var typ models.ChatType
-	var chatID, threadID, userID int
-	var text string
+	var userID, chatID, threadID, messageID int
+	var callbackQueryID, text string
 
 	switch {
 	case update.PreCheckoutQuery != nil:
@@ -60,6 +60,7 @@ func (s *delivery) handler(ctx context.Context, tgBot *bot.Bot, update *models.U
 		userID = int(update.Message.From.ID)
 		chatID = int(update.Message.Chat.ID)
 		threadID = int(update.Message.MessageThreadID)
+		messageID = update.Message.ID
 		text = update.Message.Text
 	case update.CallbackQuery != nil:
 		message := update.CallbackQuery.Message.Message
@@ -70,7 +71,17 @@ func (s *delivery) handler(ctx context.Context, tgBot *bot.Bot, update *models.U
 		userID = int(update.CallbackQuery.From.ID)
 		chatID = int(message.Chat.ID)
 		threadID = int(message.MessageThreadID)
+		messageID = message.ID
+		callbackQueryID = update.CallbackQuery.ID
 		text = update.CallbackQuery.Data
+
+		defer func() {
+			if _, err := tgBot.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
+				CallbackQueryID: callbackQueryID,
+			}); err != nil {
+				s.Logger.Error("failed to answer callback query", zap.Error(err))
+			}
+		}()
 	default:
 		return
 	}
@@ -87,12 +98,13 @@ func (s *delivery) handler(ctx context.Context, tgBot *bot.Bot, update *models.U
 	if err := s.commands.Run(s.bot, &domain.Payload{
 		Message: sharedUpdate.NewMessage(
 			consts.PlatformTelegram,
-			int(update.ID),
+			int(messageID),
 			sharedUpdate.Chat{
 				ID:       int(chatID),
 				ThreadID: int(threadID),
 			},
 			userID,
+			callbackQueryID,
 			text,
 			nil,
 		),

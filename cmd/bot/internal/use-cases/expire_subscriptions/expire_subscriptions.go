@@ -35,8 +35,10 @@ func (uc *UseCase) Run(ctx context.Context) error {
 			zap.Int("account_id", id),
 			zap.String("email", email))
 
-		if err := uc.xraymanagerRepo.RemoveClient(ctx, 1, dto.NodeTypeBlacklist, email); err != nil {
-			uc.logger.Error("remove user", zap.Error(err), zap.Int("account_id", id))
+		for _, region := range []dto.Region{dto.RegionRussia} {
+			if err := uc.xraymanagerRepo.RemoveClient(ctx, region, email); err != nil {
+				uc.logger.Error("remove user", zap.Error(err), zap.Int("account_id", id))
+			}
 		}
 
 		if err := uc.accountService.CancelSubscriptions(ctx, id); err != nil {

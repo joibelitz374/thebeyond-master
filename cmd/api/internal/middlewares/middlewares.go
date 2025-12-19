@@ -27,13 +27,12 @@ func (a auth) Init() fiber.Handler {
 		parts := strings.Split(ctx.Get("Authorization"), " ")
 		if len(parts) != 2 {
 			return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{
-				"message": "Unauthorized",
+				"message": "Invalid authorization header",
 			})
 		}
 
-		authType, authData := parts[0], parts[1]
-
-		switch authType {
+		authData := parts[1]
+		switch parts[0] {
 		case "tma":
 			if err := initdata.Validate(authData, a.token, time.Hour); err != nil {
 				return ctx.Status(http.StatusUnauthorized).JSON(fiber.Map{

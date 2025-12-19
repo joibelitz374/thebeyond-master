@@ -1,234 +1,234 @@
 7:
     emoji: "\U0001F37F"
     prices:
-        aed: 2.03
-        bdt: 67.47
+        aed: 2.02
+        bdt: 67.3
         bgn: 0.92
-        brl: 2.99
+        brl: 2.98
         cad: 0.76
-        cny: 3.89
-        czk: 11.41
-        dkk: 3.51
+        cny: 3.88
+        czk: 11.38
+        dkk: 3.5
         eur: 0.47
         gbp: 0.41
-        huf: 181.05
-        idr: 9179.48
-        ils: 1.78
-        inr: 49.99
-        irr: 23182.6
-        jpy: 86.02
-        krw: 814.04
-        mxn: 9.94
+        huf: 180.56
+        idr: 9166.65
+        ils: 1.77
+        inr: 49.87
+        irr: 23134.88
+        jpy: 85.75
+        krw: 811.41
+        mxn: 9.92
         myr: 2.26
-        nok: 5.6
-        php: 32.63
-        pkr: 154.81
-        pln: 1.99
+        nok: 5.58
+        php: 32.52
+        pkr: 154.38
+        pln: 1.98
         ron: 2.39
-        rsd: 55.21
+        rsd: 55.05
         rub: 44
-        sar: 2.07
-        sek: 5.12
+        sar: 2.06
+        sek: 5.1
         sgd: 0.71
         stars: 24
-        thb: 17.39
-        try: 23.57
-        uah: 23.32
+        thb: 17.4
+        try: 23.51
+        uah: 23.26
         usd: 0.55
-        vnd: 14524.92
+        vnd: 14485.9
     discount: 0
 14:
     emoji: "\U0001F496"
     prices:
-        aed: 4.05
-        bdt: 134.93
-        bgn: 1.84
-        brl: 5.97
+        aed: 4.04
+        bdt: 134.6
+        bgn: 1.83
+        brl: 5.96
         cad: 1.52
-        cny: 7.79
-        czk: 22.82
-        dkk: 7.02
+        cny: 7.77
+        czk: 22.76
+        dkk: 7.01
         eur: 0.94
-        gbp: 0.83
-        huf: 362.1
-        idr: 18358.95
-        ils: 3.55
-        inr: 99.97
-        irr: 46365.19
-        jpy: 172.03
-        krw: 1628.09
-        mxn: 19.88
-        myr: 4.52
-        nok: 11.19
-        php: 65.27
-        pkr: 309.62
-        pln: 3.97
-        ron: 4.79
-        rsd: 110.42
+        gbp: 0.82
+        huf: 361.13
+        idr: 18333.3
+        ils: 3.54
+        inr: 99.74
+        irr: 46269.77
+        jpy: 171.5
+        krw: 1622.82
+        mxn: 19.83
+        myr: 4.51
+        nok: 11.16
+        php: 65.03
+        pkr: 308.76
+        pln: 3.96
+        ron: 4.77
+        rsd: 110.09
         rub: 88
-        sar: 4.14
-        sek: 10.23
-        sgd: 1.43
+        sar: 4.13
+        sek: 10.21
+        sgd: 1.42
         stars: 48
-        thb: 34.79
-        try: 47.14
-        uah: 46.64
+        thb: 34.8
+        try: 47.02
+        uah: 46.53
         usd: 1.1
-        vnd: 29049.84
+        vnd: 28971.8
     discount: 0
 30:
     emoji: "\U0001F315"
     prices:
-        aed: 8.25
-        bdt: 274.47
-        bgn: 3.74
-        brl: 12.15
+        aed: 8.22
+        bdt: 273.79
+        bgn: 3.73
+        brl: 12.13
         cad: 3.09
-        cny: 15.84
-        czk: 46.41
-        dkk: 14.29
+        cny: 15.8
+        czk: 46.29
+        dkk: 14.25
         eur: 1.91
-        gbp: 1.68
-        huf: 736.54
-        idr: 37343.78
-        ils: 7.23
-        inr: 203.35
-        irr: 94311.01
-        jpy: 349.93
-        krw: 3311.67
-        mxn: 40.43
-        myr: 9.2
-        nok: 22.77
-        php: 132.76
-        pkr: 629.79
-        pln: 8.08
-        ron: 9.74
-        rsd: 224.6
+        gbp: 1.67
+        huf: 734.57
+        idr: 37291.61
+        ils: 7.19
+        inr: 202.88
+        irr: 94116.91
+        jpy: 348.84
+        krw: 3300.96
+        mxn: 40.34
+        myr: 9.17
+        nok: 22.7
+        php: 132.28
+        pkr: 628.05
+        pln: 8.06
+        ron: 9.71
+        rsd: 223.94
         rub: 179
-        sar: 8.42
-        sek: 20.82
-        sgd: 2.9
+        sar: 8.4
+        sek: 20.76
+        sgd: 2.89
         stars: 100.00000000000001
-        thb: 70.76
-        try: 95.88
-        uah: 94.88
-        usd: 2.25
-        vnd: 59090.01
+        thb: 70.8
+        try: 95.64
+        uah: 94.64
+        usd: 2.24
+        vnd: 58931.27
     discount: 0
 90:
     emoji: "\U0001F337"
     prices:
-        aed: 19.54
-        bdt: 650.14
-        bgn: 8.86
-        brl: 28.78
-        cad: 7.33
-        cny: 37.53
-        czk: 109.94
-        dkk: 33.84
-        eur: 4.53
-        gbp: 3.98
-        huf: 1744.65
-        idr: 88456.77
-        ils: 17.13
-        inr: 481.68
-        irr: 223395.92
-        jpy: 828.88
-        krw: 7844.41
-        mxn: 95.77
-        myr: 21.8
-        nok: 53.92
-        php: 314.47
-        pkr: 1491.79
-        pln: 19.15
-        ron: 23.07
-        rsd: 532.01
+        aed: 19.48
+        bdt: 648.52
+        bgn: 8.83
+        brl: 28.73
+        cad: 7.31
+        cny: 37.42
+        czk: 109.65
+        dkk: 33.75
+        eur: 4.52
+        gbp: 3.96
+        huf: 1739.99
+        idr: 88333.19
+        ils: 17.04
+        inr: 480.56
+        irr: 222936.15
+        jpy: 826.31
+        krw: 7819.04
+        mxn: 95.55
+        myr: 21.73
+        nok: 53.77
+        php: 313.33
+        pkr: 1487.68
+        pln: 19.08
+        ron: 23
+        rsd: 530.46
         rub: 424
-        sar: 19.95
-        sek: 49.31
-        sgd: 6.87
+        sar: 19.89
+        sek: 49.18
+        sgd: 6.85
         stars: 250
-        thb: 167.61
-        try: 227.12
-        uah: 224.74
-        usd: 5.32
-        vnd: 139967.41
+        thb: 167.7
+        try: 226.54
+        uah: 224.17
+        usd: 5.3
+        vnd: 139591.4
     discount: 0
 180:
     emoji: "\U0001F308"
     prices:
-        aed: 38.2
-        bdt: 1271.15
-        bgn: 17.33
-        brl: 56.26
-        cad: 14.33
-        cny: 73.37
-        czk: 214.95
-        dkk: 66.17
-        eur: 8.86
-        gbp: 7.78
-        huf: 3411.12
-        idr: 172949.67
-        ils: 33.48
-        inr: 941.78
-        irr: 436781.17
-        jpy: 1620.61
-        krw: 15337.31
-        mxn: 187.25
-        myr: 42.62
-        nok: 105.43
-        php: 614.84
-        pkr: 2916.74
-        pln: 37.43
-        ron: 45.1
-        rsd: 1040.18
+        aed: 38.09
+        bdt: 1267.99
+        bgn: 17.27
+        brl: 56.17
+        cad: 14.29
+        cny: 73.17
+        czk: 214.39
+        dkk: 65.99
+        eur: 8.83
+        gbp: 7.75
+        huf: 3402
+        idr: 172708.06
+        ils: 33.32
+        inr: 939.59
+        irr: 435882.23
+        jpy: 1615.59
+        krw: 15287.7
+        mxn: 186.82
+        myr: 42.49
+        nok: 105.14
+        php: 612.61
+        pkr: 2908.69
+        pln: 37.31
+        ron: 44.97
+        rsd: 1037.14
         rub: 829
-        sar: 39
-        sek: 96.4
-        sgd: 13.44
+        sar: 38.89
+        sek: 96.16
+        sgd: 13.4
         stars: 500
-        thb: 327.7
-        try: 444.06
-        uah: 439.4
-        usd: 10.4
-        vnd: 273662.69
+        thb: 327.88
+        try: 442.93
+        uah: 438.3
+        usd: 10.37
+        vnd: 272927.52
     discount: 0
 365:
     emoji: ⭐️
     prices:
-        aed: 75.98
-        bdt: 2528.49
-        bgn: 34.47
-        brl: 111.92
-        cad: 28.5
-        cny: 145.95
-        czk: 427.57
-        dkk: 131.61
-        eur: 17.63
-        gbp: 15.47
-        huf: 6785.2
-        idr: 344021.72
-        ils: 66.6
-        inr: 1873.34
-        irr: 868820.44
-        jpy: 3223.63
-        krw: 30508.11
-        mxn: 372.46
-        myr: 84.77
-        nok: 209.72
-        php: 1223.01
-        pkr: 5801.81
-        pln: 74.46
-        ron: 89.7
-        rsd: 2069.06
+        aed: 75.76
+        bdt: 2522.21
+        bgn: 34.36
+        brl: 111.72
+        cad: 28.42
+        cny: 145.54
+        czk: 426.46
+        dkk: 131.27
+        eur: 17.57
+        gbp: 15.41
+        huf: 6767.07
+        idr: 343541.12
+        ils: 66.27
+        inr: 1868.98
+        irr: 867032.33
+        jpy: 3213.64
+        krw: 30409.43
+        mxn: 371.61
+        myr: 84.52
+        nok: 209.13
+        php: 1218.58
+        pkr: 5785.8
+        pln: 74.22
+        ron: 89.45
+        rsd: 2063.02
         rub: 1649
-        sar: 77.58
-        sek: 191.76
-        sgd: 26.72
+        sar: 77.36
+        sek: 191.29
+        sgd: 26.65
         stars: 1000
-        thb: 651.85
-        try: 883.31
-        uah: 874.04
-        usd: 20.69
-        vnd: 544354.37
+        thb: 652.19
+        try: 881.06
+        uah: 871.85
+        usd: 20.63
+        vnd: 542892.02
     discount: 0

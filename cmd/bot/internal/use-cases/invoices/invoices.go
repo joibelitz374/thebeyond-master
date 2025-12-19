@@ -130,7 +130,8 @@ func (uc useCase) HandlePreCheckoutQuery(tgBot *bot.Bot, tgUpdate *models.Update
 	if account.SubscriptionExpiresAt == nil {
 		uc.logger.Debug("account has no subscription expires at",
 			zap.Int("account_id", account.ID))
-		if err := uc.xraymanagerRepo.AddClient(ctx, dto.ClusterID(account.ClusterID), dto.NodeTypeBlacklist, account.KeyID, email.NewAccount(account.ID)); err != nil {
+
+		if err := uc.xraymanagerRepo.AddClient(ctx, dto.RegionRussia, account.KeyID, email.NewAccount(account.ID)); err != nil {
 			uc.logger.Error("add user failed", zap.Error(err),
 				zap.Int("account_id", account.ID))
 			return err

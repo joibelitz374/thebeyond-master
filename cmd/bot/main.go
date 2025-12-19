@@ -15,6 +15,7 @@ import (
 	expireSubscriptions "github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/expire_subscriptions"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/invoices"
 	promoUC "github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/promo"
+	serviceCheck "github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/service_check"
 	"github.com/quickpowered/thebeyond-master/internal/repositories/db"
 	"github.com/quickpowered/thebeyond-master/internal/repositories/subscriptions"
 	"github.com/quickpowered/thebeyond-master/internal/repositories/web"
@@ -79,11 +80,15 @@ func main() {
 	deps := deps.NewDependencies(accountService, paymentService, promoService, subscriptionsRepo, xraymanagerRepo, logger)
 	promoUseCase := promoUC.NewUseCase(accountService, paymentService, promoService, subscriptionsRepo, logger)
 	invoicesUseCase := invoices.NewUseCase(accountService, paymentService, promoUseCase, subscriptionsRepo, xraymanagerRepo, logger)
-	expireSubscriptionsUseCase := expireSubscriptions.NewUseCase(accountService, xraymanagerRepo, logger)
 	commandsUseCase := commands.NewUseCase(deps, promoUseCase)
 
+	expireSubscriptionsUseCase := expireSubscriptions.NewUseCase(accountService, xraymanagerRepo, logger)
+	serviceCheckUseCase := serviceCheck.NewUseCase(accountService, logger)
+
+	tgBot := bot.New("telegram", os.Getenv("TG_TOKEN"))
+
 	interval := time.Duration(30) * time.Second
-	logger.Debug("starting expire subscriptions...", zap.Duration("interval", interval))
+	logger.Debug("starting expire subscriptions & questions...", zap.Duration("interval", interval))
 
 	wg := new(sync.WaitGroup)
 	wg.Go(func() {
@@ -91,13 +96,12 @@ func main() {
 			time.Sleep(interval)
 			ctx, cancel := context.WithTimeout(context.TODO(), interval)
 			expireSubscriptionsUseCase.Run(ctx)
+			serviceCheckUseCase.Run(ctx, tgBot)
 			cancel()
 		}
 	})
 
-	for _, bot := range []bin.Interface{
-		bot.New("telegram", os.Getenv("TG_TOKEN")),
-	} {
+	for _, bot := range []bin.Interface{tgBot} {
 		wg.Go(func() {
 			if err := delivery.New(bot, commandsUseCase, invoicesUseCase, logger).Listen(); err != nil {
 				logger.Error("failed to start bot", zap.Error(err))

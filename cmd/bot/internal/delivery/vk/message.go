@@ -23,6 +23,7 @@ func (s *delivery) onMessage(bot *api.API, message vkUpdate.Message) {
 			message.ChatMessageID,
 			update.Chat{ID: message.ChatID},
 			int(message.UserID),
+			"",
 			text,
 			nil,
 			bot,

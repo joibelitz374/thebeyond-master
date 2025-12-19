@@ -22,21 +22,26 @@ func NewConnectHandler(deps deps.Dependencies) connectHandler {
 }
 
 func (h connectHandler) Execute(bot bin.Interface, p *domain.Payload) error {
-	msg := i18n.ConnectMessages[language.Language(p.Account.Language)]
+	language := language.Language(p.Account.Language)
+	msg := i18n.ConnectMessages[language]
+	controlMsg := i18n.ControlMessages[language]
+	projectDomain := os.Getenv("PROJECT_DOMAIN")
+	subscriptionURL := "https://" + projectDomain + "/sub/" + p.Account.KeyID
 
 	if len(p.Args) > 1 {
-		return h.connectViaApp(bot, msg, p)
+		return h.connectViaApp(bot, p, msg, controlMsg)
 	}
 
-	projectDomain := os.Getenv("PROJECT_DOMAIN")
-	subscriptionURL := "https://" + projectDomain + "/sub/" + p.Account.KeyID + "/smart/ru"
+	buttonRows := [][]types.Button{
+		{{
+			Text: "🎾 " + msg.IHave,
+			URL:  "https://" + projectDomain + "/sub/r?url=happ://add/" + subscriptionURL + "/smart/" + p.Account.Region,
+		}},
+		{{Text: "📥 " + msg.DownloadApp, Data: "connect download"}},
+		{{Text: "◀️ " + controlMsg.Back, Data: MENU_CMD}},
+	}
 
-	return bot.SendMessage(p.Message.Chat(), msg.DoYouHaveAnApp, &types.Keyboard{
-		ButtonRows: [][]types.Button{
-			{{Text: "🎾 " + msg.IHave, URL: "https://" + projectDomain + "/sub/r?url=happ://add/" + subscriptionURL}},
-			{{Text: "📥 " + msg.DownloadApp, Data: "connect download"}},
-		},
-	})
+	return bot.SendMessage(p.Message.Chat(), msg.DoYouHaveAnApp, &types.Keyboard{ButtonRows: buttonRows})
 }
 
 type DownloadURL struct {
@@ -107,7 +112,7 @@ var downloadURLs = map[string][]DownloadURL{
 	},
 }
 
-func (h connectHandler) connectViaApp(bot bin.Interface, msg i18n.ConnectLocale, p *domain.Payload) error {
+func (h connectHandler) connectViaApp(bot bin.Interface, p *domain.Payload, msg i18n.ConnectLocale, controlMsg i18n.ControlLocale) error {
 	switch device := p.Args[1]; device {
 	case "download":
 		return bot.SendMessage(p.Message.Chat(), msg.InstallationDevice, &types.Keyboard{
@@ -118,6 +123,7 @@ func (h connectHandler) connectViaApp(bot bin.Interface, msg i18n.ConnectLocale,
 				{{Text: "🤖 Android", Data: "connect android"}},
 				{{Text: "🍎 iOS", Data: "connect ios"}},
 				{{Text: "🖥 TV", Data: "connect tv"}},
+				{{Text: "◀️ " + controlMsg.Back, Data: CONNECT_CMD}},
 			},
 		})
 	default:
@@ -131,6 +137,10 @@ func (h connectHandler) connectViaApp(bot bin.Interface, msg i18n.ConnectLocale,
 			buttonRows = append(buttonRows, []types.Button{{Text: url.Name, URL: url.URL}})
 		}
 
+		buttonRows = append(buttonRows, []types.Button{{
+			Text: "◀️ " + controlMsg.Back,
+			Data: CONNECT_CMD + " download",
+		}})
 		return bot.SendMessage(p.Message.Chat(), msg.InstallationMethod, &types.Keyboard{ButtonRows: buttonRows})
 	}
 }

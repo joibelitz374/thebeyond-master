@@ -2,231 +2,757 @@ package i18n
 
 import "github.com/quickpowered/thebeyond-master/configs/language"
 
-type RefundLocale struct {
-	InfoText       string
-	NoPayments     string
-	SuccessMessage string
+type RefundPolicyLocale struct {
+	Policy string
 }
 
-var RefundMessages = map[language.Language]RefundLocale{
+var RefundPolicyMessages = map[language.Language]RefundPolicyLocale{
 	language.English: {
-		InfoText:       "<b>How does the refund work?</b>\nFunds get returned by the admin right under the post in your Telegram channel using \"Stars\" currency.\n\n<b>How soon will the funds be back?</b>\nRefund can take anywhere from 30 minutes to 23 days.\n\n<b>Can I get just a partial refund?</b>\nNah, it returns the whole remaining balance. If you only want a chunk, just subscribe again for a different timeframe.\n\n<b>You sure you wanna request a refund?</b>",
-		NoPayments:     "No payments found",
-		SuccessMessage: "Refund requested! Wait for a message from the admin in DM",
+		Policy: "<b>REFUND POLICY:</b>\n\n" +
+			"<b>1. Refund Conditions</b>\n" +
+			"1.1. Since we provide digital goods (access keys) and services that are consumed upon use, refunds are only possible in exceptional cases.\n" +
+			"1.2. You have the right to request a full refund within 24 hours of purchase if you were unable to connect to the service due to technical issues on the Provider's side (non-working server, key generation error).\n\n" +
+			"<b>2. Refund Denials</b>\n" +
+			"Refunds are NOT issued in the following cases:\n" +
+			"• More than 24 hours have passed since the purchase.\n" +
+			"• Low connection speed caused by limitations on the user's provider side or poor mobile network coverage.\n" +
+			"• User's inability to set up third-party software (Happ, Streisand clients, etc.), provided the key itself is valid.\n" +
+			"• Access blocked for violating rules (spam, torrents, hacking attacks).\n" +
+			"• \"I changed my mind\" or \"I don't need it anymore\".\n\n" +
+			"<b>3. Refund Procedure</b>\n" +
+			"3.1. To request a refund, contact support.\n" +
+			"3.2. In your request, include: Account ID, payment receipt, and a description of the technical issue (preferably with a screenshot of the error).\n" +
+			"3.3. The refund will be processed using the same payment method, within 3–7 business days.",
 	},
 	language.Deutsch: {
-		InfoText:       "<b>Wie funktioniert die Rückerstattung?</b>\nDie Kohle wird vom Admin unter dem Post in deinem Telegram-Kanal in der Währung «Stars» zurückgezahlt.\n\n<b>Wie schnell kommt die Kohle zurück?</b>\nDie Rückerstattung dauert von 30 Minuten bis 23 Tage.\n\n<b>Kann ich nur einen Teil zurückbekommen?</b>\nNee, der gesamte Restbetrag wird zurückgezahlt. Wenn du nur 'nen Teil brauchst, abonnier einfach neu für 'ne andere Laufzeit.\n\n<b>Willst du wirklich 'ne Rückerstattung anfordern?</b>",
-		NoPayments:     "Keine Zahlungen gefunden",
-		SuccessMessage: "Rückerstattung beantragt! Warte auf eine Nachricht vom Admin im Chat",
+		Policy: "<b>RÜCKERSTATTUNGSRICHTLINIE:</b>\n\n" +
+			"<b>1. Bedingungen für Rückerstattungen</b>\n" +
+			"1.1. Da wir digitale Waren (Zugangsschlüssel) und Dienstleistungen anbieten, die beim Gebrauch verbraucht werden, sind Rückerstattungen nur in Ausnahmefällen möglich.\n" +
+			"1.2. Sie haben das Recht, innerhalb von 24 Stunden nach dem Kauf eine vollständige Rückerstattung zu beantragen, falls Sie aufgrund technischer Probleme auf Seiten des Anbieters (nicht funktionierender Server, Fehler bei der Schlüsselerzeugung) nicht auf den Dienst zugreifen konnten.\n\n" +
+			"<b>2. Verweigerung von Rückerstattungen</b>\n" +
+			"Rückerstattungen werden NICHT gewährt in folgenden Fällen:\n" +
+			"• Mehr als 24 Stunden sind seit dem Kauf vergangen.\n" +
+			"• Niedrige Verbindungsgeschwindigkeit, verursacht durch Einschränkungen beim Provider des Nutzers oder schlechte Mobilfunkabdeckung.\n" +
+			"• Unfähigkeit des Nutzers, Drittanbieter-Software (Happ-, Streisand-Clients usw.) einzurichten, sofern der Schlüssel selbst gültig ist.\n" +
+			"• Sperrung des Zugangs wegen Verstoß gegen die Regeln (Spam, Torrents, Hacking-Attacken).\n" +
+			"• „Ich habe es mir anders überlegt“ oder „Ich brauche es nicht mehr“.\n\n" +
+			"<b>3. Rückerstattungsverfahren</b>\n" +
+			"3.1. Um eine Rückerstattung zu beantragen, kontaktieren Sie den Support.\n" +
+			"3.2. In Ihrer Anfrage geben Sie an: Account-ID, Zahlungsbeleg und eine Beschreibung des technischen Problems (vorzugsweise mit einem Screenshot des Fehlers).\n" +
+			"3.3. Die Rückerstattung erfolgt über dieselbe Zahlungsmethode innerhalb von 3–7 Werktagen.",
 	},
 	language.Nederlands: {
-		InfoText:       "<b>Hoe werkt de terugbetaling?</b>\nHet geld wordt teruggegeven door de admin onder de post in je Telegram-kanaal in de valuta «Stars».\n\n<b>Hoe snel krijg ik het geld terug?</b>\nTerugbetaling duurt van 30 minuten tot 23 dagen.\n\n<b>Kan ik een deel terugkrijgen?</b>\nNee, het hele resterende saldo wordt terugbetaald. Als je maar een deel wilt, abonneer je gewoon opnieuw voor een andere periode.\n\n<b>Wil je echt een terugbetaling aanvragen?</b>",
-		NoPayments:     "Geen betalingen gevonden",
-		SuccessMessage: "Terugbetaling aangevraagd! Wacht op een berichtje van de admin in je DM",
+		Policy: "<b>RESTITUTIEBELEID:</b>\n\n" +
+			"<b>1. Voorwaarden voor restitutie</b>\n" +
+			"1.1. Aangezien we digitale goederen (toegangssleutels) en diensten leveren die bij gebruik worden geconsumeerd, is restitutie alleen mogelijk in uitzonderlijke gevallen.\n" +
+			"1.2. U hebt het recht om binnen 24 uur na aankoop een volledige restitutie aan te vragen als u niet kon verbinden met de dienst vanwege technische problemen aan de kant van de Aanbieder (niet-werkende server, fout bij sleutelgeneratie).\n\n" +
+			"<b>2. Weigering van restitutie</b>\n" +
+			"Restitutie wordt NIET verleend in de volgende gevallen:\n" +
+			"• Meer dan 24 uur zijn verstreken sinds de aankoop.\n" +
+			"• Lage verbindingssnelheid veroorzaakt door beperkingen aan de kant van de provider van de gebruiker of slechte dekking van het mobiele netwerk.\n" +
+			"• Onvermogen van de gebruiker om derde-partij software (Happ, Streisand clients, etc.) in te stellen, mits de sleutel zelf geldig is.\n" +
+			"• Blokkeren van toegang wegens schending van regels (spam, torrents, hackeraanvallen).\n" +
+			"• „Ik ben van gedachten veranderd“ of „Ik heb het niet meer nodig“.\n\n" +
+			"<b>3. Restitutieprocedure</b>\n" +
+			"3.1. Om restitutie aan te vragen, neem contact op met de support.\n" +
+			"3.2. In uw aanvraag vermeldt u: Account-ID, betalingsbewijs en een beschrijving van het technische probleem (bij voorkeur met een screenshot van de fout).\n" +
+			"3.3. De restitutie wordt verwerkt via dezelfde betaalmethode, binnen 3–7 werkdagen.",
 	},
 	language.Svenska: {
-		InfoText:       "<b>Hur funkar återbetalningen?</b>\nPengarna returneras av admin under inlägget i din Telegram-kanal i valutan «Stars».\n\n<b>Hur snart kommer pengarna tillbaka?</b>\nÅterbetalning tar från 30 minuter till 23 dagar.\n\n<b>Kan jag få tillbaka bara en del?</b>\nNej, hela kvarvarande saldot returneras. Om du bara vill ha en bit, prenumerera igen för en annan period.\n\n<b>Vill du verkligen begära återbetalning?</b>",
-		NoPayments:     "Inga betalningar hittades.",
-		SuccessMessage: "Återbetalning begärd! Vänta på meddelande från admin i DM",
+		Policy: "<b>ÅTERBETALNINGSPOLICY:</b>\n\n" +
+			"<b>1. Villkor för återbetalning</b>\n" +
+			"1.1. Eftersom vi tillhandahåller digitala varor (åtkomstnycklar) och tjänster som konsumeras vid användning, är återbetalning endast möjlig i undantagsfall.\n" +
+			"1.2. Du har rätt att begära full återbetalning inom 24 timmar efter köpet om du inte kunde ansluta till tjänsten på grund av tekniska problem från Leverantörens sida (icke-fungerande server, fel vid nyckelgenerering).\n\n" +
+			"<b>2. Nekad återbetalning</b>\n" +
+			"Återbetalning ges INTE i följande fall:\n" +
+			"• Mer än 24 timmar har gått sedan köpet.\n" +
+			"• Låg anslutningshastighet orsakad av begränsningar hos användarens provider eller dålig mobiltäckning.\n" +
+			"• Användarens oförmåga att konfigurera tredjepartsprogram (Happ, Streisand-klienter osv.), förutsatt att nyckeln själv är giltig.\n" +
+			"• Blockering av åtkomst för regelbrott (spam, torrents, hackerattacker).\n" +
+			"• „Jag ångrade mig“ eller „Jag behöver det inte längre“.\n\n" +
+			"<b>3. Återbetalningsprocedur</b>\n" +
+			"3.1. För att begära återbetalning, kontakta supporten.\n" +
+			"3.2. I din begäran ange: Konto-ID, betalningskvitto och en beskrivning av det tekniska problemet (helst med en skärmdump av felet).\n" +
+			"3.3. Återbetalningen sker via samma betalningsmetod inom 3–7 arbetsdagar.",
 	},
 	language.Norsk: {
-		InfoText:       "<b>Hvordan fungerer refusjonen?</b>\nPengene returneres av admin under innlegget i Telegram-kanalen din i valutaen «Stars».\n\n<b>Hvor fort kommer pengene tilbake?</b>\nRefusjon tar fra 30 minutter til 23 dager.\n\n<b>Kan jeg få tilbake bare en del?</b>\nNei, hele gjenværende saldo returneres. Hvis du bare trenger en del, abonner igjen for en annen periode.\n\n<b>Vil du virkelig be om refusjon?</b>",
-		NoPayments:     "Ingen betalinger funnet",
-		SuccessMessage: "Refusjon er sendt! Vent på melding fra admin i privat",
+		Policy: "<b>REFUSJONSPOLICY:</b>\n\n" +
+			"<b>1. Betingelser for refusjon</b>\n" +
+			"1.1. Siden vi tilbyr digitale varer (tilgangsnøkler) og tjenester som forbrukes ved bruk, er refusjon bare mulig i unntakstilfeller.\n" +
+			"1.2. Du har rett til å be om full refusjon innen 24 timer etter kjøpet hvis du ikke klarte å koble til tjenesten på grunn av tekniske problemer fra Leverandørens side (ikke-fungerende server, feil ved nøkkelgenerering).\n\n" +
+			"<b>2. Avslag på refusjon</b>\n" +
+			"Refusjon gis IKKE i følgende tilfeller:\n" +
+			"• Mer enn 24 timer har gått siden kjøpet.\n" +
+			"• Lav tilkoblingshastighet forårsaket av begrensninger hos brukerens leverandør eller dårlig mobildekning.\n" +
+			"• Brukerens manglende evne til å sette opp tredjepartsprogramvare (Happ, Streisand-klienter osv.), forutsatt at nøkkelen selv er gyldig.\n" +
+			"• Blokking av tilgang for brudd på reglene (spam, torrents, hackerangrep).\n" +
+			"• „Jeg ombestemte meg“ eller „Jeg trenger det ikke lenger“.\n\n" +
+			"<b>3. Refusjonsprosedyre</b>\n" +
+			"3.1. For å be om refusjon, kontakt støtte.\n" +
+			"3.2. I forespørselen oppgi: Konto-ID, betalingskvittering og en beskrivelse av det tekniske problemet (helst med et skjermbilde av feilen).\n" +
+			"3.3. Refusjonen behandles via samme betalingsmetode innen 3–7 virkedager.",
 	},
 	language.Dansk: {
-		InfoText:       "<b>Hvordan virker refund?</b>\nPengene returneres af admin under posten i din Telegram-kanal i valutaen «Stars».\n\n<b>Hvor hurtigt kommer pengene tilbage?</b>\nRefund tager fra 30 minutter til 23 dage.\n\n<b>Kan jeg få kun en del tilbage?</b>\nNej, hele den resterende saldo returneres. Hvis du kun har brug for en del, abonner igen for en anden periode.\n\n<b>Vil du virkelig anmode om refund?</b>",
-		NoPayments:     "Ingen betalinger fundet",
-		SuccessMessage: "Refund er anmodet! Vent på besked fra admin i privat chat",
+		Policy: "<b>REFUSJONSPOLITIK:</b>\n\n" +
+			"<b>1. Betingelser for refusjon</b>\n" +
+			"1.1. Da vi tilbyder digitale varer (adgangsnøgler) og tjenester, der forbruges ved brug, er refusjon kun mulig i undtagelsestilfælde.\n" +
+			"1.2. Du har ret til at anmode om fuld refusjon inden for 24 timer efter købet, hvis du ikke kunne forbinde til tjenesten på grund af tekniske problemer fra Udbyderens side (ikke-fungerende server, fejl ved nøglegenerering).\n\n" +
+			"<b>2. Afvisning af refusjon</b>\n" +
+			"Refusjon gives IKKE i følgende tilfælde:\n" +
+			"• Mere end 24 timer er gået siden købet.\n" +
+			"• Lav forbindelseshastighed forårsaget af begrænsninger hos brugerens udbyder eller dårlig mobildækning.\n" +
+			"• Brugerens manglende evne til at opsætte tredjepartssoftware (Happ, Streisand-klienter osv.), forudsat at nøglen selv er gyldig.\n" +
+			"• Blokering af adgang for overtrædelse af regler (spam, torrents, hackerangreb).\n" +
+			"• „Jeg har skiftet mening“ eller „Jeg har ikke brug for det længere“.\n\n" +
+			"<b>3. Refusjonsprocedure</b>\n" +
+			"3.1. For at anmode om refusjon, kontakt support.\n" +
+			"3.2. I din anmodning angiv: Konto-ID, betalingskvittering og en beskrivelse af det tekniske problem (helst med et screenshot af fejlen).\n" +
+			"3.3. Refusjonen behandles via samme betalingsmetode inden for 3–7 arbejdsdage.",
 	},
 	language.Español: {
-		InfoText:       "<b>¿Cómo funciona el reembolso?</b>\nLos fondos se devuelven por el admin debajo del post en tu canal de Telegram en la moneda «Stars».\n\n<b>¿Cuánto tarda el reembolso?</b>\nEl reembolso toma de 30 minutos a 23 días.\n\n<b>¿Puedo devolver solo una parte?</b>\nNo, se devuelve todo el saldo restante. Si solo quieres una parte, suscríbete de nuevo por otro período.\n\n<b>¿De verdad quieres solicitar un reembolso?</b>",
-		NoPayments:     "No se encontraron pagos",
-		SuccessMessage: "¡Reembolso solicitado! Espera el mensaje del admin en privados",
+		Policy: "<b>POLÍTICA DE REEMBOLSOS:</b>\n\n" +
+			"<b>1. Condiciones de reembolso</b>\n" +
+			"1.1. Dado que proporcionamos bienes digitales (claves de acceso) y servicios que se consumen en el momento de su uso, los reembolsos solo son posibles en casos excepcionales.\n" +
+			"1.2. Tienes derecho a solicitar un reembolso completo dentro de las 24 horas posteriores a la compra si no pudiste conectarte al servicio por problemas técnicos dependientes del Proveedor (servidor no funcional, error en la generación de clave).\n\n" +
+			"<b>2. Denegación de reembolsos</b>\n" +
+			"Los reembolsos NO se realizan en los siguientes casos:\n" +
+			"• Han pasado más de 24 horas desde la compra.\n" +
+			"• Baja velocidad de conexión causada por limitaciones en el lado del proveedor del usuario o mala cobertura de red móvil.\n" +
+			"• Incapacidad del usuario para configurar software de terceros (clientes Happ, Streisand, etc.), siempre que la clave sea válida.\n" +
+			"• Bloqueo de acceso por violación de reglas (spam, torrents, ataques de hacking).\n" +
+			"• „Cambié de opinión“ o „Ya no lo necesito“.\n\n" +
+			"<b>3. Procedimiento de reembolso</b>\n" +
+			"3.1. Para solicitar un reembolso, escribe al soporte.\n" +
+			"3.2. En la solicitud indica: ID de cuenta, recibo de pago y descripción del problema técnico (preferiblemente con una captura de pantalla del error).\n" +
+			"3.3. El reembolso se realiza por el mismo método de pago, dentro de 3–7 días hábiles.",
 	},
 	language.Français: {
-		InfoText:       "<b>Comment marche le remboursement?</b>\nLes fonds sont renvoyés par l'admin sous le post dans ton canal Telegram en devise «Stars».\n\n<b>Combien de temps pour le remboursement?</b>\nLe remboursement prend de 30 minutes à 23 jours.\n\n<b>Peut-on rembourser juste une partie?</b>\nNan, tout le solde restant est remboursé. Si t'as besoin que d'une partie, abonne-toi à nouveau pour une autre durée.\n\n<b>Tu veux vraiment demander un remboursement?</b>",
-		NoPayments:     "Aucun paiement trouvé",
-		SuccessMessage: "Remboursement demandé ! Attends le message de l’admin en MP",
+		Policy: "<b>POLITIQUE DE REMBOURSEMENT:</b>\n\n" +
+			"<b>1. Conditions de remboursement</b>\n" +
+			"1.1. Puisque nous fournissons des biens numériques (clés d'accès) et des services consommés au moment de l'utilisation, les remboursements ne sont possibles que dans des cas exceptionnels.\n" +
+			"1.2. Vous avez le droit de demander un remboursement intégral dans les 24 heures suivant l'achat si vous n'avez pas pu vous connecter au service en raison de problèmes techniques du côté du Fournisseur (serveur non fonctionnel, erreur de génération de clé).\n\n" +
+			"<b>2. Refus de remboursement</b>\n" +
+			"Les remboursements NE sont PAS effectués dans les cas suivants :\n" +
+			"• Plus de 24 heures se sont écoulées depuis l'achat.\n" +
+			"• Vitesse de connexion faible causée par des limitations du côté du fournisseur de l'utilisateur ou une mauvaise couverture réseau mobile.\n" +
+			"• Incapacité de l'utilisateur à configurer un logiciel tiers (clients Happ, Streisand, etc.), à condition que la clé soit valide.\n" +
+			"• Blocage d'accès pour violation des règles (spam, torrents, attaques de hacking).\n" +
+			"• « J'ai changé d'avis » ou « Je n'en ai plus besoin ».\n\n" +
+			"<b>3. Procédure de remboursement</b>\n" +
+			"3.1. Pour formuler une demande de remboursement, contactez le support.\n" +
+			"3.2. Dans la demande, indiquez : ID du compte, reçu de paiement et description du problème technique (de préférence avec une capture d'écran de l'erreur).\n" +
+			"3.3. Le remboursement est effectué par le même moyen de paiement, dans un délai de 3 à 7 jours ouvrables.",
 	},
 	language.Português: {
-		InfoText:       "<b>Como funciona o reembolso?</b>\nOs fundos são devolvidos pelo admin sob o post no teu canal Telegram na moeda «Stars».\n\n<b>Quanto tempo leva o reembolso?</b>\nO reembolso demora de 30 minutos a 23 dias.\n\n<b>Posso devolver só uma parte?</b>\nNão, todo o saldo restante é devolvido. Se precisares só de uma parte, assina de novo por outro período.\n\n<b>Queres mesmo pedir um reembolso?</b>",
-		NoPayments:     "Nenhum pagamento encontrado",
-		SuccessMessage: "Reembolso solicitado! Aguarde a mensagem do admin no privado",
+		Policy: "<b>POLÍTICA DE REEMBOLSO:</b>\n\n" +
+			"<b>1. Condições de reembolso</b>\n" +
+			"1.1. Como fornecemos bens digitais (chaves de acesso) e serviços que são consumidos no momento do uso, os reembolsos só são possíveis em casos excepcionais.\n" +
+			"1.2. Você tem o direito de solicitar um reembolso total dentro de 24 horas após a compra se não conseguiu se conectar ao serviço por razões técnicas dependentes do Provedor (servidor não funcional, erro de geração de chave).\n\n" +
+			"<b>2. Negação de reembolso</b>\n" +
+			"Os reembolsos NÃO são realizados nos seguintes casos:\n" +
+			"• Passaram mais de 24 horas desde a compra.\n" +
+			"• Baixa velocidade de conexão causada por limitações do lado do provedor do usuário ou má cobertura de rede móvel.\n" +
+			"• Incapacidade do usuário de configurar software de terceiros (clientes Happ, Streisand, etc.), desde que a chave seja válida.\n" +
+			"• Bloqueio de acesso por violação de regras (spam, torrents, ataques de hacking).\n" +
+			"• „Mudei de ideia“ ou „Não preciso mais“.\n\n" +
+			"<b>3. Procedimento de reembolso</b>\n" +
+			"3.1. Para solicitar um reembolso, escreva para o suporte.\n" +
+			"3.2. No pedido, indique: ID da conta, recibo de pagamento e descrição do problema técnico (de preferência com uma captura de tela do erro).\n" +
+			"3.3. O reembolso é realizado pelo mesmo método de pagamento, dentro de 3–7 dias úteis.",
 	},
 	language.Italiana: {
-		InfoText:       "<b>Come funziona il rimborso?</b>\nI fondi vengono restituiti dall'admin sotto il post nel tuo canale Telegram nella valuta «Stars».\n\n<b>Quanto ci vuole per il rimborso?</b>\nIl rimborso richiede da 30 minuti a 23 giorni.\n\n<b>Posso restituire solo una parte?</b>\nNo, viene restituito l'intero saldo rimanente. Se ti serve solo una parte, iscriviti di nuovo per un altro periodo.\n\n<b>Vuoi davvero richiedere un rimborso?</b>",
-		NoPayments:     "Nessun pagamento trovato",
-		SuccessMessage: "Rimborso richiesto! Aspetta il messaggio dell’admin in privato",
+		Policy: "<b>POLITICA DI RIMBORSO:</b>\n\n" +
+			"<b>1. Condizioni di rimborso</b>\n" +
+			"1.1. Poiché forniamo beni digitali (chiavi di accesso) e servizi che vengono consumati al momento dell'uso, i rimborsi sono possibili solo in casi eccezionali.\n" +
+			"1.2. Hai il diritto di richiedere un rimborso completo entro 24 ore dall'acquisto se non sei riuscito a connetterti al servizio per motivi tecnici dipendenti dal Fornitore (server non funzionante, errore di generazione della chiave).\n\n" +
+			"<b>2. Negazione di rimborso</b>\n" +
+			"I rimborsi NON vengono effettuati nei seguenti casi:\n" +
+			"• Sono passate più di 24 ore dall'acquisto.\n" +
+			"• Bassa velocità di connessione causata da limitazioni dal lato del provider dell'utente o scarsa copertura di rete mobile.\n" +
+			"• Incapacità dell'utente di configurare software di terze parti (client Happ, Streisand, ecc.), purché la chiave sia valida.\n" +
+			"• Blocco dell'accesso per violazione delle regole (spam, torrent, attacchi di hacking).\n" +
+			"• „Ho cambiato idea“ o „Non ne ho più bisogno“.\n\n" +
+			"<b>3. Procedura di rimborso</b>\n" +
+			"3.1. Per richiedere un rimborso, scrivi al supporto.\n" +
+			"3.2. Nella richiesta indica: ID dell'account, ricevuta di pagamento e descrizione del problema tecnico (preferibilmente con uno screenshot dell'errore).\n" +
+			"3.3. Il rimborso viene effettuato con lo stesso metodo di pagamento, entro 3–7 giorni lavorativi.",
 	},
 	language.Русский: {
-		InfoText:       "<b>Как работает возврат средств?</b>\nСредства возвращаются администратором под постом в Вашем Telegram-канале валютой «Stars».\n\n<b>Как скоро вернут средства?</b>\nВозврат средств занимает от 30 минут до 23 дней.\n\n<b>Можно ли вернуть часть средств?</b>\nВозвращается весь оставшийся баланс. Если нужно только часть, подпишитесь снова на другой срок.\n\n<b>Вы действительно хотите запросить возврат?</b>",
-		NoPayments:     "Платежи не найдены",
-		SuccessMessage: "Возврат оформлен! Ожидай сообщения от админа в личку",
+		Policy: "<b>ПОЛИТИКА ВОЗВРАТА СРЕДСТВ:</b>\n\n" +
+			"<b>1. Условия возврата</b>\n" +
+			"1.1. Поскольку мы предоставляем цифровые товары (ключи доступа) и услуги, которые потребляются в момент использования, возврат средств возможен только в исключительных случаях.\n" +
+			"1.2. Вы имеете право запросить полный возврат средств в течение 24 часов с момента покупки, если вам не удалось подключиться к сервису по техническим причинам, зависящим от Исполнителя (нерабочий сервер, ошибка генерации ключа).\n\n" +
+			"<b>2. Отказ в возврате</b>\n" +
+			"Возврат средств НЕ производится в следующих случаях:\n" +
+			"• Прошло более 24 часов с момента покупки.\n" +
+			"• Низкая скорость соединения, вызванная ограничениями на стороне провайдера пользователя или плохим качеством покрытия мобильной сети.\n" +
+			"• Неумение пользователя настроить стороннее программное обеспечение (клиенты Happ, Streisand и др.), при условии, что сам ключ валиден.\n" +
+			"• Блокировка доступа за нарушение правил (спам, торренты, хакерские атаки).\n" +
+			"• «Я передумал» или «Мне больше не нужно».\n\n" +
+			"<b>3. Процедура возврата</b>\n" +
+			"3.1. Для оформления возврата напишите в службу поддержки.\n" +
+			"3.2. В заявке укажите: ID аккаунта, чек об оплате и описание технической проблемы (желательно со скриншотом ошибки).\n" +
+			"3.3. Возврат осуществляется тем же способом, которым была произведена оплата, в течение 3–7 рабочих дней.",
 	},
 	language.Українська: {
-		InfoText:       "<b>Як працює повернення коштів?</b>\nКошти повертаються адміністратором під постом у Вашому Telegram-каналі валютою «Stars».\n\n<b>Як скоро повернуть кошти?</b>\nПовернення коштів займає від 30 хвилин до 23 днів.\n\n<b>Чи можна повернути частину коштів?</b>\nПовертається весь залишковий баланс. Якщо потрібно тільки частину, підпишіться знову на інший термін.\n\n<b>Ви дійсно хочете запросити повернення?</b>",
-		NoPayments:     "Платежі не знайдено",
-		SuccessMessage: "Повернення оформлено! Чекай повідомлення від адміна в приват",
+		Policy: "<b>ПОЛІТИКА ПОВЕРНЕННЯ КОШТІВ:</b>\n\n" +
+			"<b>1. Умови повернення</b>\n" +
+			"1.1. Оскільки ми надаємо цифрові товари (ключі доступу) та послуги, які споживаються в момент використання, повернення коштів можливе лише у виняткових випадках.\n" +
+			"1.2. Ви маєте право запросити повне повернення коштів протягом 24 годин з моменту покупки, якщо вам не вдалося підключитися до сервісу через технічні причини, залежні від Виконавця (неробочий сервер, помилка генерації ключа).\n\n" +
+			"<b>2. Відмова у поверненні</b>\n" +
+			"Повернення коштів НЕ проводиться у таких випадках:\n" +
+			"• Минуло більше 24 годин з моменту покупки.\n" +
+			"• Низька швидкість з'єднання, спричинена обмеженнями з боку провайдера користувача або поганою якістю покриття мобільної мережі.\n" +
+			"• Невміння користувача налаштувати стороннє програмне забезпечення (клієнти Happ, Streisand тощо), за умови, що сам ключ валідний.\n" +
+			"• Блокування доступу за порушення правил (спам, торренти, хакерські атаки).\n" +
+			"• «Я передумав» або «Мені більше не потрібно».\n\n" +
+			"<b>3. Процедура повернення</b>\n" +
+			"3.1. Для оформлення повернення напишіть у службу підтримки.\n" +
+			"3.2. У заявці вкажіть: ID акаунта, чек про оплату та опис технічної проблеми (бажано зі скріншотом помилки).\n" +
+			"3.3. Повернення здійснюється тим же способом, яким була проведена оплата, протягом 3–7 робочих днів.",
 	},
 	language.Polski: {
-		InfoText:       "<b>Jak działa zwrot środków?</b>\nŚrodki są zwracane przez admina pod postem w Twoim kanale Telegram w walucie «Stars».\n\n<b>Jak szybko środki zostaną zwrócone?</b>\nZwrot zajmuje od 30 minut do 23 dni.\n\n<b>Czy można zwrócić tylko część?</b>\nZwrot obejmuje cały pozostały balans. Jeśli chcesz tylko część, subskrybuj znowu na inny okres.\n\n<b>Czy na pewno chcesz poprosić o zwrot?</b>",
-		NoPayments:     "Nie znaleziono płatności",
-		SuccessMessage: "Zwrot złożony! Czekaj na wiadomość od admina w prywatnych",
+		Policy: "<b>POLITYKA ZWROTÓW:</b>\n\n" +
+			"<b>1. Warunki zwrotów</b>\n" +
+			"1.1. Ponieważ dostarczamy cyfrowe towary (klucze dostępu) i usługi, które są konsumowane w momencie użycia, zwroty są możliwe tylko w wyjątkowych przypadkach.\n" +
+			"1.2. Masz prawo zażądać pełnego zwrotu w ciągu 24 godzin od zakupu, jeśli nie udało Ci się połączyć z usługą z powodów technicznych zależnych od Wykonawcy (nie działający serwer, błąd generowania klucza).\n\n" +
+			"<b>2. Odmowa zwrotów</b>\n" +
+			"Zwroty NIE są dokonywane w następujących przypadkach:\n" +
+			"• Minęło więcej niż 24 godziny od zakupu.\n" +
+			"• Niska prędkość połączenia spowodowana ograniczeniami po stronie dostawcy użytkownika lub słabym zasięgiem sieci mobilnej.\n" +
+			"• Nieumiejętność użytkownika w konfiguracji oprogramowania stron trzecich (klienty Happ, Streisand itp.), pod warunkiem, że klucz jest ważny.\n" +
+			"• Blokada dostępu za naruszenie zasad (spam, torrenty, ataki hakerskie).\n" +
+			"• „Zmieniłem zdanie“ lub „Już mi niepotrzebne“.\n\n" +
+			"<b>3. Procedura zwrotów</b>\n" +
+			"3.1. Aby złożyć wniosek o zwrot, napisz do wsparcia.\n" +
+			"3.2. W wniosku podaj: ID konta, paragon płatności i opis problemu technicznego (najlepiej ze zrzutem ekranu błędu).\n" +
+			"3.3. Zwrot jest realizowany tą samą metodą płatności w ciągu 3–7 dni roboczych.",
 	},
 	language.Ceština: {
-		InfoText:       "<b>Jak funguje vrácení peněz?</b>\nPeníze jsou vráceny adminem pod příspěvkem ve tvém Telegram kanálu v měně «Stars».\n\n<b>Jak brzy peníze přijdou zpět?</b>\nVrácení trvá od 30 minut do 23 dnů.\n\n<b>Lze vrátit jen část?</b>\nVrátí se celý zbývající zůstatek. Pokud potřebuješ jen část, přihlas se znovu na jinou dobu.\n\n<b>Opravdu chceš požádat o vrácení?</b>",
-		NoPayments:     "Žádné platby nenalezeny",
-		SuccessMessage: "Vrácení požádáno! Čekej na zprávu od admina v soukromí",
+		Policy: "<b>POLITIKA VRACENÍ PENĚZ:</b>\n\n" +
+			"<b>1. Podmínky vracení</b>\n" +
+			"1.1. Protože poskytujeme digitální zboží (přístupové klíče) a služby, které se spotřebovávají v okamžiku použití, je vracení peněz možné pouze ve výjimečných případech.\n" +
+			"1.2. Máte právo požádat o plné vrácení peněz do 24 hodin od nákupu, pokud se vám nepodařilo připojit k službě kvůli technickým problémům závislým na Dodavateli (nefungující server, chyba generování klíče).\n\n" +
+			"<b>2. Odmítnutí vracení</b>\n" +
+			"Vrácení peněz se NEPROVÁDÍ v následujících případech:\n" +
+			"• Uplynulo více než 24 hodin od nákupu.\n" +
+			"• Nízká rychlost spojení způsobená omezeními na straně poskytovatele uživatele nebo špatnou kvalitou pokrytí mobilní sítě.\n" +
+			"• Nes chopnost uživatele nastavit software třetích stran (klienti Happ, Streisand atd.), za předpokladu, že klíč je platný.\n" +
+			"• Blokování přístupu za porušení pravidel (spam, torrenty, hackerské útoky).\n" +
+			"• „Rozmyslel jsem si to“ nebo „Už to nepotřebuji“.\n\n" +
+			"<b>3. Postup vracení</b>\n" +
+			"3.1. Pro podání žádosti o vrácení napište do podpory.\n" +
+			"3.2. V žádosti uveďte: ID účtu, doklad o platbě a popis technického problému (ideálně se screenshotem chyby).\n" +
+			"3.3. Vrácení se provádí stejným způsobem, jakým byla provedena platba, do 3–7 pracovních dnů.",
 	},
 	language.Български: {
-		InfoText:       "<b>Как работи възстановяването на средства?</b>\nСредствата се възстановяват от админа под публикацията във твоя Telegram канал в валутата «Stars».\n\n<b>Колко бързо ще се възстановят средствата?</b>\nВъзстановяването отнема от 30 минути до 23 дни.\n\n<b>Може ли да се възстанови само част?</b>\nВъзстановява се целият останал баланс. Ако ти трябва само част, абонирай се пак за друг период.\n\n<b>Наистина ли искаш да поискаш възстановяване?</b>",
-		NoPayments:     "Няма намерени плащания",
-		SuccessMessage: "Възстановяване поискано! Изчакай съобщение от админа в лично",
+		Policy: "<b>ПОЛИТИКА ЗА ВЪЗСТАНОВЯВАНЕ НА СРЕДСТВА:</b>\n\n" +
+			"<b>1. Условия за възстановяване</b>\n" +
+			"1.1. Тъй като предоставяме цифрови стоки (ключове за достъп) и услуги, които се консумират в момента на използване, възстановяването на средства е възможно само в изключителни случаи.\n" +
+			"1.2. Имате право да поискате пълно възстановяване в рамките на 24 часа от покупката, ако не сте успели да се свържете със услугата поради технически причини, зависещи от Изпълнителя (неработещ сървър, грешка при генериране на ключ).\n\n" +
+			"<b>2. Отказ от възстановяване</b>\n" +
+			"Възстановяване на средства НЕ се извършва в следните случаи:\n" +
+			"• Изминали са повече от 24 часа от покупката.\n" +
+			"• Ниска скорост на връзката, причинена от ограничения от страна на доставчика на потребителя или лошо качество на покритието на мобилната мрежа.\n" +
+			"• Невъзможност на потребителя да настрои софтуер на трети страни (клиенти Happ, Streisand и др.), при условие че самият ключ е валиден.\n" +
+			"• Блокиране на достъпа за нарушение на правилата (спам, торенти, хакерски атаки).\n" +
+			"• „Размислих си“ или „Вече не ми трябва“.\n\n" +
+			"<b>3. Процедура за възстановяване</b>\n" +
+			"3.1. За да оформите възстановяване, пишете в службата за поддръжка.\n" +
+			"3.2. В заявката посочете: ID на акаунта, чек за плащане и описание на техническия проблем (желателно със скрийншот на грешката).\n" +
+			"3.3. Възстановяването се извършва по същия начин, по който е извършено плащането, в рамките на 3–7 работни дни.",
 	},
 	language.Српски: {
-		InfoText:       "<b>Како функционише повраћај средстава?</b>\nСредства се враћају од админа под постом у твом Телеграм каналу у валути «Stars».\n\n<b>Колико брзо ће се средства вратити?</b>\nПовраћај траје од 30 минута до 23 дана.\n\n<b>Може ли се вратити само део?</b>\nВраћа се цео преостали баланс. Ако ти треба само део, претплати се поново на други период.\n\n<b>Да ли стварно желиш да затражиш повраћај?</b>",
-		NoPayments:     "Нема пронађених плаћања",
-		SuccessMessage: "Повраћај је затражен! Чекај поруку од админа у приватно",
+		Policy: "<b>ПОЛИТИКА ПОВРАЋАЈА СРЕДСТАВА:</b>\n\n" +
+			"<b>1. Услови за повраћај</b>\n" +
+			"1.1. Пошто пружамо дигиталне производе (кључеве за приступ) и услуге које се троше у тренутку коришћења, повраћај средстава је могућ само у изузетним случајевима.\n" +
+			"1.2. Имате право да затражите пун повраћај средстава у року од 24 сата од куповине, ако нисте успели да се повежете са услугом због техничких разлога зависних од Извођача (нерадни сервер, грешка у генерисању кључа).\n\n" +
+			"<b>2. Одбијање повраћаја</b>\n" +
+			"Повраћај средстава СЕ НЕ ВРШИ у следећим случајевима:\n" +
+			"• Прошло је више од 24 сата од куповине.\n" +
+			"• Ниска брзина везе узрокована ограничењима на страни провајдера корисника или лошим квалитетом покривености мобилне мреже.\n" +
+			"• Немогућност корисника да подеси софтвер трећих страна (клијенти Happ, Streisand итд.), под условом да је сам кључ важећи.\n" +
+			"• Блокирање приступа због кршења правила (спам, торенти, хакерски напади).\n" +
+			"• „Предомислио сам се“ или „Више ми не треба“.\n\n" +
+			"<b>3. Процедура повраћаја</b>\n" +
+			"3.1. За оформљење повраћаја напишите у службу подршке.\n" +
+			"3.2. У захтеву наведите: ID налога, рачун о плаћању и опис техничког проблема (пожељно са скриншотом грешке).\n" +
+			"3.3. Повраћај се врши истим начином којим је извршено плаћање, у року од 3–7 радних дана.",
 	},
 	language.Hrvatski: {
-		InfoText:       "<b>Kako funkcionira povrat sredstava?</b>\nSredstva vraća admin ispod posta u tvom Telegram kanalu u valuti «Stars».\n\n<b>Koliko brzo će se sredstva vratiti?</b>\nPovrat traje od 30 minuta do 23 dana.\n\n<b>Može li se vratiti samo dio?</b>\nVraća se cijeli preostali saldo. Ako trebaš samo dio, pretplati se ponovo za drugi rok.\n\n<b>Želiš li stvarno zatražiti povrat?</b>",
-		NoPayments:     "Nema pronađenih plaćanja",
-		SuccessMessage: "Povrat je zatražen! Čekaj poruku od admina u privatno",
+		Policy: "<b>POLITIKA POVRATA SREDSTAVA:</b>\n\n" +
+			"<b>1. Uvjeti povrata</b>\n" +
+			"1.1. Budući da pružamo digitalne proizvode (ključeve za pristup) i usluge koje se troše u trenutku korištenja, povrat sredstava je moguć samo u iznimnim slučajevima.\n" +
+			"1.2. Imate pravo zatražiti puni povrat sredstava u roku od 24 sata od kupnje ako niste uspjeli spojiti se na uslugu zbog tehničkih razloga ovisnih o Izvođaču (nefunkcionalni server, greška u generiranju ključa).\n\n" +
+			"<b>2. Odbijanje povrata</b>\n" +
+			"Povrat sredstava SE NE VRŠI u sljedećim slučajevima:\n" +
+			"• Prošlo je više od 24 sata od kupnje.\n" +
+			"• Niska brzina veze uzrokovana ograničenjima na strani korisničkog pružatelja ili lošom kvalitetom pokrivenosti mobilne mreže.\n" +
+			"• Nemogućnost korisnika da postavi softver trećih strana (klijenti Happ, Streisand itd.), pod uvjetom da je sam ključ valjan.\n" +
+			"• Blokiranje pristupa zbog kršenja pravila (spam, torrenti, hakerski napadi).\n" +
+			"• „Predomislio sam se“ ili „Više mi ne treba“.\n\n" +
+			"<b>3. Postupak povrata</b>\n" +
+			"3.1. Za podnošenje zahtjeva za povrat napišite u službu podrške.\n" +
+			"3.2. U zahtjevu navedite: ID računa, račun o plaćanju i opis tehničkog problema (poželjno sa screenshotom greške).\n" +
+			"3.3. Povrat se vrši istim načinom kojim je izvršeno plaćanje, u roku od 3–7 radnih dana.",
 	},
 	language.Slovenčina: {
-		InfoText:       "<b>Ako funguje vrátenie prostriedkov?</b>\nProstriedky vracia admin pod príspevkom v tvojom Telegram kanáli v mene «Stars».\n\n<b>Ako rýchlo sa prostriedky vrátia?</b>\nVrátenie trvá od 30 minút do 23 dní.\n\n<b>Môžem vrátiť len časť?</b>\nVracia sa celý zvyšný zostatok. Ak potrebuješ len časť, prihlás sa znova na inú dobu.\n\n<b>Naozaj chceš požiadať o vrátenie?</b>",
-		NoPayments:     "Žiadne platby nájdené",
-		SuccessMessage: "Vrátenie požiadané! Čakaj na správu od admina v súkromí",
+		Policy: "<b>POLITIKA VRÁTENIA PROSTRIEDKOV:</b>\n\n" +
+			"<b>1. Podmienky vrátenia</b>\n" +
+			"1.1. Keďže poskytujeme digitálne tovary (prístupové kľúče) a služby, ktoré sa spotrebúvajú v okamihu použitia, vrátenie prostriedkov je možné len vo výnimočných prípadoch.\n" +
+			"1.2. Máte právo požiadať o plné vrátenie prostriedkov do 24 hodín od nákupu, ak sa vám nepodarilo pripojiť k službe kvôli technickým príčinám závislým od Vykonávateľa (nefungujúci server, chyba generovania kľúča).\n\n" +
+			"<b>2. Odmietnutie vrátenia</b>\n" +
+			"Vrátenie prostriedkov SA NEVYKONÁVA v nasledujúcich prípadoch:\n" +
+			"• Uplynulo viac ako 24 hodín od nákupu.\n" +
+			"• Nízka rýchlosť spojenia spôsobená obmedzeniami na strane poskytovateľa používateľa alebo zlou kvalitou pokrytia mobilnej siete.\n" +
+			"• Nes chopnosť používateľa nastaviť softvér tretích strán (klienti Happ, Streisand atď.), za predpokladu, že samotný kľúč je platný.\n" +
+			"• Blokovanie prístupu za porušenie pravidiel (spam, torrenty, hackerské útoky).\n" +
+			"• „Rozmyslel som si to“ alebo „Už to nepotrebujem“.\n\n" +
+			"<b>3. Postup vrátenia</b>\n" +
+			"3.1. Na vybavenie vrátenia napíšte do podpory.\n" +
+			"3.2. V žiadosti uveďte: ID účtu, doklad o platbe a popis technického problému (ideálne so screenshotom chyby).\n" +
+			"3.3. Vrátenie sa vykonáva tým istým spôsobom, akým bola vykonaná platba, do 3–7 pracovných dní.",
 	},
 	language.Slovenski: {
-		InfoText:       "<b>Kako deluje vračilo sredstev?</b>\nSredstva vrne admin pod objavo v tvojem Telegram kanalu v valuti «Stars».\n\n<b>Kako hitro bodo sredstva vrnjena?</b>\nVračilo traja od 30 minut do 23 dni.\n\n<b>Ali lahko vrnem samo del?</b>\nVrne se celoten preostali znesek. Če potrebuješ le del, naroči se ponovno za drugo obdobje.\n\n<b>Ali res želiš zahtevati vračilo?</b>",
-		NoPayments:     "Ni najdenih plačil",
-		SuccessMessage: "Vračilo zahtevano! Počakaj na sporočilo od admina v zasebno",
+		Policy: "<b>POLITIKA VRAČILA SREDSTEV:</b>\n\n" +
+			"<b>1. Pogoji vračila</b>\n" +
+			"1.1. Ker zagotavljamo digitalne izdelke (ključe za dostop) in storitve, ki se porabijo v trenutku uporabe, je vračilo sredstev možno samo v izjemnih primerih.\n" +
+			"1.2. Imate pravico zahtevati polno vračilo v roku 24 ur od nakupa, če se niste mogli povezati s storitvijo zaradi tehničnih razlogov, odvisnih od Izvajalca (ne delujoč strežnik, napaka pri generiranju ključa).\n\n" +
+			"<b>2. Zavrnitev vračila</b>\n" +
+			"Vračilo sredstev SE NE IZVAJA v naslednjih primerih:\n" +
+			"• Minilo je več kot 24 ur od nakupa.\n" +
+			"• Nizka hitrost povezave, povzročena z omejitvami na strani ponudnika uporabnika ali slabo kakovostjo pokritosti mobilnega omrežja.\n" +
+			"• Nezmožnost uporabnika nastaviti programske opreme tretjih oseb (klienti Happ, Streisand itd.), pod pogojem, da je ključ sam veljaven.\n" +
+			"• Blokiranje dostopa zaradi kršitve pravil (spam, torrenti, hekerski napadi).\n" +
+			"• „Premislil sem si“ ali „Ne potrebujem več“.\n\n" +
+			"<b>3. Postopek vračila</b>\n" +
+			"3.1. Za zahtevo vračila pišite v podporo.\n" +
+			"3.2. V zahtevku navedite: ID računa, potrdilo o plačilu in opis tehničnega problema (po možnosti s posnetkom zaslona napake).\n" +
+			"3.3. Vračilo se izvede na enak način, kot je bilo izvedeno plačilo, v roku 3–7 delovnih dni.",
 	},
 	language.Lietùvių: {
-		InfoText:       "<b>Kaip veikia grąžinimas?</b>\nLėšos grąžinamos admino po įrašu tavo Telegram kanale valiuta «Stars».\n\n<b>Kaip greitai lėšos bus grąžintos?</b>\nGrąžinimas užtrunka nuo 30 minučių iki 23 dienų.\n\n<b>Ar galima grąžinti tik dalį?</b>\nGrąžinamas visas likęs balansas. Jei reikia tik dalies, prenumeruok vėl kitam laikotarpiui.\n\n<b>Ar tikrai nori prašyti grąžinimo?</b>",
-		NoPayments:     "Mokėjimų nerasta",
-		SuccessMessage: "Grąžinimas pateiktas! Laukite žinutės nuo admino asmeninėse",
+		Policy: "<b>GRĄŽINIMO POLITIKA:</b>\n\n" +
+			"<b>1. Grąžinimo sąlygos</b>\n" +
+			"1.1. Kadangi teikiame skaitmenines prekes (prieigos raktus) ir paslaugas, kurios suvartojamos naudojimo metu, grąžinimas galimas tik išskirtiniais atvejais.\n" +
+			"1.2. Jūs turite teisę prašyti pilno grąžinimo per 24 valandas nuo pirkimo, jei nepavyko prisijungti prie paslaugos dėl techninių priežasčių, priklausančių nuo Vykdytojo (neveikiantis serveris, rakto generavimo klaida).\n\n" +
+			"<b>2. Grąžinimo atmetimas</b>\n" +
+			"Grąžinimas NEATLIKIMAS šiais atvejais:\n" +
+			"• Praėjo daugiau nei 24 valandos nuo pirkimo.\n" +
+			"• Žema ryšio greitis, sukeltas apribojimų vartotojo tiekėjo pusėje ar prastos mobiliojo tinklo aprėpties.\n" +
+			"• Vartotojo nesugebėjimas nustatyti trečiųjų šalių programinės įrangos (Happ, Streisand klientai ir kt.), jei pats raktas yra galiojantis.\n" +
+			"• Prieigos blokavimas už taisyklių pažeidimą (spam, torrentai, hakerių atakos).\n" +
+			"• „Apsigalvojau“ arba „Man daugiau nereikia“.\n\n" +
+			"<b>3. Grąžinimo procedūra</b>\n" +
+			"3.1. Norėdami prašyti grąžinimo, rašykite į paramą.\n" +
+			"3.2. Prašyme nurodykite: Paskyros ID, mokėjimo čekį ir techninės problemos aprašymą (pageidautina su klaidos ekrano nuotrauka).\n" +
+			"3.3. Grąžinimas atliekamas tuo pačiu mokėjimo būdu per 3–7 darbo dienas.",
 	},
 	language.Latviešu: {
-		InfoText:       "<b>Kā darbojas atmaksa?</b>\nLīdzekļi tiek atgriezti no admina zem ieraksta tavā Telegram kanālā valūtā «Stars».\n\n<b>Cik ātri līdzekļi tiks atgriezti?</b>\nAtmaksa aizņem no 30 minūtēm līdz 23 dienām.\n\n<b>Vai var atgriezt tikai daļu?</b>\nTiek atgriezts viss atlikušais atlikums. Ja vajag tikai daļu, abonē atkal citam termiņam.\n\n<b>Vai tiešām vēlies pieprasīt atmaksu?</b>",
-		NoPayments:     "Nav atrasti maksājumi",
-		SuccessMessage: "Atmaksa pieprasīta! Gaidi ziņu no admina privāti",
+		Policy: "<b>ATMKSAS POLITIKA:</b>\n\n" +
+			"<b>1. Atmaksa nosacījumi</b>\n" +
+			"1.1. Tā kā mēs nodrošinām digitālos produktus (pieejas atslēgas) un pakalpojumus, kas tiek patērēti lietošanas brīdī, atmaksa ir iespējama tikai izņēmuma gadījumos.\n" +
+			"1.2. Jums ir tiesības pieprasīt pilnu atmaksu 24 stundu laikā pēc pirkuma, ja neizdevās pieslēgties pakalpojumam tehnisku iemeslu dēļ, kas atkarīgi no Izpildītāja (nedarbojošs serveris, atslēgas ģenerēšanas kļūda).\n\n" +
+			"<b>2. Atmaksa atteikums</b>\n" +
+			"Atmaksa NETIEK veikta šādos gadījumos:\n" +
+			"• Pagājušas vairāk nekā 24 stundas kopš pirkuma.\n" +
+			"• Zema savienojuma ātrums, ko izraisa ierobežojumi lietotāja pakalpojumu sniedzēja pusē vai slikta mobilo tīklu pārklājuma kvalitāte.\n" +
+			"• Lietotāja nespēja iestatīt trešo pušu programmatūru (Happ, Streisand klienti u.tml.), ja pati atslēga ir derīga.\n" +
+			"• Pieejas bloķēšana par noteikumu pārkāpumu (spam, torrenti, hakeru uzbrukumi).\n" +
+			"• „Pārdomāju“ vai „Man vairs nevajag“.\n\n" +
+			"<b>3. Atmaksa procedūra</b>\n" +
+			"3.1. Lai pieteiktu atmaksu, rakstiet atbalstam.\n" +
+			"3.2. Pieteikumā norādiet: Kontu ID, maksājuma čeku un tehniskās problēmas aprakstu (vēlams ar kļūdas ekrānšāviņu).\n" +
+			"3.3. Atmaksa tiek veikta ar to pašu maksājuma metodi 3–7 darba dienu laikā.",
 	},
 	language.Eesti: {
-		InfoText:       "<b>Kuidas tagastamine töötab?</b>\nRahad tagastab admin postituse all sinu Telegrami kanalil valuutas «Stars».\n\n<b>Kui kiiresti rahad tagastatakse?</b>\nTagastamine võtab 30 minutist kuni 23 päevani.\n\n<b>Kas saab tagastada ainult osa?</b>\nTagastatakse kogu järelejäänud saldo. Kui vaja ainult osa, telli uuesti teisele perioodile.\n\n<b>Kas sa tõesti tahad tagastamist taotleda?</b>",
-		NoPayments:     "Makseid ei leitud",
-		SuccessMessage: "Tagastamine esitatud! Oota admini sõnumit privaatselt",
+		Policy: "<b>TAGASTUSPOLIITIKA:</b>\n\n" +
+			"<b>1. Tagastuse tingimused</b>\n" +
+			"1.1. Kuna pakume digitaalseid tooteid (juurdepääsu võtmeid) ja teenuseid, mis tarbitakse kasutamise hetkel, on tagastus võimalik ainult erandjuhtudel.\n" +
+			"1.2. Teil on õigus taotleda täielikku tagastust 24 tunni jooksul pärast ostu, kui teil ei õnnestunud teenusega ühendust saada tehniliste põhjuste tõttu, mis sõltuvad Teenuseosutajast (mittetoimiv server, võtme genereerimise viga).\n\n" +
+			"<b>2. Tagastuse keelamine</b>\n" +
+			"Tagastust EI TEHTA järgmistel juhtudel:\n" +
+			"• On möödunud rohkem kui 24 tundi ostust.\n" +
+			"• Madal ühenduse kiirus, mis on põhjustatud piirangutest kasutaja teenusepakkuja poolt või halva mobiilivõrgu katvusest.\n" +
+			"• Kasutaja võimetus kolmanda osapoole tarkvara seadistada (Happ, Streisand kliendid jne), tingimusel, et võti ise on kehtiv.\n" +
+			"• Juurdepääsu blokeerimine reeglite rikkumise eest (spam, torrentid, häkkimise rünnakud).\n" +
+			"• „Muutsin meelt“ või „Mul pole enam vaja“.\n\n" +
+			"<b>3. Tagastuse protseduur</b>\n" +
+			"3.1. Tagastuse vormistamiseks kirjutage toele.\n" +
+			"3.2. Taotluses märkige: Konto ID, maksekviitung ja tehnilise probleemi kirjeldus (soovitavalt koos vea ekraanipildiga).\n" +
+			"3.3. Tagastus tehakse sama makseviisiga 3–7 tööpäeva jooksul.",
 	},
 	language.Suomi: {
-		InfoText:       "<b>Miten palautus toimii?</b>\nRahat palauttaa admin postauksen alla Telegram-kanavallasi valuutassa «Stars».\n\n<b>Kuinka pian rahat palautetaan?</b>\nPalautus kestää 30 minuutista 23 päivään.\n\n<b>Voiko palauttaa vain osan?</b>\nPalautetaan koko jäljellä oleva saldo. Jos tarvit vain osan, tilaa uudelleen toiselle jaksolle.\n\n<b>Haluatko todella pyytää palautusta?</b>",
-		NoPayments:     "Ei löytynyt maksuja",
-		SuccessMessage: "Palautus pyydetty! Odota viestiä adminilta yksityisviestinä",
+		Policy: "<b>PALAUTUSKÄYTÄNTÖ:</b>\n\n" +
+			"<b>1. Palautuksen ehdot</b>\n" +
+			"1.1. Koska tarjoamme digitaalisia tuotteita (pääsyavaimia) ja palveluita, jotka kulutetaan käytön hetkellä, palautus on mahdollista vain poikkeustapauksissa.\n" +
+			"1.2. Sinulla on oikeus pyytää täydellistä palautusta 24 tunnin sisällä ostoksesta, jos et onnistunut yhdistämään palveluun teknisistä syistä, jotka riippuvat Toimittajasta (toimimaton palvelin, avaimen generointivirhe).\n\n" +
+			"<b>2. Palautuksen hylkääminen</b>\n" +
+			"Palautusta EI TEHDÄ seuraavissa tapauksissa:\n" +
+			"• On kulunut yli 24 tuntia ostoksesta.\n" +
+			"• Matala yhteyden nopeus, joka johtuu rajoituksista käyttäjän tarjoajan puolelta tai huonosta mobiiliverkon kattavuudesta.\n" +
+			"• Käyttäjän kyvyttömyys määrittää kolmannen osapuolen ohjelmistoa (Happ, Streisand-asiakkaat jne.), edellyttäen että avain itse on kelvollinen.\n" +
+			"• Pääsyn estäminen sääntöjen rikkomisen vuoksi (spam, torrentit, hakkerointihyökkäykset).\n" +
+			"• „Muutin mieltäni“ tai „En tarvitse enää“.\n\n" +
+			"<b>3. Palautusmenettely</b>\n" +
+			"3.1. Palautuksen pyytämiseksi kirjoita tukeen.\n" +
+			"3.2. Pyynnössä ilmoita: Tilin ID, maksukuitti ja teknisen ongelman kuvaus (mieluiten virheen kuvakaappauksella).\n" +
+			"3.3. Palautus suoritetaan samalla maksutavalla 3–7 arkipäivän sisällä.",
 	},
 	language.Ελληνικά: {
-		InfoText:       "<b>Πώς λειτουργεί η επιστροφή;</b>\nΤα χρήματα επιστρέφονται από τον admin κάτω από την ανάρτηση στο κανάλι σου στο Telegram με νόμισμα «Stars».\n\n<b>Πόσο γρήγορα θα επιστραφούν τα χρήματα;</b>\nΗ επιστροφή διαρκεί από 30 λεπτά έως 23 ημέρες.\n\n<b>Μπορώ να επιστρέψω μόνο μέρος;</b>\nΕπιστρέφεται ολόκληρο το υπόλοιπο. Αν χρειάζεσαι μόνο μέρος, εγγράψου ξανά για άλλη διάρκεια.\n\n<b>Θες σίγουρα να ζητήσεις επιστροφή;</b>",
-		NoPayments:     "Δεν βρέθηκαν πληρωμές",
-		SuccessMessage: "Επιστροφή ζητήθηκε! Περίμενε μήνυμα από τον admin στα προσωπικά",
+		Policy: "<b>ΠΟΛΙΤΙΚΗ ΕΠΙΣΤΡΟΦΩΝ:</b>\n\n" +
+			"<b>1. Όροι επιστροφών</b>\n" +
+			"1.1. Εφόσον παρέχουμε ψηφιακά αγαθά (κλειδιά πρόσβασης) και υπηρεσίες που καταναλώνονται τη στιγμή της χρήσης, οι επιστροφές είναι δυνατές μόνο σε εξαιρετικές περιπτώσεις.\n" +
+			"1.2. Έχετε το δικαίωμα να ζητήσετε πλήρη επιστροφή μέσα σε 24 ώρες από την αγορά, αν δεν καταφέρατε να συνδεθείτε στην υπηρεσία λόγω τεχνικών λόγων που εξαρτώνται από τον Παροχέα (μη λειτουργικός διακομιστής, σφάλμα δημιουργίας κλειδιού).\n\n" +
+			"<b>2. Άρνηση επιστροφών</b>\n" +
+			"Οι επιστροφές ΔΕΝ πραγματοποιούνται στις εξής περιπτώσεις:\n" +
+			"• Έχουν περάσει περισσότερες από 24 ώρες από την αγορά.\n" +
+			"• Χαμηλή ταχύτητα σύνδεσης προκαλούμενη από περιορισμούς από την πλευρά του παρόχου του χρήστη ή κακή ποιότητα κάλυψης κινητού δικτύου.\n" +
+			"• Αδυναμία του χρήστη να ρυθμίσει λογισμικό τρίτων (πελάτες Happ, Streisand κ.λπ.), υπό την προϋπόθεση ότι το κλειδί είναι έγκυρο.\n" +
+			"• Αποκλεισμός πρόσβασης για παραβίαση κανόνων (spam, torrents, επιθέσεις hacking).\n" +
+			"• «Άλλαξα γνώμη» ή «Δεν το χρειάζομαι πια».\n\n" +
+			"<b>3. Διαδικασία επιστροφών</b>\n" +
+			"3.1. Για να υποβάλετε αίτημα επιστροφής, γράψτε στην υποστήριξη.\n" +
+			"3.2. Στο αίτημα αναφέρετε: ID λογαριασμού, απόδειξη πληρωμής και περιγραφή του τεχνικού προβλήματος (κατά προτίμηση με screenshot του σφάλματος).\n" +
+			"3.3. Η επιστροφή πραγματοποιείται με τον ίδιο τρόπο πληρωμής, μέσα σε 3–7 εργάσιμες ημέρες.",
 	},
 	language.Română: {
-		InfoText:       "<b>Cum funcționează rambursarea?</b>\nFondurile sunt returnate de admin sub postarea din canalul tău Telegram în moneda «Stars».\n\n<b>Cât de repede vin fondurile înapoi?</b>\nRambursarea durează de la 30 de minute la 23 de zile.\n\n<b>Pot returna doar o parte?</b>\nSe returnează întregul sold rămas. Dacă ai nevoie doar de o parte, abonează-te din nou pentru altă perioadă.\n\n<b>Vrei cu adevărat să ceri rambursare?</b>",
-		NoPayments:     "Nu s-au găsit plăți",
-		SuccessMessage: "Rambursare solicitată! Așteaptă mesajul adminului în privat",
+		Policy: "<b>POLITICA DE RAMBURSARE:</b>\n\n" +
+			"<b>1. Condiții de rambursare</b>\n" +
+			"1.1. Deoarece oferim bunuri digitale (chei de acces) și servicii care sunt consumate în momentul utilizării, rambursările sunt posibile doar în cazuri excepționale.\n" +
+			"1.2. Aveți dreptul să solicitați o rambursare completă în termen de 24 de ore de la achiziție, dacă nu ați reușit să vă conectați la serviciu din motive tehnice dependente de Furnizor (server nefuncțional, eroare de generare a cheii).\n\n" +
+			"<b>2. Refuzul rambursării</b>\n" +
+			"Rambursările NU se efectuează în următoarele cazuri:\n" +
+			"• Au trecut mai mult de 24 de ore de la achiziție.\n" +
+			"• Viteză scăzută de conexiune cauzată de limitări din partea furnizorului utilizatorului sau acoperire slabă a rețelei mobile.\n" +
+			"• Incapacitatea utilizatorului de a configura software terț (clienți Happ, Streisand etc.), cu condiția ca cheia să fie validă.\n" +
+			"• Blocarea accesului pentru încălcarea regulilor (spam, torrente, atacuri de hacking).\n" +
+			"• „M-am răzgândit“ sau „Nu mai am nevoie“.\n\n" +
+			"<b>3. Procedura de rambursare</b>\n" +
+			"3.1. Pentru a solicita o rambursare, scrieți la suport.\n" +
+			"3.2. În cerere indicați: ID-ul contului, chitanța de plată și descrierea problemei tehnice (preferabil cu un screenshot al erorii).\n" +
+			"3.3. Rambursarea se efectuează prin aceeași metodă de plată, în termen de 3–7 zile lucrătoare.",
 	},
 	language.Magyar: {
-		InfoText:       "<b>Hogyan működik a visszatérítés?</b>\nA pénzt az admin téríti vissza a bejegyzés alatt a Telegram csatornádon «Stars» pénznemben.\n\n<b>Mennyi idő a visszatérítés?</b>\nA visszatérítés 30 perctől 23 napig tart.\n\n<b>Visszatéríthető csak egy rész?</b>\nA teljes fennmaradó egyenleg térül vissza. Ha csak rész kell, fizess elő újra más időtartamra.\n\n<b>Tényleg kéred a visszatérítést?</b>",
-		NoPayments:     "Nem található fizetés",
-		SuccessMessage: "Visszatérítés kérve! Várj az admin üzenetére privátban",
+		Policy: "<b>VISSZATÉRÍTÉSI SZABÁLYZAT:</b>\n\n" +
+			"<b>1. Visszatérítési feltételek</b>\n" +
+			"1.1. Mivel digitális termékeket (hozzáférési kulcsokat) és szolgáltatásokat nyújtunk, amelyek használatkor elfogyasztódnak, a visszatérítés csak kivételes esetekben lehetséges.\n" +
+			"1.2. Jogosult teljes visszatérítést kérni a vásárlástól számított 24 órán belül, ha nem sikerült csatlakozni a szolgáltatáshoz a Szolgáltatótól függő technikai okok miatt (nem működő szerver, kulcsgenerálási hiba).\n\n" +
+			"<b>2. Visszatérítés elutasítása</b>\n" +
+			"Visszatérítés NEM történik a következő esetekben:\n" +
+			"• Több mint 24 óra telt el a vásárlás óta.\n" +
+			"• Alacsony csatlakozási sebesség, amit a felhasználó szolgáltatójának korlátozásai vagy gyenge mobilhálózati lefedettség okoz.\n" +
+			"• A felhasználó képtelensége harmadik féltől származó szoftver beállítására (Happ, Streisand kliensek stb.), feltéve, hogy a kulcs érvényes.\n" +
+			"• Hozzáférés blokkolása szabálysértés miatt (spam, torrentek, hackertámadások).\n" +
+			"• „Meggondoltam magam“ vagy „Már nincs rá szükségem“.\n\n" +
+			"<b>3. Visszatérítési eljárás</b>\n" +
+			"3.1. Visszatérítés kéréséhez írjon a támogatásnak.\n" +
+			"3.2. A kérésben tüntesse fel: Fiók ID, fizetési bizonylat és a technikai probléma leírása (lehetőleg a hiba képernyőképével).\n" +
+			"3.3. A visszatérítés ugyanazon fizetési móddal történik, 3–7 munkanapon belül.",
 	},
 	language.Arabic: {
-		InfoText:       "<b>كيف يعمل استرداد الأموال؟</b>\nالأموال تسترد من قبل الإداري تحت المنشور في قناتك على تليجرام بعملة «Stars».\n\n<b>كم الوقت حتى يتم الاسترداد؟</b>\nاسترداد الأموال يأخذ من 30 دقيقة إلى 23 يوم.\n\n<b>هل يمكن استرداد جزء فقط؟</b>\nيسترد الرصيد المتبقي كله. إذا كنت تحتاج جزء فقط، اشترك مرة أخرى لمدة مختلفة.\n\n<b>هل تريد فعلا طلب الاسترداد؟</b>",
-		NoPayments:     "لم يتم العثور على مدفوعات",
-		SuccessMessage: "تم طلب الاسترداد! انتظر رسالة من الإدارة في الخاص",
+		Policy: "<b>سياسة الاسترداد:</b>\n\n" +
+			"<b>1. شروط الاسترداد</b>\n" +
+			"1.1. بما أننا نقدم سلعًا رقمية (مفاتيح الوصول) وخدمات تُستهلك في لحظة الاستخدام، فإن الاسترداد ممكن فقط في حالات استثنائية.\n" +
+			"1.2. لديك الحق في طلب استرداد كامل خلال 24 ساعة من الشراء إذا لم تتمكن من الاتصال بالخدمة بسبب أسباب فنية تعتمد على المزود (خادم غير عامل، خطأ في توليد المفتاح).\n\n" +
+			"<b>2. رفض الاسترداد</b>\n" +
+			"لا يتم الاسترداد في الحالات التالية:\n" +
+			"• مر أكثر من 24 ساعة منذ الشراء.\n" +
+			"• سرعة اتصال منخفضة ناتجة عن قيود من جانب مزود المستخدم أو جودة تغطية شبكة الهاتف المحمول السيئة.\n" +
+			"• عدم قدرة المستخدم على إعداد برمجيات الطرف الثالث (عملاء Happ، Streisand إلخ)، بشرط أن يكون المفتاح صالحًا.\n" +
+			"• حظر الوصول بسبب انتهاك القواعد (سبام، تورنت، هجمات هكر).\n" +
+			"• «غيرت رأيي» أو «لم أعد بحاجة إليه».\n\n" +
+			"<b>3. إجراء الاسترداد</b>\n" +
+			"3.1. لطلب الاسترداد، اكتب إلى الدعم.\n" +
+			"3.2. في الطلب حدد: معرف الحساب، إيصال الدفع ووصف المشكلة الفنية (يفضل مع لقطة شاشة للخطأ).\n" +
+			"3.3. يتم الاسترداد بنفس طريقة الدفع خلال 3–7 أيام عمل.",
 	},
 	language.Farsi: {
-		InfoText:       "<b>بازگشت وجوه چطور کار می‌کنه؟</b>\nوجوه توسط مدیر زیر پست در کانال تلگرامتون با ارز «Stars» برگردونده می‌شه.\n\n<b>وجوه کی برمی‌گرده؟</b>\nبازگشت وجوه از ۳۰ دقیقه تا ۲۳ روز طول می‌کشه.\n\n<b>می‌شه فقط بخشی رو برگردوند؟</b>\nکل موجودی باقی‌مونده برگردونده می‌شه. اگه فقط بخشی می‌خوای، دوباره برای مدت دیگه مشترک شو.\n\n<b>واقعا می‌خوای درخواست بازگشت بدی؟</b>",
-		NoPayments:     "پرداختی یافت نشد",
-		SuccessMessage: "درخواست بازگشت ثبت شد! منتظر پیام ادمین در خصوصی باش",
+		Policy: "<b>سیاست بازپرداخت:</b>\n\n" +
+			"<b>1. شرایط بازپرداخت</b>\n" +
+			"1.1. از آنجایی که ما کالاهای دیجیتال (کلیدهای دسترسی) و خدمات ارائه می‌دهیم که در لحظه استفاده مصرف می‌شوند، بازپرداخت فقط در موارد استثنایی ممکن است.\n" +
+			"1.2. شما حق دارید ظرف ۲۴ ساعت پس از خرید، بازپرداخت کامل درخواست کنید اگر نتوانستید به سرویس متصل شوید به دلایل فنی وابسته به مجری (سرور غیرفعال، خطای تولید کلید).\n\n" +
+			"<b>2. رد بازپرداخت</b>\n" +
+			"بازپرداخت انجام نمی‌شود در موارد زیر:\n" +
+			"• بیش از ۲۴ ساعت از خرید گذشته است.\n" +
+			"• سرعت اتصال پایین ناشی از محدودیت‌های سمت ارائه‌دهنده کاربر یا کیفیت پوشش ضعیف شبکه موبایل.\n" +
+			"• ناتوانی کاربر در تنظیم نرم‌افزارهای شخص ثالث (کلاینت‌های Happ، Streisand و غیره)، به شرط اینکه خود کلید معتبر باشد.\n" +
+			"• مسدود شدن دسترسی به دلیل نقض قوانین (اسپم، تورنت‌ها، حملات هکری).\n" +
+			"• «پشیمان شدم» یا «دیگه لازم ندارم».\n\n" +
+			"<b>3. روند بازپرداخت</b>\n" +
+			"3.1. برای ثبت بازپرداخت، به پشتیبانی بنویسید.\n" +
+			"3.2. در درخواست مشخص کنید: شناسه حساب، رسید پرداخت و توصیف مشکل فنی (ترجیحاً با اسکرین‌شات خطا).\n" +
+			"3.3. بازپرداخت با همان روش پرداخت انجام می‌شود، ظرف ۳–۷ روز کاری.",
 	},
 	language.Türkçe: {
-		InfoText:       "<b>İade nasıl çalışır?</b>\nParalar admin tarafından Telegram kanalındaki postun altında «Stars» para birimiyle iade edilir.\n\n<b>Paralar ne zaman iade edilir?</b>\nİade 30 dakikadan 23 güne kadar sürer.\n\n<b>Sadece bir kısmını iade edebilir miyim?</b>\nTüm kalan bakiye iade edilir. Sadece bir kısma ihtiyacın varsa, farklı bir süre için yeniden abone ol.\n\n<b>Gerçekten iade talep etmek istiyor musun?</b>",
-		NoPayments:     "Ödeme bulunamadı",
-		SuccessMessage: "İade talebin alındı! Adminden özel mesaj bekle",
+		Policy: "<b>İADE POLİTİKASI:</b>\n\n" +
+			"<b>1. İade Şartları</b>\n" +
+			"1.1. Dijital ürünler (erişim anahtarları) ve kullanım anında tüketilen hizmetler sunduğumuz için iadeler sadece istisnai durumlarda mümkündür.\n" +
+			"1.2. Satın alımdan sonraki 24 saat içinde tam iade talep etme hakkınız vardır eğer hizmete Sağlayıcı'ya bağlı teknik nedenlerle (çalışmayan sunucu, anahtar üretme hatası) bağlanamadıysanız.\n\n" +
+			"<b>2. İade Reddi</b>\n" +
+			"İadeler yapılmaz şu durumlarda:\n" +
+			"• Satın alımdan 24 saatten fazla zaman geçti.\n" +
+			"• Kullanıcının sağlayıcısındaki kısıtlamalar veya kötü mobil ağ kapsama kalitesinden kaynaklanan düşük bağlantı hızı.\n" +
+			"• Kullanıcının üçüncü taraf yazılımları (Happ, Streisand istemcileri vb.) kuramaması, anahtarın geçerli olması koşuluyla.\n" +
+			"• Kurallara uymama nedeniyle erişim engelleme (spam, torrentler, hacker saldırıları).\n" +
+			"• „Fikrimi değiştirdim“ veya „Artık ihtiyacım yok“.\n\n" +
+			"<b>3. İade Prosedürü</b>\n" +
+			"3.1. İade talebi için desteğe yazın.\n" +
+			"3.2. Talebinizde belirtin: Hesap ID'si, ödeme makbuzu ve teknik sorunun açıklaması (tercihen hata ekran görüntüsüyle).\n" +
+			"3.3. İade aynı ödeme yöntemiyle 3–7 iş günü içinde yapılır.",
 	},
 	language.Hebrew: {
-		InfoText:       "<b>איך עובד ההחזר?</b>\nהכספים מוחזרים על ידי האדמין מתחת לפוסט בערוץ הטלגרם שלך במטבע «Stars».\n\n<b>מתי הכספים יוחזרו?</b>\nההחזר לוקח מ-30 דקות עד 23 ימים.\n\n<b>אפשר להחזיר רק חלק?</b>\nכל היתרה הנותרת מוחזרת. אם צריך רק חלק, הרשם שוב לתקופה אחרת.\n\n<b>אתה בטוח רוצה לבקש החזר?</b>",
-		NoPayments:     "לא נמצאו תשלומים",
-		SuccessMessage: "ההחזר בטיפול! חכה להודעה מהאדמין בפרטי",
+		Policy: "<b>מדיניות החזרים:</b>\n\n" +
+			"<b>1. תנאי החזרים</b>\n" +
+			"1.1. מאחר שאנו מספקים מוצרים דיגיטליים (מפתחות גישה) ושירותים שנצרכים ברגע השימוש, החזרים אפשריים רק במקרים יוצאי דופן.\n" +
+			"1.2. יש לך זכות לבקש החזר מלא בתוך 24 שעות מרגע הרכישה אם לא הצלחת להתחבר לשירות מסיבות טכניות התלויות בספק (שרת לא עובד, שגיאת יצירת מפתח).\n\n" +
+			"<b>2. סירוב החזרים</b>\n" +
+			"החזרים לא מתבצעים במקרים הבאים:\n" +
+			"• עברו יותר מ-24 שעות מרגע הרכישה.\n" +
+			"• מהירות חיבור נמוכה הנגרמת ממגבלות מצד ספק המשתמש או כיסוי רשת סלולרית גרוע.\n" +
+			"• חוסר יכולת של המשתמש להגדיר תוכנה של צד שלישי (לקוחות Happ, Streisand וכו'), בתנאי שהמפתח עצמו תקף.\n" +
+			"• חסימת גישה בגלל הפרת חוקים (ספאם, טורנטים, התקפות האקינג).\n" +
+			"• „שיניתי דעתי“ או „אני לא צריך את זה יותר“.\n\n" +
+			"<b>3. הליך החזרים</b>\n" +
+			"3.1. כדי לבקש החזר, כתוב לתמיכה.\n" +
+			"3.2. בבקשה ציין: מזהה חשבון, קבלה על תשלום ותיאור הבעיה הטכנית (רצוי עם צילום מסך של השגיאה).\n" +
+			"3.3. ההחזר מתבצע באותה שיטת תשלום בתוך 3–7 ימי עבודה.",
 	},
 	language.ZH中文: {
-		InfoText:       "<b>退款怎么运作？</b>\n资金由管理员在你的Telegram频道帖子下以“Stars”货币退还。\n\n<b>资金什么时候退还？</b>\n退款需要30分钟到23天。\n\n<b>可以只退部分资金吗？</b>\n退还全部剩余余额。如果只需部分，再订阅其他期限。\n\n<b>你真的想请求退款吗？</b>",
-		NoPayments:     "未找到付款",
-		SuccessMessage: "退款已申请！请等待管理员私信你",
+		Policy: "<b>退款政策：</b>\n\n" +
+			"<b>1. 退款条件</b>\n" +
+			"1.1. 由于我们提供数字商品（访问密钥）和在使用时即消耗的服务，退款仅在例外情况下可能。\n" +
+			"1.2. 您有权在购买后24小时内要求全额退款，如果由于提供商方面的技术原因（非工作服务器、密钥生成错误）无法连接到服务。\n\n" +
+			"<b>2. 拒绝退款</b>\n" +
+			"在以下情况下不进行退款：\n" +
+			"• 购买后已超过24小时。\n" +
+			"• 低连接速度，由用户提供商方面的限制或移动网络覆盖质量差引起。\n" +
+			"• 用户无法设置第三方软件（Happ、Streisand客户端等），前提是密钥本身有效。\n" +
+			"• 因违反规则（垃圾邮件、种子、黑客攻击）而被封锁访问。\n" +
+			"• “我改变了主意”或“我不再需要了”。\n\n" +
+			"<b>3. 退款程序</b>\n" +
+			"3.1. 要申请退款，请联系支持。\n" +
+			"3.2. 在申请中指定：账户ID、付款收据和技术问题的描述（最好附上错误截图）。\n" +
+			"3.3. 退款通过相同的付款方式在3–7个工作日内进行。",
 	},
 	language.JA日本語: {
-		InfoText:       "<b>返金はどう機能しますか？</b>\n資金は管理者によりTelegramチャンネルの投稿の下で「Stars」通貨で返金されます。\n\n<b>資金はいつ返金されますか？</b>\n返金は30分から23日かかります。\n\n<b>資金の一部だけ返金できますか？</b>\n残りの残高全部が返金されます。一部だけ必要な場合、別の期間で再度購読してください。\n\n<b>本当に返金をリクエストしますか？</b>",
-		NoPayments:     "支払いが見つかりません",
-		SuccessMessage: "返金申請完了！管理人からDMで連絡待ってね",
+		Policy: "<b>返金ポリシー：</b>\n\n" +
+			"<b>1. 返金の条件</b>\n" +
+			"1.1. 当社はデジタル商品（アクセスキー）と使用時に消費されるサービスを提供しているため、返金は例外的な場合にのみ可能です。\n" +
+			"1.2. 購入後24時間以内に、提供者の技術的な理由（動作しないサーバー、キーの生成エラー）でサービスに接続できなかった場合、完全返金を要求する権利があります。\n\n" +
+			"<b>2. 返金の拒否</b>\n" +
+			"返金は以下の場合に行われません：\n" +
+			"• 購入から24時間以上経過した場合。\n" +
+			"• ユーザーのプロバイダー側の制限やモバイルネットワークのカバレッジの質の悪さによる低速接続。\n" +
+			"• ユーザーがサードパーティソフトウェア（Happ、Streisandクライアントなど）を設定できない場合、キーが有効である限り。\n" +
+			"• ルール違反（スパム、トレント、ハッキング攻撃）によるアクセスブロック。\n" +
+			"• 「気が変わった」や「もう必要ない」。\n\n" +
+			"<b>3. 返金の手順</b>\n" +
+			"3.1. 返金を申請するには、サポートに連絡してください。\n" +
+			"3.2. 申請に記載：アカウントID、支払い領収書、技術的な問題の説明（エラーのスクリーンショットを推奨）。\n" +
+			"3.3. 返金は同じ支払い方法で3–7営業日以内に行われます。",
 	},
 	language.KO한국어: {
-		InfoText:       "<b>환불은 어떻게 작동하나요?</b>\n자금은 관리자가 Telegram 채널 게시물 아래에서 «Stars» 통화로 환불합니다.\n\n<b>자금은 언제 환불되나요?</b>\n환불은 30분에서 23일까지 걸립니다。\n\n<b>자금 일부만 환불할 수 있나요?</b>\n남은 잔액 전체가 환불됩니다. 일부만 필요하다면 다른 기간으로 다시 구독하세요。\n\n<b>정말 환불 요청하시겠어요?</b>",
-		NoPayments:     "지불 내역이 없습니다",
-		SuccessMessage: "환불 신청 완료! 관리자로부터 DM을 기다려 주세요",
+		Policy: "<b>환불 정책:</b>\n\n" +
+			"<b>1. 환불 조건</b>\n" +
+			"1.1. 우리는 디지털 상품(액세스 키)과 사용 시 소비되는 서비스를 제공하므로, 환불은 예외적인 경우에만 가능합니다.\n" +
+			"1.2. 구매 후 24시간 이내에 제공자 측의 기술적 이유(작동하지 않는 서버, 키 생성 오류)로 서비스에 연결할 수 없었던 경우 전체 환불을 요청할 권리가 있습니다.\n\n" +
+			"<b>2. 환불 거부</b>\n" +
+			"환불은 다음 경우에 이루어지지 않습니다:\n" +
+			"• 구매 후 24시간 이상 경과한 경우.\n" +
+			"• 사용자 제공자 측의 제한이나 모바일 네트워크 커버리지 품질이 낮아서 발생한 낮은 연결 속도.\n" +
+			"• 사용자가 타사 소프트웨어(Happ, Streisand 클라이언트 등)를 설정할 수 없는 경우, 키 자체가 유효한 경우.\n" +
+			"• 규칙 위반(스팸, 토렌트, 해킹 공격)으로 액세스 차단.\n" +
+			"• “마음이 바뀌었어요” 또는 “더 이상 필요 없어요”.\n\n" +
+			"<b>3. 환불 절차</b>\n" +
+			"3.1. 환불을 신청하려면 지원팀에 문의하세요.\n" +
+			"3.2. 신청서에 지정: 계정 ID, 결제 영수증, 기술 문제 설명(오류 스크린샷 바람직).\n" +
+			"3.3. 환불은 동일한 결제 방법으로 3–7 영업일 이내에 이루어집니다.",
 	},
 	language.TiếngViệt: {
-		InfoText:       "<b>Hoàn tiền hoạt động thế nào?</b>\nTiền được hoàn lại bởi admin dưới bài đăng trong kênh Telegram của bạn bằng tiền tệ «Stars».\n\n<b>Tiền sẽ được hoàn lại sau bao lâu?</b>\nHoàn tiền mất từ 30 phút đến 23 ngày。\n\n<b>Có thể hoàn lại chỉ một phần không?</b>\nHoàn lại toàn bộ số dư còn lại. Nếu cần chỉ phần, đăng ký lại cho khoảng thời gian khác。\n\n<b>Bạn có thực sự muốn yêu cầu hoàn tiền không?</b>",
-		NoPayments:     "Không tìm thấy thanh toán",
-		SuccessMessage: "Đã gửi yêu cầu hoàn tiền! Chờ tin nhắn từ admin trong tin nhắn riêng",
+		Policy: "<b>CHÍNH SÁCH HOÀN TIỀN:</b>\n\n" +
+			"<b>1. Điều kiện hoàn tiền</b>\n" +
+			"1.1. Vì chúng tôi cung cấp hàng hóa kỹ thuật số (khóa truy cập) và dịch vụ được tiêu thụ ngay khi sử dụng, hoàn tiền chỉ có thể trong các trường hợp đặc biệt.\n" +
+			"1.2. Bạn có quyền yêu cầu hoàn tiền đầy đủ trong vòng 24 giờ sau khi mua nếu bạn không thể kết nối với dịch vụ do lý do kỹ thuật phụ thuộc vào Nhà cung cấp (máy chủ không hoạt động, lỗi tạo khóa).\n\n" +
+			"<b>2. Từ chối hoàn tiền</b>\n" +
+			"Hoàn tiền KHÔNG được thực hiện trong các trường hợp sau:\n" +
+			"• Đã qua hơn 24 giờ kể từ khi mua.\n" +
+			"• Tốc độ kết nối thấp do hạn chế từ phía nhà cung cấp của người dùng hoặc chất lượng phủ sóng mạng di động kém.\n" +
+			"• Người dùng không thể thiết lập phần mềm bên thứ ba (khách hàng Happ, Streisand v.v.), miễn là khóa chính nó hợp lệ.\n" +
+			"• Chặn truy cập do vi phạm quy tắc (spam, torrent, tấn công hack).\n" +
+			"• “Tôi thay đổi ý kiến” hoặc “Tôi không cần nữa”.\n\n" +
+			"<b>3. Quy trình hoàn tiền</b>\n" +
+			"3.1. Để yêu cầu hoàn tiền, viết cho hỗ trợ.\n" +
+			"3.2. Trong yêu cầu chỉ định: ID tài khoản, biên nhận thanh toán và mô tả vấn đề kỹ thuật (tốt nhất với ảnh chụp màn hình lỗi).\n" +
+			"3.3. Hoàn tiền được thực hiện bằng cùng phương thức thanh toán trong vòng 3–7 ngày làm việc.",
 	},
 	language.THภาษาไทย: {
-		InfoText:       "<b>การคืนเงินทำงานยังไง?</b>\nเงินถูกคืนโดยแอดมินใต้โพสต์ในช่อง Telegram ของคุณในสกุลเงิน «Stars».\n\n<b>เงินจะถูกคืนเร็วแค่ไหน?</b>\nการคืนเงินใช้เวลาตั้งแต่ 30 นาทีถึง 23 วัน。\n\n<b>คืนเงินบางส่วนได้มั้ย?</b>\nคืนยอดคงเหลือทั้งหมด ถ้าต้องการแค่บางส่วน สมัครสมาชิกใหม่สำหรับระยะเวลาอื่น。\n\n<b>คุณแน่ใจว่าต้องการขอคืนเงินเหรอ?</b>",
-		NoPayments:     "ไม่พบการชำระเงิน",
-		SuccessMessage: "ขอคืนเงินเรียบร้อย! รอแอดมินทักในแชทส่วนตัว",
+		Policy: "<b>นโยบายการคืนเงิน:</b>\n\n" +
+			"<b>1. เงื่อนไขการคืนเงิน</b>\n" +
+			"1.1. เนื่องจากเราให้บริการสินค้าดิจิทัล (คีย์การเข้าถึง) และบริการที่ถูกบริโภคในขณะใช้งาน การคืนเงินเป็นไปได้เฉพาะในกรณีพิเศษเท่านั้น.\n" +
+			"1.2. คุณมีสิทธิ์ขอคืนเงินเต็มจำนวนภายใน 24 ชั่วโมงหลังจากการซื้อ หากคุณไม่สามารถเชื่อมต่อกับบริการเนื่องจากปัญหาทางเทคนิคที่ขึ้นอยู่กับผู้ให้บริการ (เซิร์ฟเวอร์ไม่ทำงาน ข้อผิดพลาดในการสร้างคีย์).\n\n" +
+			"<b>2. การปฏิเสธการคืนเงิน</b>\n" +
+			"ไม่มีการคืนเงินในกรณีดังต่อไปนี้:\n" +
+			"• ผ่านไปมากกว่า 24 ชั่วโมงนับจากวันที่ซื้อ.\n" +
+			"• ความเร็วการเชื่อมต่อต่ำที่เกิดจากข้อจำกัดจากฝั่งผู้ให้บริการของผู้ใช้หรือคุณภาพการครอบคลุมเครือข่ายมือถือที่ไม่ดี.\n" +
+			"• ผู้ใช้ไม่สามารถตั้งค่าซอฟต์แวร์บุคคลที่สาม (ไคลเอ็นต์ Happ, Streisand ฯลฯ) ได้ โดยที่คีย์เองถูกต้อง.\n" +
+			"• การบล็อกการเข้าถึงเนื่องจากการละเมิดกฎ (สแปม, ทอร์เรนต์, การโจมตีแฮกเกอร์).\n" +
+			"• “ฉันเปลี่ยนใจแล้ว” หรือ “ฉันไม่ต้องการอีกต่อไป”.\n\n" +
+			"<b>3. ขั้นตอนการคืนเงิน</b>\n" +
+			"3.1. เพื่อขอคืนเงิน เขียนไปยังฝ่ายสนับสนุน.\n" +
+			"3.2. ในคำขอระบุ: ID บัญชี, ใบเสร็จรับเงินการชำระเงิน และคำอธิบายปัญหาทางเทคนิค (ควรมีภาพหน้าจอของข้อผิดพลาด).\n" +
+			"3.3. การคืนเงินดำเนินการด้วยวิธีการชำระเงินเดียวกันภายใน 3–7 วันทำการ.",
 	},
 	language.BahasaIndonesia: {
-		InfoText:       "<b>Bagaimana cara kerja pengembalian dana?</b>\nDana dikembalikan oleh admin di bawah posting di kanal Telegram kamu dalam mata uang «Stars».\n\n<b>Seberapa cepat dana dikembalikan?</b>\nPengembalian dana memakan waktu dari 30 menit hingga 23 hari。\n\n<b>Bisa kembalikan sebagian dana saja?</b>\nSeluruh saldo tersisa dikembalikan. Kalau butuh cuma sebagian, berlangganan lagi buat periode lain。\n\n<b>Kamu yakin mau minta pengembalian dana?</b>",
-		NoPayments:     "Tidak ada pembayaran ditemukan",
-		SuccessMessage: "Refund sudah diajukan! Tunggu pesan dari admin di DM",
+		Policy: "<b>KEBIJAKAN PENGEMBALIAN DANA:</b>\n\n" +
+			"<b>1. Syarat Pengembalian Dana</b>\n" +
+			"1.1. Karena kami menyediakan barang digital (kunci akses) dan layanan yang dikonsumsi pada saat penggunaan, pengembalian dana hanya mungkin dalam kasus luar biasa.\n" +
+			"1.2. Anda berhak meminta pengembalian dana penuh dalam waktu 24 jam setelah pembelian jika Anda tidak dapat terhubung ke layanan karena alasan teknis yang bergantung pada Penyedia (server tidak berfungsi, kesalahan pembuatan kunci).\n\n" +
+			"<b>2. Penolakan Pengembalian Dana</b>\n" +
+			"Pengembalian dana TIDAK dilakukan dalam kasus berikut:\n" +
+			"• Lebih dari 24 jam telah berlalu sejak pembelian.\n" +
+			"• Kecepatan koneksi rendah yang disebabkan oleh batasan dari sisi penyedia pengguna atau kualitas jangkauan jaringan seluler yang buruk.\n" +
+			"• Ketidakmampuan pengguna untuk mengatur perangkat lunak pihak ketiga (klien Happ, Streisand dll.), asalkan kunci itu sendiri valid.\n" +
+			"• Pemblokiran akses karena pelanggaran aturan (spam, torrent, serangan hacking).\n" +
+			"• “Saya berubah pikiran” atau “Saya tidak butuh lagi”.\n\n" +
+			"<b>3. Prosedur Pengembalian Dana</b>\n" +
+			"3.1. Untuk mengajukan pengembalian dana, tulis ke dukungan.\n" +
+			"3.2. Dalam permintaan sebutkan: ID akun, bukti pembayaran dan deskripsi masalah teknis (sebaiknya dengan screenshot kesalahan).\n" +
+			"3.3. Pengembalian dana dilakukan dengan metode pembayaran yang sama dalam waktu 3–7 hari kerja.",
 	},
 	language.BahasaMelayu: {
-		InfoText:       "<b>Bagaimana refund berfungsi?</b>\nDana dikembalikan oleh admin di bawah pos dalam saluran Telegram anda dalam mata wang «Stars».\n\n<b>Berapa lama dana akan dikembalikan?</b>\nRefund mengambil masa dari 30 minit hingga 23 hari。\n\n<b>Boleh kembalikan sebahagian dana sahaja?</b>\nKeseluruhan baki yang tinggal dikembalikan. Kalau perlu sebahagian sahaja, langgan semula untuk tempoh lain。\n\n<b>Anda pasti mahu minta refund?</b>",
-		NoPayments:     "Tiada pembayaran ditemui",
-		SuccessMessage: "Refund sudah dimohon! Tunggu mesej dari admin di DM",
+		Policy: "<b>DASAR PEMBAYARAN BALIK:</b>\n\n" +
+			"<b>1. Syarat Pembayaran Balik</b>\n" +
+			"1.1. Oleh kerana kami menyediakan barangan digital (kunci akses) dan perkhidmatan yang dimakan pada masa penggunaan, pembayaran balik hanya boleh dalam kes luar biasa.\n" +
+			"1.2. Anda berhak meminta pembayaran balik penuh dalam masa 24 jam selepas pembelian jika anda tidak dapat menyambung ke perkhidmatan kerana sebab teknikal yang bergantung pada Pembekal (pelayan tidak berfungsi, kesilapan penjanaan kunci).\n\n" +
+			"<b>2. Penolakan Pembayaran Balik</b>\n" +
+			"Pembayaran balik TIDAK dilakukan dalam kes berikut:\n" +
+			"• Lebih daripada 24 jam telah berlalu sejak pembelian.\n" +
+			"• Kelajuan sambungan rendah yang disebabkan oleh had dari pihak pembekal pengguna atau kualiti liputan rangkaian mudah alih yang buruk.\n" +
+			"• Ketidakupayaan pengguna untuk menyiapkan perisian pihak ketiga (klien Happ, Streisand dll.), dengan syarat kunci itu sendiri sah.\n" +
+			"• Sekatan akses kerana pelanggaran peraturan (spam, torrent, serangan penggodaman).\n" +
+			"• “Saya ubah fikiran” atau “Saya tak perlu lagi”.\n\n" +
+			"<b>3. Prosedur Pembayaran Balik</b>\n" +
+			"3.1. Untuk memohon pembayaran balik, tulis kepada sokongan.\n" +
+			"3.2. Dalam permohonan nyatakan: ID akaun, resit pembayaran dan perihalan masalah teknikal (lebih baik dengan tangkapan skrin kesilapan).\n" +
+			"3.3. Pembayaran balik dilakukan dengan kaedah pembayaran yang sama dalam masa 3–7 hari bekerja.",
 	},
 	language.Tagalog: {
-		InfoText:       "<b>Paano gumagana ang refund?</b>\nAng pera ibinabalik ng admin sa ilalim ng post sa iyong Telegram channel sa currency na «Stars».\n\n<b>Gaano kabilis ibabalik ang pera?</b>\nAng refund tumatagal mula 30 minuto hanggang 23 araw。\n\n<b>Maaari bang ibalik lang bahagi ng pera?</b>\nIbinabalik ang buong natitirang balanse. Kung kailangan mo lang bahagi, mag-subscribe ulit para sa ibang termino。\n\n<b>Sigurado ka bang gustong humiling ng refund?</b>",
-		NoPayments:     "Walang natagpuang bayad",
-		SuccessMessage: "Na-request na ang refund! Hintayin ang mensahe ng admin sa DM",
+		Policy: "<b>PAT KARANIWAN NG REFUND:</b>\n\n" +
+			"<b>1. Kondisyon ng Refund</b>\n" +
+			"1.1. Dahil nagbibigay kami ng digital na produkto (access keys) at serbisyo na nauubos sa oras ng paggamit, ang refund ay posible lamang sa mga eksepsiyonal na kaso.\n" +
+			"1.2. May karapatan kang humiling ng buong refund sa loob ng 24 oras mula sa pagbili kung hindi ka nakakonekta sa serbisyo dahil sa teknikal na dahilan na nakadepende sa Provider (hindi gumaganang server, error sa pagbuo ng key).\n\n" +
+			"<b>2. Pagtanggi sa Refund</b>\n" +
+			"Hindi ginagawa ang refund sa mga sumusunod na kaso:\n" +
+			"• Lumipas na ang higit sa 24 oras mula sa pagbili.\n" +
+			"• Mababang bilis ng koneksyon na dulot ng limitasyon sa panig ng provider ng user o mahinang coverage ng mobile network.\n" +
+			"• Kawalan ng kakayahang mag-set up ng third-party software (Happ, Streisand clients, atbp.), kung ang key mismo ay valid.\n" +
+			"• Pag-block ng access dahil sa paglabag sa rules (spam, torrents, hacking attacks).\n" +
+			"• “Nagbago ang isip ko” o “Hindi ko na kailangan”.\n\n" +
+			"<b>3. Proseso ng Refund</b>\n" +
+			"3.1. Para sa paghingi ng refund, sumulat sa support.\n" +
+			"3.2. Sa request, tukuyin: Account ID, resibo ng bayad at paglalarawan ng teknikal na problema (mas mabuti na may screenshot ng error).\n" +
+			"3.3. Ang refund ay ginagawa sa parehong paraan ng bayad sa loob ng 3–7 araw ng trabaho.",
 	},
 	language.Hindi: {
-		InfoText:       "<b>रिफंड कैसे काम करता है?</b>\nफंड्स एडमिन द्वारा आपके टेलीग्राम चैनल में पोस्ट के नीचे «Stars» करंसी में वापस किए जाते हैं।\n\n<b>फंड्स कितनी जल्दी वापस मिलेंगे?</b>\nरिफंड 30 मिनट से 23 दिनों तक लगता है。\n\n<b>क्या फंड्स का सिर्फ हिस्सा वापस किया जा सकता है?</b>\nपूरी बाकी बैलेंस वापस की जाती है। अगर सिर्फ हिस्सा चाहिए, तो दूसरे टर्म के लिए फिर सब्सक्राइब करो。\n\n<b>क्या तुम सच में रिफंड रिक्वेस्ट करना चाहते हो?</b>",
-		NoPayments:     "कोई भुगतान नहीं मिला",
-		SuccessMessage: "रिफंड रिक्वेस्ट हो गई! एडमिन की प्राइवेट मैसेज का इंतज़ार करो",
+		Policy: "<b>रिफंड पॉलिसी:</b>\n\n" +
+			"<b>1. रिफंड की शर्तें</b>\n" +
+			"1.1. चूंकि हम डिजिटल गुड्स (एक्सेस कीज) और सेवाएं प्रदान करते हैं जो उपयोग के समय ही खपत हो जाती हैं, रिफंड केवल असाधारण मामलों में संभव है.\n" +
+			"1.2. आपको खरीद के 24 घंटों के भीतर पूर्ण रिफंड मांगने का अधिकार है अगर आप प्रदाता की तकनीकी वजहों से (नॉन-वर्किंग सर्वर, की जेनरेशन एरर) सेवा से कनेक्ट नहीं हो पाए.\n\n" +
+			"<b>2. रिफंड अस्वीकृति</b>\n" +
+			"रिफंड नहीं किया जाता निम्न मामलों में:\n" +
+			"• खरीद से 24 घंटे से ज्यादा समय बीत चुका है.\n" +
+			"• यूजर के प्रोवाइडर की तरफ से लिमिटेशन या मोबाइल नेटवर्क कवरेज की खराब क्वालिटी से कम कनेक्शन स्पीड.\n" +
+			"• यूजर की थर्ड-पार्टी सॉफ्टवेयर (Happ, Streisand क्लाइंट्स आदि) सेट करने में असमर्थता, बशर्ते की खुद वैलिड हो.\n" +
+			"• रूल्स वायलेशन (स्पैम, टॉरेंट्स, हैकिंग अटैक्स) के लिए एक्सेस ब्लॉक.\n" +
+			"• “मैंने अपना मन बदल लिया” या “मुझे अब जरूरत नहीं है”.\n\n" +
+			"<b>3. रिफंड प्रक्रिया</b>\n" +
+			"3.1. रिफंड के लिए सपोर्ट को लिखें.\n" +
+			"3.2. रिक्वेस्ट में बताएं: अकाउंट ID, पेमेंट रसीद और तकनीकी समस्या का वर्णन (बेहतर होगा एरर का स्क्रीनशॉट).\n" +
+			"3.3. रिफंड उसी पेमेंट मेथड से 3–7 वर्किंग डेज में किया जाता है.",
 	},
 	language.URاردو: {
-		InfoText:       "<b>ریفنڈ کیسے کام کرتا ہے؟</b>\nفنڈز ایڈمن کے ذریعے آپ کے ٹیلی گرام چینل میں پوسٹ کے نیچے «Stars» کرنسی میں واپس کیے جاتے ہیں۔\n\n<b>فنڈز کتنی جلدی واپس ملेंगे؟</b>\nریفنڈ 30 منٹ سے 23 دن تک لگتا ہے。\n\n<b>کیا فنڈز کا صرف حصہ واپس کیا جا سکتا ہے؟</b>\nپوری باقی بیلنس واپس کی جاتی ہے۔ اگر صرف حصہ چاہیے تو دوسرے ٹرم کے لیے پھر سبسکرائب کرو。\n\n<b>کیا تم واقعی ریفنڈ کی درخواست کرنا چاہتے ہو؟</b>",
-		NoPayments:     "کوئی ادائیگی نہیں ملی",
-		SuccessMessage: "ریفنڈ کی درخواست ہو گئی! ایڈمن کی پرائیویٹ میں میسج کا انتظار کرو",
+		Policy: "<b>ریفنڈ پالیسی:</b>\n\n" +
+			"<b>1. ریفنڈ کی شرائط</b>\n" +
+			"1.1. چونکہ ہم ڈیجیٹل سامان (رسائی کیز) اور خدمات فراہم کرتے ہیں جو استعمال کے وقت ہی استعمال ہو جاتی ہیں، ریفنڈ صرف غیر معمولی معاملات میں ممکن ہے.\n" +
+			"1.2. آپ کو خریداری کے 24 گھنٹوں کے اندر مکمل ریفنڈ کی درخواست کرنے کا حق ہے اگر آپ فراہم کنندہ کی تکنیکی وجوہات سے (غیر فعال سرور، کی جنریشن ایرر) سروس سے جڑ نہیں سکے.\n\n" +
+			"<b>2. ریفنڈ کی مستردی</b>\n" +
+			"ریفنڈ نہیں کیا جاتا درج ذیل معاملات میں:\n" +
+			"• خریداری سے 24 گھنٹے سے زیادہ وقت گزر چکا ہے.\n" +
+			"• کم کنکشن سپیڈ جو صارف کے پرووائیڈر کی طرف سے لمیٹیشن یا موبائل نیٹ ورک کوریج کی خراب کوالٹی کی وجہ سے ہے.\n" +
+			"• صارف کی تھرڈ پارٹی سافٹ ویئر (Happ, Streisand کلائنٹس وغیرہ) سیٹ کرنے میں ناکامی، بشرطیکہ کی خود درست ہو.\n" +
+			"• رولز کی خلاف ورزی (سپیم, ٹورنٹس, ہیکنگ اٹیکس) کی وجہ سے رسائی بلاک.\n" +
+			"• “میں نے اپنا خیال بدل لیا” یا “مجھے اب ضرورت نہیں ہے”.\n\n" +
+			"<b>3. ریفنڈ کا طریقہ کار</b>\n" +
+			"3.1. ریفنڈ کے لیے سپورٹ کو لکھیں.\n" +
+			"3.2. درخواست میں بتائیں: اکاؤنٹ ID, پیمنٹ رسید اور تکنیکی مسئلے کی تفصیل (بہتر ہو گا ایرر کا اسکرین شاٹ).\n" +
+			"3.3. ریفنڈ اسی پیمنٹ میتھڈ سے 3–7 ورکنگ ڈیز میں کیا جاتا ہے.",
 	},
 	language.Bengali: {
-		InfoText:       "<b>রিফান্ড কীভাবে কাজ করে?</b>\nতহবিলগুলি অ্যাডমিন দ্বারা আপনার টেলিগ্রাম চ্যানেলে পোস্টের নীচে «Stars» মুদ্রায় ফেরত দেওয়া হয়।\n\n<b>তহবিলগুলি কত তাড়াতাড়ি ফেরত দেওয়া হবে?</b>\nরিফান্ড ৩০ মিনিট থেকে ২৩ দিন লাগে。\n\n<b>তহবিলের শুধু অংশ ফেরত দেওয়া যায়?</b>\nসম্পূর্ণ অবশিষ্ট ব্যালেন্স ফেরত দেওয়া হয়। যদি শুধু অংশ চাই, অন্য টার্মের জন্য আবার সাবস্ক্রাইব করো。\n\n<b>তুমি কি সত্যিই রিফান্ড রিকোয়েস্ট করতে চাও?</b>",
-		NoPayments:     "কোনো পেমেন্ট পাওয়া যায়নি",
-		SuccessMessage: "রিফান্ড রিকোয়েস্ট হয়ে গেছে! অ্যাডমিনের প্রাইভেট মেসেজের জন্য অপেক্ষা করো",
+		Policy: "<b>রিফান্ড পলিসি:</b>\n\n" +
+			"<b>1. রিফান্ডের শর্তাবলী</b>\n" +
+			"1.1. যেহেতু আমরা ডিজিটাল গুডস (অ্যাক্সেস কী) এবং সার্ভিস প্রদান করি যা ব্যবহারের সময়ই খরচ হয়ে যায়, রিফান্ড শুধুমাত্র অসাধারণ কেসে সম্ভব.\n" +
+			"1.2. ক্রয়ের ২৪ ঘন্টার মধ্যে আপনার সম্পূর্ণ রিফান্ড দাবি করার অধিকার আছে যদি আপনি প্রোভাইডারের টেকনিক্যাল কারণে (নন-ওয়ার্কিং সার্ভার, কী জেনারেশন এরর) সার্ভিসে কানেক্ট করতে না পারেন.\n\n" +
+			"<b>2. রিফান্ড প্রত্যাখ্যান</b>\n" +
+			"রিফান্ড করা হয় না নিম্নলিখিত কেসে:\n" +
+			"• ক্রয় থেকে ২৪ ঘন্টা অতিক্রম করেছে.\n" +
+			"• কম কানেকশন স্পিড যা ইউজারের প্রোভাইডারের লিমিটেশন বা মোবাইল নেটওয়ার্ক কভারেজের খারাপ কোয়ালিটির কারণে.\n" +
+			"• ইউজারের থার্ড-পার্টি সফটওয়্যার (Happ, Streisand ক্লায়েন্টস ইত্যাদি) সেট করতে অক্ষমতা, যদি কী নিজেই ভ্যালিড হয়.\n" +
+			"• রুলস ভায়োলেশন (স্প্যাম, টরেন্টস, হ্যাকিং অ্যাটাকস) এর জন্য অ্যাক্সেস ব্লক.\n" +
+			"• “আমি মন পরিবর্তন করেছি” বা “আমার আর দরকার নেই”.\n\n" +
+			"<b>3. রিফান্ড প্রসেস</b>\n" +
+			"3.1. রিফান্ডের জন্য সাপোর্টে লিখুন.\n" +
+			"3.2. রিকোয়েস্টে উল্লেখ করুন: অ্যাকাউন্ট আইডি, পেমেন্ট রিসিপ্ট এবং টেকনিক্যাল প্রবলেমের বর্ণনা (ভালো হবে এররের স্ক্রিনশট).\n" +
+			"3.3. রিফান্ড একই পেমেন্ট মেথডে ৩–৭ ওয়ার্কিং ডেয়ে করা হয়.",
 	},
 	language.Tamiḻ: {
-		InfoText:       "<b>பணத்திருப்பு எப்படி வேலை செய்கிறது?</b>\nபணங்கள் நிர்வாகியால் உங்கள் டெலிகிராம் சேனலில் பதிவின் கீழ் «Stars» நாணயத்தில் திருப்பி அளிக்கப்படும்。\n\n<b>பணங்கள் எப்போது திருப்பி அளிக்கப்படும்?</b>\nபணத்திருப்பு 30 நிமிடங்கள் முதல் 23 நாட்கள் வரை எடுக்கும்。\n\n<b>பணங்களின் ஒரு பகுதி மட்டும் திருப்பி அளிக்க முடியுமா?</b>\nமுழு எஞ்சிய இருப்பு திருப்பி அளிக்கப்படும். ஒரு பகுதி மட்டும் தேவைப்பட்டால், வேறு காலத்துக்கு மீண்டும் சந்தா செலுத்து。\n\n<b>நீ உண்மையில் பணத்திருப்பு கோர விரும்புகிறாயா?</b>",
-		NoPayments:     "பணம் செலுத்தல்கள் கிடைக்கவில்லை",
-		SuccessMessage: "பணத்திருப்பு கோரிக்கை செய்யப்பட்டது! நிர்வாகியின் தனிப்பட்ட செய்தியை எதிர்பார்க்கவும்",
+		Policy: "<b>பணத்திருப்பு கொள்கை:</b>\n\n" +
+			"<b>1. பணத்திருப்பு நிபந்தனைகள்</b>\n" +
+			"1.1. நாங்கள் டிஜிட்டல் பொருட்கள் (அணுகல் சாவிகள்) மற்றும் பயன்பாட்டில் உடனடியாக உட்கொள்ளப்படும் சேவைகளை வழங்குவதால், பணத்திருப்பு விதிவிலக்கான வழக்குகளில் மட்டுமே சாத்தியம்.\n" +
+			"1.2. வாங்கிய 24 மணி நேரத்திற்குள் முழு பணத்திருப்பு கோருவதற்கு உரிமை உண்டு, வழங்குநரின் தொழில்நுட்ப காரணங்களால் (வேலை செய்யாத சர்வர், சாவி உருவாக்க பிழை) சேவையுடன் இணைக்க முடியவில்லை என்றால்.\n\n" +
+			"<b>2. பணத்திருப்பு மறுப்பு</b>\n" +
+			"பணத்திருப்பு செய்யப்படாது பின்வரும் வழக்குகளில்:\n" +
+			"• வாங்கியதிலிருந்து 24 மணி நேரத்திற்கு மேல் கடந்துவிட்டது.\n" +
+			"• பயனரின் வழங்குநரின் வரம்புகள் அல்லது மொபைல் நெட்வொர்க் கவரேஜ் தரம் குறைவானதால் குறைந்த இணைப்பு வேகம்.\n" +
+			"• பயனர் மூன்றாவது தரப்பு மென்பொருள் (Happ, Streisand க்ளையன்ட்கள் போன்றவை) அமைக்க இயலாதது, சாவி சரியானதாக இருந்தால்.\n" +
+			"• விதிகள் மீறலால் அணுகல் தடை (ஸ்பேம், டோரண்ட்கள், ஹேக்கிங் அட்டாக்கள்).\n" +
+			"• “நான் மனம் மாற்றினேன்” அல்லது “இனி எனக்கு தேவையில்லை”.\n\n" +
+			"<b>3. பணத்திருப்பு நடைமுறை</b>\n" +
+			"3.1. பணத்திருப்பு கோருவதற்கு சப்போர்ட்டுக்கு எழுதுங்கள்.\n" +
+			"3.2. கோரிக்கையில் குறிப்பிடுங்கள்: அக்கவுண்ட் ஐடி, பேமெண்ட் ரசீது மற்றும் தொழில்நுட்ப பிரச்சனையின் விளக்கம் (பிழை ஸ்கிரீன்ஷாட் விரும்பத்தக்கது).\n" +
+			"3.3. பணத்திருப்பு அதே பேமெண்ட் முறையில் 3–7 வேலை நாட்களுக்குள் செய்யப்படும்.",
 	},
 	language.Telugu: {
-		InfoText:       "<b>రీఫండ్ ఎలా పని చేస్తుంది?</b>\nనిధులు అడ్మిన్ ద్వారా మీ టెలిగ్రామ్ ఛానల్‌లో పోస్ట్ కింద «Stars» కరెన్సీలో తిరిగి ఇవ్వబడతాయి。\n\n<b>నిధులు ఎప్పుడు తిరిగి ఇవ్వబడతాయి?</b>\nరీఫండ్ 30 నిమిషాల నుండి 23 రోజుల వరకు పడుతుంది。\n\n<b>నిధులలో ఒక భాగం మాత్రమే తిరిగి ఇవ్వవచ్చా?</b>\nమొత్తం మిగిలిన బ్యాలెన్స్ తిరిగి ఇవ్వబడుతుంది. ఒక భాగం మాత్రమే అవసరమైతే, మరొక కాలానికి మళ్లీ సబ్‌స్క్రైబ్ చేయి。\n\n<b>మీరు నిజంగా రీఫండ్ అభ్యర్థించాలనుకుంటున్నారా?</b>",
-		NoPayments:     "చెల్లింపులు కనుగొనబడలేదు",
-		SuccessMessage: "రీఫండ్ రిక్వెస్ట్ అయింది! అడ్మిన్ నుంచి ప్రైవేట్‌లో మెసేజ్ కోసం వేచి ఉండు",
+		Policy: "<b>రీఫండ్ పాలసీ:</b>\n\n" +
+			"<b>1. రీఫండ్ షరతులు</b>\n" +
+			"1.1. మేము డిజిటల్ గూడ్స్ (యాక్సెస్ కీలు) మరియు ఉపయోగం సమయంలో ఖర్చయ్యే సర్వీసులు అందిస్తాము కాబట్టి, రీఫండ్ అసాధారణ కేసులలో మాత్రమే సాధ్యం.\n" +
+			"1.2. కొనుగోలు తర్వాత 24 గంటలలోపు పూర్తి రీఫండ్ అభ్యర్థించే హక్కు మీకు ఉంది, ప్రొవైడర్ టెక్నికల్ కారణాల వల్ల (వర్కింగ్ కాని సర్వర్, కీ జెనరేషన్ ఎర్రర్) సర్వీస్ కి కనెక్ట్ కాలేదు అంటే.\n\n" +
+			"<b>2. రీఫండ్ తిరస్కరణ</b>\n" +
+			"రీఫండ్ చేయబడదు కింది కేసులలో:\n" +
+			"• కొనుగోలు నుండి 24 గంటలు మించి పోయింది.\n" +
+			"• యూజర్ ప్రొవైడర్ సైడ్ లిమిటేషన్లు లేదా మొబైల్ నెట్వర్క్ కవరేజ్ క్వాలిటీ తక్కువ కారణంగా తక్కువ కనెక్షన్ స్పీడ్.\n" +
+			"• యూజర్ థర్డ్-పార్టీ సాఫ్ట్వేర్ (Happ, Streisand క్లయింట్లు మొదలైనవి) సెటప్ చేయలేకపోవడం, కీ స్వయంగా వాలిడ్ అయితే.\n" +
+			"• రూల్స్ వయోలేషన్ (స్పామ్, టారెంట్స్, హ్యాకింగ్ అటాక్స్) కోసం యాక్సెస్ బ్లాక్.\n" +
+			"• “నేను మనసు మార్చాను” లేదా “నాకు ఇక అవసరం లేదు”.\n\n" +
+			"<b>3. రీఫండ్ ప్రాసెస్</b>\n" +
+			"3.1. రీఫండ్ కోసం సపోర్ట్ కి రాయండి.\n" +
+			"3.2. రిక్వెస్ట్ లో స్పెసిఫై: అకౌంట్ ఐడీ, పేమెంట్ రసీదు మరియు టెక్నికల్ ప్రాబ్లెమ్ డిస్క్రిప్షన్ (ఎర్రర్ స్క్రీన్ షాట్ బెటర్).\n" +
+			"3.3. రీఫండ్ అదే పేమెంట్ మెథడ్ తో 3–7 వర్కింగ్ డేస్ లో చేయబడుతుంది.",
 	},
 	language.Marathi: {
-		InfoText:       "<b>परतावा कसा काम करतो?</b>\nनिधी अॅडमिनद्वारे तुमच्या टेलिग्राम चॅनेलमध्ये पोस्टखाली «Stars» चलनात परत केले जातात。\n\n<b>निधी कधी परत मिळतील?</b>\nपरतावा ३० मिनिटांपासून २३ दिवसांपर्यंत घेतो。\n\n<b>निधीचा फक्त भाग परत करता येईल का?</b>\nसंपूर्ण उर्वरित शिल्लक परत केली जाते. फक्त भाग हवा असल्यास दुसऱ्या मुदतीसाठी पुन्हा सबस्क्राईब करा。\n\n<b>तुम्हाला खरंच परतावा विनंती करायचा आहे का?</b>",
-		NoPayments:     "कोणतेही पेमेंट सापडले नाही",
-		SuccessMessage: "रिफंड रिक्वेस्ट झाली! अॅडमिनकडून प्रायव्हेट मध्ये मेसेजची वाट पहा",
+		Policy: "<b>रिफंड पॉलिसी:</b>\n\n" +
+			"<b>1. रिफंडच्या अटी</b>\n" +
+			"1.1. आम्ही डिजिटल गुड्स (ऍक्सेस कीज) आणि वापराच्या वेळी खर्च होणाऱ्या सेवा देतो म्हणून, रिफंड फक्त अपवादात्मक प्रकरणांमध्ये शक्य आहे.\n" +
+			"1.2. खरेदीच्या २४ तासांच्या आत तुम्हाला पूर्ण रिफंड मागण्याचा अधिकार आहे जर तुम्ही प्रदात्याच्या तांत्रिक कारणांमुळे (नॉन-वर्किंग सर्व्हर, की जेनरेशन एरर) सेवेशी कनेक्ट होऊ शकला नाहीत.\n\n" +
+			"<b>2. रिफंड नाकारणे</b>\n" +
+			"रिफंड केले जात नाही खालील प्रकरणांमध्ये:\n" +
+			"• खरेदीपासून २४ तासांपेक्षा जास्त वेळ गेला आहे.\n" +
+			"• युजरच्या प्रोव्हायडरच्या बाजूच्या मर्यादा किंवा मोबाइल नेटवर्क कव्हरेजच्या खराब क्वालिटीमुळे कमी कनेक्शन स्पीड.\n" +
+			"• युजरची थर्ड-पार्टी सॉफ्टवेअर (Happ, Streisand क्लायंट्स इत्यादी) सेट करण्यात असमर्थता, की स्वतः वैध असल्यास.\n" +
+			"• रूल्स व्हायोलेशन (स्पॅम, टॉरेंट्स, हॅकिंग अटॅक्स) साठी ऍक्सेस ब्लॉक.\n" +
+			"• “मी माझा विचार बदलला” किंवा “मला आता गरज नाही”.\n\n" +
+			"<b>3. रिफंड प्रक्रिया</b>\n" +
+			"3.1. रिफंडसाठी सपोर्टला लिहा.\n" +
+			"3.2. रिक्वेस्टमध्ये सांगाः अकाउंट आयडी, पेमेंट रिसीट आणि तांत्रिक समस्येचे वर्णन (एररचा स्क्रीनशॉट चांगला).\n" +
+			"3.3. रिफंड त्याच पेमेंट मेथडने ३–७ वर्किंग डेजमध्ये केले जाते.",
 	},
 }

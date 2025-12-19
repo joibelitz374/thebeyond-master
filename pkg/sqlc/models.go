@@ -23,6 +23,7 @@ type Account struct {
 	Promo                 pgtype.Text
 	Discount              pgtype.Int4
 	ClusterID             pgtype.Int2
+	ServiceCheckSent      pgtype.Int2
 }
 
 type Payment struct {

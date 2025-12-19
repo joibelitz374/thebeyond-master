@@ -13,6 +13,7 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/domain"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/i18n"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
+	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/telegram"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
 	"github.com/quickpowered/thebeyond-master/configs/language"
@@ -35,7 +36,9 @@ func NewPromoCmd(deps deps.Dependencies) promoHandler {
 }
 
 func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
-	msg := i18n.PromoInfoMessages[language.Language(p.Account.Language)]
+	language := language.Language(p.Account.Language)
+	msg := i18n.PromoInfoMessages[language]
+	controlMsg := i18n.ControlMessages[language]
 	opts := []any{deps.ToForward(bot, p)}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
@@ -71,7 +74,9 @@ func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 			msg.ClientDiscount, promoCfg.LevelDiscounts[promo.Level-1],
 			msg.Link, promo.Name)
 		text += h.statisticPromo(promo, msg)
-
+		opts = append(opts, &types.Keyboard{ButtonRows: [][]types.Button{{
+			{Text: "◀️ " + controlMsg.Back, Data: PROMO_CMD},
+		}}})
 		return bot.SendMessage(p.Message.Chat(), text, opts...)
 	}
 
@@ -80,7 +85,7 @@ func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 		return err
 	}
 
-	buttonRows, idx := make([][]types.Button, len(promos)+1), 1
+	buttonRows, idx := make([][]types.Button, len(promos)+2), 1
 	// buttonRows[0] = append(buttonRows[0], types.Button{Text: "⭐️ TOP", Data: "toppromo"})
 	for _, promo := range promos {
 		buttonRows[idx] = append(buttonRows[idx], types.Button{
@@ -94,6 +99,7 @@ func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 		buttonRows = append(buttonRows, []types.Button{{Text: "🆕 " + msg.Create, Data: "promo random"}})
 	}
 
+	buttonRows = append(buttonRows, []types.Button{{Text: "◀️ " + controlMsg.Back, Data: MENU_CMD}})
 	opts = append(opts, &types.Keyboard{ButtonRows: buttonRows})
 	return bot.SendMessage(p.Message.Chat(), fmt.Sprintf("%s:\n\n🆘 %s\n\n🗒 %s: %d/3",
 		msg.YourPromocodes, msg.WhatIsIt,
@@ -135,7 +141,12 @@ func (h promoHandler) createPromo(bot bin.Interface, p *domain.Payload, name str
 		return err
 	}
 
-	if err := bot.SendMessage(p.Message.Chat(), "🎫 "+msg.PromocodeCreated); err != nil {
+	tgBot, ok := bot.(*telegram.Adapter)
+	if !ok {
+		return errors.New("failed to cast bot to telegram adapter")
+	}
+
+	if err := tgBot.AnswerCallbackQuery(p.Message.CallbackQueryID(), "🎫 "+msg.PromocodeCreated); err != nil {
 		return err
 	}
 

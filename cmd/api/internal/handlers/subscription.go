@@ -12,7 +12,6 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/api/internal/handlers/dto"
 	"github.com/quickpowered/thebeyond-master/cmd/api/pkg/domains"
 	xmdto "github.com/quickpowered/thebeyond-master/internal/repositories/xraymanager/dto"
-	errorsvar "github.com/quickpowered/thebeyond-master/pkg/errors"
 	"github.com/quickpowered/thebeyond-master/pkg/utils"
 )
 
@@ -44,33 +43,26 @@ func (h subscription) Default(c fiber.Ctx) error {
 		expire = int(subscriptionExpiresAt.Unix())
 	}
 
-	subscription := "#profile-title: base64:8J+SmyBCZXlvbmQgU2VjdXJl" +
-		"\n#profile-update-interval: 12" +
-		"\n#profile-web-page-url: https://t.me/beyondsecurenews" +
-		"\n#support-url: https://t.me/beyondsecurenews?direct" +
-		"\n#notification-subs-expire: 1" +
-		"\n#hide-settings: true" +
-		fmt.Sprintf("\n#subscription-userinfo: expire=%v", expire)
+	h.setAppHeaders(c, expire)
 
-	lists := []xmdto.ListType{xmdto.NodeTypeBlacklist}
-	if account.WhitelistExpiresAt != nil {
-		lists = append(lists, xmdto.NodeTypeWhitelist)
+	groupedNodes, err := h.xraymanagerRepo.GetGroupedNodes(xmdto.Region(account.Region))
+	if err != nil {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{
+			"message": err,
+		})
 	}
 
-	for _, list := range lists {
-		nodes, err := h.xraymanagerRepo.GetNodes(ctx, xmdto.ClusterID(account.ClusterID), list)
-		if err != nil {
-			if errors.Is(err, errorsvar.ErrListNodesNotFound) {
+	nodeByCountryCodes := make(map[string]struct{})
+
+	var subscription string
+	for _, nodes := range groupedNodes {
+		for _, node := range nodes {
+			if _, ok := nodeByCountryCodes[node.CountryCode]; ok {
 				continue
 			}
 
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Internal server error",
-			})
-		}
-
-		for _, node := range nodes {
-			subscription += "\n" + utils.GenerateVLESSURI(node, account.KeyID, node.PublicKey, account.ShortID)
+			nodeByCountryCodes[node.CountryCode] = struct{}{}
+			subscription += utils.GenerateVLESSURI(node, account.KeyID, node.PublicKey, account.ShortID) + "\n"
 		}
 	}
 
@@ -81,7 +73,8 @@ func (h subscription) Smart(c fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
 	defer cancel()
 
-	if region := c.Params("region"); region != "ru" {
+	region := c.Params("region")
+	if region != "ru" && region != "ruwh" {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Region not found",
 		})
@@ -107,18 +100,7 @@ func (h subscription) Smart(c fiber.Ctx) error {
 	}
 
 	c.Set("Content-Type", "application/json")
-	c.Set("Profile-Title", "base64:8J+SmyBCZXlvbmQgU2VjdXJl")
-	c.Set("Profile-Update-Interval", "12")
-	c.Set("Profile-Web-Page-URL", "https://t.me/beyondsecurenews")
-	c.Set("Support-URL", "https://t.me/beyondsecurenews?direct")
-	c.Set("Notification-Subs-Expire", "1")
-	c.Set("Hide-Settings", "true")
-	c.Set("Subscription-Userinfo", fmt.Sprintf("expire=%v", expire))
-
-	lists := []xmdto.ListType{xmdto.NodeTypeBlacklist}
-	if account.WhitelistExpiresAt != nil {
-		lists = append(lists, xmdto.NodeTypeWhitelist)
-	}
+	h.setAppHeaders(c, expire)
 
 	clientConfig := dto.XRayClientConfig{
 		Log: dto.Log{
@@ -203,7 +185,7 @@ func (h subscription) Smart(c fiber.Ctx) error {
 		},
 		Outbounds: []dto.Outbound{},
 		BurstObservatory: dto.BurstObservatory{
-			SubjectSelector: []string{"proxy"},
+			SubjectSelector: []string{"general-proxy", "fallback-proxy"},
 			PingConfig: dto.PingConfig{
 				Destination:  "https://www.google.com/generate_204",
 				Connectivity: "",
@@ -217,11 +199,11 @@ func (h subscription) Smart(c fiber.Ctx) error {
 			Balancers: []dto.Balancer{
 				{
 					Tag:      "balancer",
-					Selector: []string{"proxy"},
+					Selector: []string{"general-proxy"},
 					Strategy: dto.Strategy{
 						Type: "leastPing",
 					},
-					FallbackTag: "direct",
+					FallbackTag: "fallback-proxy",
 				},
 			},
 			DomainStrategy: "IPIfNonMatch",
@@ -257,7 +239,7 @@ func (h subscription) Smart(c fiber.Ctx) error {
 				},
 				// {
 				// 	Type:        "field",
-				// 	Domain:      blockedDomains,
+				// 	Domain:      domains.Blocked,
 				// 	BalancerTag: "balancer",
 				// },
 				{
@@ -279,28 +261,24 @@ func (h subscription) Smart(c fiber.Ctx) error {
 		},
 	}
 
-	for _, list := range lists {
-		nodes, err := h.xraymanagerRepo.GetNodes(ctx, xmdto.ClusterID(account.ClusterID), list)
-		if err != nil {
-			if errors.Is(err, errorsvar.ErrListNodesNotFound) {
-				continue
-			}
+	groupedNodes, err := h.xraymanagerRepo.GetGroupedNodes(xmdto.Region(region))
+	if err != nil {
+		fmt.Println("groupedNodes error is", err)
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal server error",
+		})
+	}
 
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Internal server error",
-			})
-		}
+	if len(groupedNodes) == 0 {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{
+			"message": "Nodes not found",
+		})
+	}
 
-		if len(nodes) == 0 {
-			return c.Status(http.StatusNotFound).JSON(fiber.Map{
-				"message": "Nodes not found",
-			})
-		}
-
-		node := nodes[0]
-		clientConfig.Outbounds = []dto.Outbound{
-			{
-				Tag:      "proxy",
+	for groupName, nodes := range groupedNodes {
+		for _, node := range nodes {
+			clientConfig.Outbounds = append(clientConfig.Outbounds, dto.Outbound{
+				Tag:      string(groupName) + "-proxy",
 				Protocol: "vless",
 				Settings: dto.OutboundSettings{
 					Vnext: []dto.Vnext{
@@ -334,21 +312,31 @@ func (h subscription) Smart(c fiber.Ctx) error {
 						Path: "/",
 					},
 				},
-			},
-			{
-				Tag:      "direct",
-				Protocol: "freedom",
-				Settings: dto.OutboundSettings{},
-			},
-			{
-				Tag:      "block",
-				Protocol: "blackhole",
-				Settings: dto.OutboundSettings{},
-			},
+			})
 		}
-
-		break
 	}
 
+	clientConfig.Outbounds = append(clientConfig.Outbounds, dto.Outbound{
+		Tag:      "direct",
+		Protocol: "freedom",
+		Settings: dto.OutboundSettings{},
+	})
+
+	clientConfig.Outbounds = append(clientConfig.Outbounds, dto.Outbound{
+		Tag:      "block",
+		Protocol: "blackhole",
+		Settings: dto.OutboundSettings{},
+	})
+
 	return c.JSON(clientConfig)
+}
+
+func (h subscription) setAppHeaders(c fiber.Ctx, expire int) {
+	c.Set("Profile-Title", "base64:8J+SmyBUSEUgQkVZT05E")
+	c.Set("Profile-Update-Interval", "12")
+	c.Set("Profile-Web-Page-URL", "https://t.me/beyondsecurenews")
+	c.Set("Support-URL", "https://t.me/beyondsecurenews?direct")
+	c.Set("Notification-Subs-Expire", "1")
+	c.Set("Hide-Settings", "true")
+	c.Set("Subscription-Userinfo", fmt.Sprintf("expire=%v", expire))
 }

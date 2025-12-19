@@ -2,12 +2,15 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"time"
 
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/domain"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/i18n"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
+	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/telegram"
+	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
 	"github.com/quickpowered/thebeyond-master/configs"
 	"github.com/quickpowered/thebeyond-master/configs/language"
@@ -31,12 +34,14 @@ func (h languageHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 		p.Account.Language = "en"
 	}
 
-	msg := i18n.LanguageMessages[language.Language(p.Account.Language)]
+	myLanguage := language.Language(p.Account.Language)
+	msg := i18n.LanguageMessages[myLanguage]
+	controlMsg := i18n.ControlMessages[myLanguage]
 	opts := []any{deps.ToForward(bot, p)}
 
 	var page int
 	if len(p.Args) >= 2 {
-		return h.changeLanguage(bot, p, msg, isNewcomer, opts...)
+		return h.changeLanguage(bot, p, msg, isNewcomer)
 	}
 
 	getter := func(code string) string {
@@ -52,6 +57,13 @@ func (h languageHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 		return err
 	}
 
+	if !isNewcomer {
+		keyboard.ButtonRows = append(keyboard.ButtonRows, []types.Button{{
+			Text: "◀️ " + controlMsg.Back,
+			Data: SETTINGS_CMD,
+		}})
+	}
+
 	opts = append(opts, keyboard)
 	return bot.SendMessage(p.Message.Chat(), msg.ChooseLanguage+":", opts...)
 }
@@ -61,7 +73,6 @@ func (h languageHandler) changeLanguage(
 	p *domain.Payload,
 	msg i18n.LanguageLocale,
 	isNewcomer bool,
-	opts ...any,
 ) error {
 	id, err := strconv.Atoi(p.Args[1])
 	if err != nil {
@@ -74,7 +85,7 @@ func (h languageHandler) changeLanguage(
 			return h.AccountService.SetLanguage(ctx, p.Account.ID, p.Account.Language)
 		}
 
-		if err := setValue(bot, p, msg.LanguageChangedTo, getter, setter, opts...); err != nil {
+		if err := setValue(bot, p, msg.LanguageChangedTo, getter, setter); err != nil {
 			return err
 		}
 
@@ -82,12 +93,19 @@ func (h languageHandler) changeLanguage(
 			p.Args = []string{CURRENCY_CMD}
 			return h.currencyHandler.Execute(bot, p)
 		}
-		return nil
+
+		p.Args = []string{LANGUAGE_CMD}
+		return h.Execute(bot, p)
 	}
 
 	page := id
 	if page < 1 || page >= len(language.LimitedTargets) {
-		return bot.SendMessage(p.Message.Chat(), "Invalid page number", opts...)
+		tgBot, ok := bot.(*telegram.Adapter)
+		if !ok {
+			return errors.New("failed to cast bot to telegram adapter")
+		}
+
+		return tgBot.AnswerCallbackQuery(p.Message.CallbackQueryID(), "Invalid page number")
 	}
 
 	return nil

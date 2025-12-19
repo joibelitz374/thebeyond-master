@@ -9,18 +9,20 @@ type NewMessageInterface interface {
 	ID() int
 	Chat() ChatInterface
 	Sender() int
+	CallbackQueryID() string
 	Text() string
 	Reply() *Message
 }
 
 type Message struct {
-	platform  consts.Platform
-	vkBot     *api.API
-	messageID int
-	chat      ChatInterface
-	senderID  int
-	text      string
-	reply     *Message
+	platform        consts.Platform
+	vkBot           *api.API
+	messageID       int
+	chat            ChatInterface
+	senderID        int
+	callbackQueryID string
+	text            string
+	reply           *Message
 }
 
 func NewMessage(
@@ -28,17 +30,19 @@ func NewMessage(
 	id int,
 	chat ChatInterface,
 	senderID int,
+	callbackQueryID string,
 	text string,
 	reply *Message,
 	bots ...any,
 ) Message {
 	message := Message{
-		platform:  platform,
-		messageID: id,
-		chat:      chat,
-		senderID:  senderID,
-		text:      text,
-		reply:     reply,
+		platform:        platform,
+		messageID:       id,
+		chat:            chat,
+		senderID:        senderID,
+		callbackQueryID: callbackQueryID,
+		text:            text,
+		reply:           reply,
 	}
 
 	for _, bot := range bots {
@@ -61,6 +65,10 @@ func (m Message) Chat() ChatInterface {
 
 func (m Message) Sender() int {
 	return m.senderID
+}
+
+func (m Message) CallbackQueryID() string {
+	return m.callbackQueryID
 }
 
 func (m Message) Text() string {

@@ -1,11 +1,13 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/domain"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
+	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/telegram"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/configs"
 	"github.com/quickpowered/thebeyond-master/pkg/consts"
@@ -78,20 +80,20 @@ func setValue(
 	p *domain.Payload, changedToText string,
 	getter func() (configs.ItemInfo, bool),
 	setter func() error,
-	opts ...any,
 ) error {
+	tgBot, ok := bot.(*telegram.Adapter)
+	if !ok {
+		return errors.New("failed to cast bot to telegram adapter")
+	}
+
 	val, ok := getter()
 	if !ok {
-		if err := bot.SendMessage(p.Message.Chat(), "Invalid code", opts...); err != nil {
-			return err
-		}
-
-		return fmt.Errorf("invalid code")
+		return tgBot.AnswerCallbackQuery(p.Message.CallbackQueryID(), "Invalid code")
 	}
 
 	if err := setter(); err != nil {
 		return err
 	}
 
-	return bot.SendMessage(p.Message.Chat(), changedToText+" "+val.Flag+" "+val.Name, opts...)
+	return tgBot.AnswerCallbackQuery(p.Message.CallbackQueryID(), changedToText+" "+val.Flag+" "+val.Name)
 }

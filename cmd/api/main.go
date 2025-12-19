@@ -79,18 +79,15 @@ func main() {
 		port = "80"
 	}
 
-	certFile := os.Getenv("CERT_FILE")
-	if certFile == "" {
-		certFile = "/etc/ssl/certs/certificate.crt"
+	config := fiber.ListenConfig{}
+
+	if certFile := os.Getenv("CERT_FILE"); certFile != "" {
+		config.CertFile = certFile
 	}
 
-	certKeyFile := os.Getenv("CERT_KEY_FILE")
-	if certKeyFile == "" {
-		certKeyFile = "/etc/ssl/private/certificate.key"
+	if certKeyFile := os.Getenv("CERT_KEY_FILE"); certKeyFile != "" {
+		config.CertKeyFile = certKeyFile
 	}
 
-	log.Fatalln(app.Listen(":"+port, fiber.ListenConfig{
-		CertFile:    certFile,
-		CertKeyFile: certKeyFile,
-	}))
+	log.Fatalln(app.Listen(":"+port, config))
 }

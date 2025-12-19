@@ -18,6 +18,7 @@ func (s *delivery) onCallback(bot *api.API, callback vkUpdate.Callback) {
 				callback.ChatMessageID,
 				update.Chat{ID: callback.ChatID},
 				int(callback.UserID),
+				"",
 				command,
 				nil,
 				bot,

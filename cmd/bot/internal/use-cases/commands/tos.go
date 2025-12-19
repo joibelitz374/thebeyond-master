@@ -9,22 +9,22 @@ import (
 	"github.com/quickpowered/thebeyond-master/configs/language"
 )
 
-const REFUND_CMD = "refund"
+const TOS_CMD = "tos"
 
-type refundHandler struct {
+type tosHandler struct {
 	deps.Dependencies
 }
 
-func NewRefundHandler(deps deps.Dependencies) refundHandler {
-	return refundHandler{deps}
+func NewTosHandler(deps deps.Dependencies) tosHandler {
+	return tosHandler{deps}
 }
 
-func (h refundHandler) Execute(bot bin.Interface, p *domain.Payload) error {
+func (h tosHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	language := language.Language(p.Account.Language)
-	msg := i18n.RefundPolicyMessages[language]
+	msg := i18n.TosMessages[language]
 	controlMsg := i18n.ControlMessages[language]
 	opts := []any{deps.ToForward(bot, p), &types.Keyboard{
 		ButtonRows: [][]types.Button{{{Text: "◀️ " + controlMsg.Back, Data: ABOUT_CMD}}},
 	}}
-	return bot.SendMessage(p.Message.Chat(), msg.Policy, opts...)
+	return bot.SendMessage(p.Message.Chat(), msg.Terms, opts...)
 }

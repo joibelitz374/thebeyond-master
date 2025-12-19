@@ -69,6 +69,7 @@ func (s *delivery) handler(session *discordgo.Session, message *discordgo.Messag
 			int(messageID),
 			update.Chat{ID: int(guildID), ThreadID: int(channelID)},
 			refSenderID,
+			"",
 			originalMsg.Content,
 			nil,
 		)
@@ -84,6 +85,7 @@ func (s *delivery) handler(session *discordgo.Session, message *discordgo.Messag
 				ThreadID: channelID,
 			},
 			senderID,
+			"",
 			message.Content,
 			replyMessage,
 		),

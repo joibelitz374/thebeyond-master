@@ -12,13 +12,15 @@ import (
 )
 
 type Interface interface {
-	GetAllByPlatform(ctx context.Context, platform consts.Platform) (accounts []int, err error)
 	Get(ctx context.Context, platform consts.Platform, platformAccountID int) (domain.Account, error)
+	GetAllByPlatform(ctx context.Context, platform consts.Platform) (accounts []int, err error)
 	GetByAccountID(ctx context.Context, accountID int) (account domain.Account, err error)
 	GetByKeyID(ctx context.Context, keyID string) (domain.Account, error)
 	GetPlatformUserID(ctx context.Context, accountID int) (externalAccountID int, err error)
 	GetExpiredUsers(ctx context.Context) ([]int, error)
+	FindUsersForServiceCheck(ctx context.Context) (accounts []domain.ServiceCheck, err error)
 	Create(ctx context.Context, platform consts.Platform, platformAccountID int, expiresAt time.Time, promo *string, discount int) (int, string, error)
+	MarkServiceCheckSent(ctx context.Context, accountID int) error
 	AddSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error
 	RemoveSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error
 	CancelSubscriptions(ctx context.Context, accountID int) error
@@ -64,6 +66,10 @@ func (s service) GetAllByPlatform(ctx context.Context, platform consts.Platform)
 	return s.repo.GetAllByPlatform(ctx, platform)
 }
 
+func (s service) FindUsersForServiceCheck(ctx context.Context) (accounts []domain.ServiceCheck, err error) {
+	return s.repo.FindUsersForServiceCheck(ctx)
+}
+
 func (s service) Create(ctx context.Context, platform consts.Platform, platformAccountID int, expiresAt time.Time, promo *string, discount int) (int, string, error) {
 	keyID, err := gonanoid.Generate(consts.NANOID_ALPHABET, consts.NANOID_LENGTH)
 	if err != nil {
@@ -74,6 +80,10 @@ func (s service) Create(ctx context.Context, platform consts.Platform, platformA
 
 	accountID, err := s.repo.Create(ctx, platform, platformAccountID, keyID, shortID, expiresAt, promo, discount)
 	return accountID, keyID, err
+}
+
+func (s service) MarkServiceCheckSent(ctx context.Context, accountID int) error {
+	return s.repo.MarkServiceCheckSent(ctx, accountID)
 }
 
 func (s service) AddSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error {

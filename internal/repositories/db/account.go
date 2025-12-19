@@ -18,7 +18,9 @@ type AccountInterface interface {
 	GetPlatformUserID(ctx context.Context, accountID int) (int, error)
 	GetExpiredUsers(ctx context.Context) ([]int, error)
 	GetAllByPlatform(ctx context.Context, platform consts.Platform) ([]int, error)
+	FindUsersForServiceCheck(ctx context.Context) (accounts []domain.ServiceCheck, err error)
 	Create(ctx context.Context, platform consts.Platform, platformAccountID int, keyID, shortID string, expiresAt time.Time, promo *string, discount int) (int, error)
+	MarkServiceCheckSent(ctx context.Context, accountID int) error
 	AddSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error
 	RemoveSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error
 	CancelSubscriptions(ctx context.Context, accountID int) error
@@ -166,6 +168,24 @@ func (db accountDB) GetAllByPlatform(ctx context.Context, platform consts.Platfo
 	return accounts, nil
 }
 
+func (db accountDB) FindUsersForServiceCheck(ctx context.Context) (accounts []domain.ServiceCheck, err error) {
+	rows, err := db.queries.FindUsersForServiceCheck(ctx)
+	if err != nil {
+		return accounts, err
+	}
+
+	accounts = make([]domain.ServiceCheck, len(rows))
+	for i, row := range rows {
+		accounts[i] = domain.ServiceCheck{
+			ID:                int(row.ID),
+			ExternalAccountID: int(row.ExternalAccountID),
+			Language:          row.Language,
+		}
+	}
+
+	return accounts, nil
+}
+
 func (db accountDB) Create(ctx context.Context, platform consts.Platform, platformAccountID int, keyID, shortID string, expiresAt time.Time, promo *string, discount int) (int, error) {
 	txn, err := db.pool.Begin(ctx)
 	if err != nil {
@@ -199,6 +219,10 @@ func (db accountDB) Create(ctx context.Context, platform consts.Platform, platfo
 	}
 
 	return int(newAccountID), txn.Commit(ctx)
+}
+
+func (db accountDB) MarkServiceCheckSent(ctx context.Context, accountID int) error {
+	return db.queries.MarkServiceCheckSent(ctx, int32(accountID))
 }
 
 func (db accountDB) AddSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error {

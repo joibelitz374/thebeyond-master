@@ -34,7 +34,7 @@ func (h regionHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	opts := []any{deps.ToForward(bot, p), types.DisableMentions}
 
 	var idx int
-	buttonRows := make([][]types.Button, len(regionsOrder))
+	buttonRows := make([][]types.Button, len(regionsOrder)+1)
 	for _, rows := range regionsOrder {
 		for _, region := range rows {
 			regionName := regions[region][0] + " " + regions[region][1]
@@ -50,6 +50,7 @@ func (h regionHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 		idx++
 	}
 
+	buttonRows = append(buttonRows, []types.Button{{Text: "◀️ Назад", Data: SETTINGS_CMD}})
 	opts = append(opts, &types.Keyboard{ButtonRows: buttonRows})
-	return bot.SendMessage(p.Message.Chat(), "Выберите ваш регион:\n\nОт региона зависит список серверов и их настройки. Выбирайте тот регион, где вы находитесь и для каких целей используете наш сервис!", opts...)
+	return bot.SendMessage(p.Message.Chat(), "Выберите регион:", opts...)
 }

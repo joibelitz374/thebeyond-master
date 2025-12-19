@@ -7,6 +7,7 @@ type Account struct {
 	ClusterID             int
 	KeyID                 string
 	ShortID               string
+	NetworkType           string
 	Devices               int
 	Region                string
 	Language              string
