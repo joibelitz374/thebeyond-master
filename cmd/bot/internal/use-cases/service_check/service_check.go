@@ -2,6 +2,7 @@ package serviceCheck
 
 import (
 	"context"
+	"strings"
 
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/i18n"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
@@ -41,11 +42,19 @@ func (uc *UseCase) Run(ctx context.Context, tgBot bin.Interface) error {
 
 func (uc *UseCase) QueryServiceCheck(ctx context.Context, tgBot bin.Interface, account domain.ServiceCheck) error {
 	if err := uc.accountService.MarkServiceCheckSent(ctx, account.ID); err != nil {
-		uc.logger.Error("failed to mark service check sent", zap.Error(err))
+		uc.logger.Error("failed to mark service check as sent",
+			zap.Error(err),
+			zap.Int("account_id", account.ID),
+		)
 		return err
 	}
 
-	msg := i18n.ServiceCheckMessages[language.Language(account.Language)]
+	accountLanguage := strings.ToLower(strings.TrimSpace(account.Language))
+	if accountLanguage == "" {
+		accountLanguage = "en"
+	}
+
+	msg := i18n.ServiceCheckMessages[language.Language(accountLanguage)]
 	if err := tgBot.SendMessage(update.Chat{ID: account.ExternalAccountID}, msg.ServiceWorking, &types.Keyboard{
 		ButtonRows: [][]types.Button{
 			{{Text: msg.YesEverythingFine, Data: "support ok"}},
@@ -53,9 +62,18 @@ func (uc *UseCase) QueryServiceCheck(ctx context.Context, tgBot bin.Interface, a
 			{{Text: msg.ThereAreProblems, URL: "https://t.me/beyondsecurebot?direct"}},
 		},
 	}); err != nil {
-		uc.logger.Error("failed to send message", zap.Error(err))
-		return err
+		uc.logger.Error("failed to send service check message",
+			zap.Error(err),
+			zap.Int("chat_id", account.ExternalAccountID),
+			zap.Int("account_id", account.ID),
+		)
 	}
+
+	uc.logger.Info("service check message sent successfully",
+		zap.Int("account_id", account.ID),
+		zap.Int("chat_id", account.ExternalAccountID),
+		zap.String("language", accountLanguage),
+	)
 
 	return nil
 }

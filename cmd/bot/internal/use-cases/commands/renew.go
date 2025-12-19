@@ -67,8 +67,6 @@ func (h renewHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 
 	// 	return bot.SendMessage(p.Message.Chat(), "Выберите способ оплаты:", opts...)
 	case len(p.Args) >= 2:
-		devices := 1
-
 		days, err := strconv.Atoi(p.Args[1])
 		if err != nil {
 			return err
@@ -97,7 +95,7 @@ func (h renewHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 				p.Message.Chat(),
 				h.newTitle(msg, days),
 				"Оплачивая, вы соглашаетесь с правилами сервиса, включая политику возвратов. Доступ предоставляется сразу после успешной оплаты. Спасибо за выбор!",
-				fmt.Sprintf("d:%d;devices:%d", days, devices),
+				fmt.Sprintf("d:%d", days),
 				"XTR", int(price),
 			); err != nil {
 				return err

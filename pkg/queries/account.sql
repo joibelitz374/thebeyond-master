@@ -58,9 +58,8 @@ WHERE platform_id = $1;
 SELECT a.id, pa.external_account_id, a.language
 FROM account a
 JOIN platform_account pa ON pa.fk_account_id = a.id
-WHERE a.created_at BETWEEN NOW() - INTERVAL '10 minutes'
-  AND NOW() - INTERVAL '5 minutes'
-AND a.service_check_sent = 0;
+WHERE a.created_at <= NOW() - INTERVAL '5 minutes'
+  AND a.service_check_sent = 0;
 
 -- name: CreateAccount :one
 INSERT INTO account(key_id, short_id, subscription_expires_at, region, promo, discount)
