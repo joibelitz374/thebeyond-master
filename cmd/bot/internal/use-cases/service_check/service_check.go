@@ -58,8 +58,8 @@ func (uc *UseCase) QueryServiceCheck(ctx context.Context, tgBot bin.Interface, a
 	if err := tgBot.SendMessage(update.Chat{ID: account.ExternalAccountID}, msg.ServiceWorking, &types.Keyboard{
 		ButtonRows: [][]types.Button{
 			{{Text: msg.YesEverythingFine, Data: "support ok"}},
-			{{Text: msg.NoNeedHelp, URL: "https://t.me/beyondsecurebot?direct"}},
-			{{Text: msg.ThereAreProblems, URL: "https://t.me/beyondsecurebot?direct"}},
+			{{Text: msg.NoNeedHelp, URL: "https://t.me/beyondsecurenews?direct"}},
+			{{Text: msg.ThereAreProblems, URL: "https://t.me/beyondsecurenews?direct"}},
 		},
 	}); err != nil {
 		uc.logger.Error("failed to send service check message",
