@@ -79,13 +79,17 @@ func (r repository) GetGroupedNodes(region dto.Region) (map[dto.GroupType][]*dto
 }
 
 func (r repository) AddClient(ctx context.Context, region dto.Region, id string, email string) error {
+	addedToNodes := map[string]struct{}{}
 	for _, nodes := range r.groups[region] {
 		for _, node := range nodes {
-			if _, err := node.Client().AddClient(ctx, &v1.AddClientRequest{
-				Id:    id,
-				Email: email,
-			}); err != nil {
-				return err
+			if _, ok := addedToNodes[node.IP]; !ok {
+				if _, err := node.Client().AddClient(ctx, &v1.AddClientRequest{
+					Id:    id,
+					Email: email,
+				}); err != nil {
+					return err
+				}
+				addedToNodes[node.IP] = struct{}{}
 			}
 		}
 	}
