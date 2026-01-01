@@ -2,14 +2,11 @@ package commands
 
 import (
 	"context"
-	"errors"
-	"strconv"
 	"time"
 
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/domain"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/i18n"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
-	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/telegram"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
 	"github.com/quickpowered/thebeyond-master/configs"
@@ -31,82 +28,55 @@ func NewLanguageHandler(deps deps.Dependencies) languageHandler {
 func (h languageHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	isNewcomer := p.Account.IsNewcomer()
 	if isNewcomer {
-		p.Account.Language = "en"
+		p.Account.Language = language.English
 	}
 
-	myLanguage := language.Language(p.Account.Language)
-	msg := i18n.LanguageMessages[myLanguage]
-	controlMsg := i18n.ControlMessages[myLanguage]
-	opts := []any{deps.ToForward(bot, p)}
-
-	var page int
+	msg := i18n.LanguageMessages[p.Account.Language]
+	controlMsg := i18n.ControlMessages[p.Account.Language]
 	if len(p.Args) >= 2 {
 		return h.changeLanguage(bot, p, msg, isNewcomer)
 	}
 
-	getter := func(code string) string {
+	buttons, err := getButtons(LANGUAGE_CMD, language.Targets, func(code string) string {
 		language, ok := language.Get(language.Language(code))
 		if !ok {
 			return "Undefined"
 		}
 		return language.Flag + " " + language.Name
-	}
-
-	keyboard, err := buildKeyboardList(bot.GetPlatform(), page, LANGUAGE_CMD, language.LimitedTargets, language.Targets, getter)
+	})
 	if err != nil {
 		return err
 	}
 
 	if !isNewcomer {
-		keyboard.ButtonRows = append(keyboard.ButtonRows, []types.Button{{
-			Text: "◀️ " + controlMsg.Back,
-			Data: SETTINGS_CMD,
-		}})
+		buttons = append(buttons, []types.Button{types.NewCallbackButton("◀️ "+controlMsg.Back, SETTINGS_CMD)})
 	}
 
-	opts = append(opts, keyboard)
-	return bot.SendMessage(p.Message.Chat(), msg.ChooseLanguage+":", opts...)
+	return bot.SendMessage(p.Message.Chat(), msg.ChooseLanguage+":", &types.Keyboard{ButtonRows: buttons})
 }
 
-func (h languageHandler) changeLanguage(
-	bot bin.Interface,
-	p *domain.Payload,
-	msg i18n.LanguageLocale,
-	isNewcomer bool,
-) error {
-	id, err := strconv.Atoi(p.Args[1])
-	if err != nil {
-		p.Account.Language = p.Args[1]
+func (h languageHandler) changeLanguage(bot bin.Interface, p *domain.Payload, msg i18n.LanguageLocale, isNewcomer bool) error {
+	p.Account.Language = language.Language(p.Args[1])
 
-		getter := func() (configs.ItemInfo, bool) { return language.Get(language.Language(p.Account.Language)) }
-		setter := func() error {
-			ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
-			defer cancel()
-			return h.AccountService.SetLanguage(ctx, p.Account.ID, p.Account.Language)
-		}
-
-		if err := setValue(bot, p, msg.LanguageChangedTo, getter, setter); err != nil {
-			return err
-		}
-
-		if isNewcomer {
-			p.Args = []string{CURRENCY_CMD}
-			return h.currencyHandler.Execute(bot, p)
-		}
-
-		p.Args = []string{LANGUAGE_CMD}
-		return h.Execute(bot, p)
+	getter := func() (configs.ItemInfo, bool) {
+		return language.Get(language.Language(p.Account.Language))
 	}
 
-	page := id
-	if page < 1 || page >= len(language.LimitedTargets) {
-		tgBot, ok := bot.(*telegram.Adapter)
-		if !ok {
-			return errors.New("failed to cast bot to telegram adapter")
-		}
-
-		return tgBot.AnswerCallbackQuery(p.Message.CallbackQueryID(), "Invalid page number")
+	setter := func() error {
+		ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+		defer cancel()
+		return h.AccountService.SetLanguage(ctx, p.Account.ID, string(p.Account.Language))
 	}
 
-	return nil
+	if err := setValue(bot, p, msg.LanguageChangedTo, getter, setter); err != nil {
+		return err
+	}
+
+	if isNewcomer {
+		p.Args = []string{CURRENCY_CMD}
+		return h.currencyHandler.Execute(bot, p)
+	}
+
+	p.Args = []string{LANGUAGE_CMD}
+	return h.Execute(bot, p)
 }

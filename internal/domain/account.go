@@ -1,27 +1,42 @@
 package domain
 
-import "time"
+import (
+	"time"
+
+	"github.com/quickpowered/thebeyond-master/configs/currency"
+	"github.com/quickpowered/thebeyond-master/configs/language"
+)
 
 type Account struct {
 	ID                    int
 	ClusterID             int
 	KeyID                 string
 	ShortID               string
-	NetworkType           string
-	Devices               int
-	Region                string
-	Language              string
-	Currency              string
-	Protocol              string
-	SubscriptionExpiresAt *time.Time
-	WhitelistExpiresAt    *time.Time
-	LastKeyRefreshAt      *time.Time
-	Promo                 *string
+	Tariff                int
 	Discount              int
+	Promo                 *string
+	FreemiumStatus        string
+	SubscriptionStatus    string
+	SubscriptionExpiresAt *time.Time
+	Devices               int
+	UsedUplink            int64
+	UsedDownlink          int64
+	Protocol              string
+	Region                string
+	Language              language.Language
+	Currency              currency.Currency
+	LastKeyRefreshAt      *time.Time
+	LastTrafficRefreshAt  *time.Time
+	// WhitelistExpiresAt    *time.Time
+}
+
+type ExternalAccount struct {
+	ID                int
+	ExternalAccountID int
 }
 
 func (a Account) IsActive() (active bool) {
-	if a.SubscriptionExpiresAt != nil && a.SubscriptionExpiresAt.After(time.Now()) {
+	if a.SubscriptionStatus != "unavailable" || a.FreemiumStatus != "unavailable" {
 		active = true
 	}
 	return

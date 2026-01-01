@@ -5,6 +5,7 @@ import "github.com/quickpowered/thebeyond-master/configs"
 type Currency string
 
 const (
+	XTR Currency = "xtr"
 	USD Currency = "usd"
 	EUR Currency = "eur"
 	GBP Currency = "gbp"
@@ -41,10 +42,26 @@ const (
 	AED Currency = "aed"
 )
 
+var Targets = [][]string{
+	{"usd", "eur", "gbp"},
+	{"rub", "uah", "pln"},
+	{"czk", "ron", "huf"},
+	{"bgn", "rsd"},
+	{"sek", "nok", "dkk"},
+	{"inr", "cny", "jpy"},
+	{"krw", "vnd", "thb"},
+	{"idr", "myr", "php"},
+	{"sgd"},
+	{"pkr", "bdt"},
+	{"brl", "mxn", "cad"},
+	{"try", "irr", "ils"},
+	{"sar", "aed"},
+}
+
 var Currencies = map[Currency]configs.ItemInfo{
-	USD: {Flag: "🇺🇸", Emoji: "💵", Name: "US Dollar"},
-	EUR: {Flag: "🇪🇺", Emoji: "💶", Name: "Euro"},
-	GBP: {Flag: "🇬🇧", Emoji: "💷", Name: "British Pound"},
+	USD: {Flag: "🇺🇸", Emoji: "$", Name: "US Dollar"},
+	EUR: {Flag: "🇪🇺", Emoji: "€", Name: "Euro"},
+	GBP: {Flag: "🇬🇧", Emoji: "£", Name: "British Pound"},
 	RUB: {Flag: "🇷🇺", Emoji: "₽", Name: "Russian Ruble"},
 	UAH: {Flag: "🇺🇦", Emoji: "₴", Name: "Ukrainian Hryvnia"},
 	PLN: {Flag: "🇵🇱", Emoji: "zł", Name: "Polish Zloty"},
@@ -57,8 +74,8 @@ var Currencies = map[Currency]configs.ItemInfo{
 	NOK: {Flag: "🇳🇴", Emoji: "kr🇳🇴", Name: "Norwegian Krone"},
 	DKK: {Flag: "🇩🇰", Emoji: "kr🇩🇰", Name: "Danish Krone"},
 	INR: {Flag: "🇮🇳", Emoji: "₹", Name: "Indian Rupee"},
-	CNY: {Flag: "🇨🇳", Emoji: "💴", Name: "Chinese Yuan"},
-	JPY: {Flag: "🇯🇵", Emoji: "JP💴", Name: "Japanese Yen"},
+	CNY: {Flag: "🇨🇳", Emoji: "CN¥", Name: "Chinese Yuan"},
+	JPY: {Flag: "🇯🇵", Emoji: "¥", Name: "Japanese Yen"},
 	KRW: {Flag: "🇰🇷", Emoji: "₩", Name: "South Korean Won"},
 	VND: {Flag: "🇻🇳", Emoji: "₫", Name: "Vietnamese Dong"},
 	THB: {Flag: "🇹🇭", Emoji: "฿", Name: "Thai Baht"},

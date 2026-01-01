@@ -6,7 +6,6 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
-	"github.com/quickpowered/thebeyond-master/configs/language"
 )
 
 const PRIVACY_CMD = "privacy"
@@ -20,11 +19,8 @@ func NewPrivacyHandler(deps deps.Dependencies) privacyHandler {
 }
 
 func (h privacyHandler) Execute(bot bin.Interface, p *domain.Payload) error {
-	language := language.Language(p.Account.Language)
-	msg := i18n.PrivacyPolicyMessages[language]
-	controlMsg := i18n.ControlMessages[language]
-	opts := []any{deps.ToForward(bot, p), &types.Keyboard{
-		ButtonRows: [][]types.Button{{{Text: "◀️ " + controlMsg.Back, Data: ABOUT_CMD}}},
-	}}
-	return bot.SendMessage(p.Message.Chat(), msg.Policy, opts...)
+	msg := i18n.PrivacyPolicyMessages[p.Account.Language]
+	controlMsg := i18n.ControlMessages[p.Account.Language]
+	return bot.SendMessage(p.Message.Chat(), msg.Policy, types.NewKeyboard().
+		NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, ABOUT_CMD)))
 }

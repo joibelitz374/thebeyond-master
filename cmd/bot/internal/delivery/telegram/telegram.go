@@ -44,74 +44,37 @@ func (s *delivery) Listen() error {
 }
 
 func (s *delivery) handler(ctx context.Context, tgBot *bot.Bot, update *models.Update) {
-	var typ models.ChatType
-	var userID, chatID, threadID, messageID int
-	var callbackQueryID, text string
-
-	switch {
-	case update.PreCheckoutQuery != nil:
-		typ = models.ChatTypePrivate
-		if err := s.invoices.HandlePreCheckoutQuery(tgBot, update); err != nil {
-			s.Logger.Error("pre checkout query failed", zap.Error(err))
-		}
-		return
-	case update.Message != nil:
-		typ = update.Message.Chat.Type
-		userID = int(update.Message.From.ID)
-		chatID = int(update.Message.Chat.ID)
-		threadID = int(update.Message.MessageThreadID)
-		messageID = update.Message.ID
-		text = update.Message.Text
-	case update.CallbackQuery != nil:
-		message := update.CallbackQuery.Message.Message
-		if message == nil {
-			return
-		}
-		typ = message.Chat.Type
-		userID = int(update.CallbackQuery.From.ID)
-		chatID = int(message.Chat.ID)
-		threadID = int(message.MessageThreadID)
-		messageID = message.ID
-		callbackQueryID = update.CallbackQuery.ID
-		text = update.CallbackQuery.Data
-
-		defer func() {
-			if _, err := tgBot.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
-				CallbackQueryID: callbackQueryID,
-			}); err != nil {
-				s.Logger.Error("failed to answer callback query", zap.Error(err))
-			}
-		}()
-	default:
+	parsed, ok := s.parseUpdate(ctx, tgBot, update)
+	if !ok {
 		return
 	}
 
-	if typ != models.ChatTypePrivate {
+	if parsed.typ != models.ChatTypePrivate {
 		s.Logger.Debug("not private chat",
-			zap.String("type", string(typ)),
-			zap.Int("chat_id", chatID),
-			zap.Int("thread_id", threadID),
-			zap.Int("user_id", userID))
+			zap.String("type", string(parsed.typ)),
+			zap.Int("chat_id", parsed.chatID),
+			zap.Int("thread_id", parsed.threadID),
+			zap.Int("user_id", parsed.userID))
 		return
 	}
 
 	if err := s.commands.Run(s.bot, &domain.Payload{
 		Message: sharedUpdate.NewMessage(
 			consts.PlatformTelegram,
-			int(messageID),
+			int(parsed.messageID),
 			sharedUpdate.Chat{
-				ID:       int(chatID),
-				ThreadID: int(threadID),
+				ID:       int(parsed.chatID),
+				ThreadID: int(parsed.threadID),
 			},
-			userID,
-			callbackQueryID,
-			text,
+			parsed.userID,
+			parsed.callbackQueryID,
+			parsed.text,
 			nil,
 		),
 	}); err != nil {
 		s.Logger.Error("command failed", zap.Error(err),
-			zap.Int("chat_id", chatID),
-			zap.Int("user_id", userID),
-			zap.String("text", text))
+			zap.Int("chat_id", parsed.chatID),
+			zap.Int("user_id", parsed.userID),
+			zap.String("text", parsed.text))
 	}
 }

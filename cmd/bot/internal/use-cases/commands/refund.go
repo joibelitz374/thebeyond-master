@@ -6,7 +6,6 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
-	"github.com/quickpowered/thebeyond-master/configs/language"
 )
 
 const REFUND_CMD = "refund"
@@ -20,11 +19,8 @@ func NewRefundHandler(deps deps.Dependencies) refundHandler {
 }
 
 func (h refundHandler) Execute(bot bin.Interface, p *domain.Payload) error {
-	language := language.Language(p.Account.Language)
-	msg := i18n.RefundPolicyMessages[language]
-	controlMsg := i18n.ControlMessages[language]
-	opts := []any{deps.ToForward(bot, p), &types.Keyboard{
-		ButtonRows: [][]types.Button{{{Text: "◀️ " + controlMsg.Back, Data: ABOUT_CMD}}},
-	}}
-	return bot.SendMessage(p.Message.Chat(), msg.Policy, opts...)
+	msg := i18n.RefundPolicyMessages[p.Account.Language]
+	controlMsg := i18n.ControlMessages[p.Account.Language]
+	return bot.SendMessage(p.Message.Chat(), msg.Policy, types.NewKeyboard().
+		NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, ABOUT_CMD)))
 }

@@ -10,8 +10,7 @@ import (
 )
 
 const regenerateKey = `-- name: RegenerateKey :exec
-UPDATE account
-SET key_id = $1
+UPDATE account SET key_id = $1
 WHERE id = $2
 `
 
@@ -26,8 +25,7 @@ func (q *Queries) RegenerateKey(ctx context.Context, arg RegenerateKeyParams) er
 }
 
 const setCurrency = `-- name: SetCurrency :exec
-UPDATE account
-SET currency = $1
+UPDATE account SET currency = $1
 WHERE id = $2
 `
 
@@ -42,8 +40,7 @@ func (q *Queries) SetCurrency(ctx context.Context, arg SetCurrencyParams) error 
 }
 
 const setLanguage = `-- name: SetLanguage :exec
-UPDATE account
-SET language = $1
+UPDATE account SET language = $1
 WHERE id = $2
 `
 
@@ -58,8 +55,7 @@ func (q *Queries) SetLanguage(ctx context.Context, arg SetLanguageParams) error 
 }
 
 const setLocation = `-- name: SetLocation :exec
-UPDATE account
-SET server_location = $1
+UPDATE account SET server_location = $1
 WHERE id = $2
 `
 
@@ -74,8 +70,7 @@ func (q *Queries) SetLocation(ctx context.Context, arg SetLocationParams) error 
 }
 
 const setProtocol = `-- name: SetProtocol :exec
-UPDATE account
-SET protocol = $1
+UPDATE account SET protocol = $1
 WHERE id = $2
 `
 
@@ -90,8 +85,7 @@ func (q *Queries) SetProtocol(ctx context.Context, arg SetProtocolParams) error 
 }
 
 const setRegion = `-- name: SetRegion :exec
-UPDATE account
-SET region = $1
+UPDATE account SET region = $1
 WHERE id = $2
 `
 

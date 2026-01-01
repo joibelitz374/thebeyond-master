@@ -2,6 +2,7 @@ package commands
 
 import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/domain"
+	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/i18n"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
@@ -10,16 +11,20 @@ import (
 const REGION_CMD = "region"
 
 var regions = map[string][2]string{
-	"cn":    {"🇨🇳", "中国"},
-	"ru":    {"🇷🇺", "Россия"},
-	"ir":    {"🇮🇷", "جمهوری اسلامی ایران"},
-	"eu_av": {"🇬🇧🇫🇷🇪🇸🇮🇹🇩🇰🇬🇷🍓", "EU Anti-AV"},
+	"us": {"🇺🇸", "США"},
+	"eu": {"🇪🇺", "ЕС"},
+	"ru": {"🇷🇺", "Россия"},
+	"ir": {"🇮🇷", "Иран"},
+	"tr": {"🇹🇷", "Турция"},
+	"cn": {"🇨🇳", "Китай"},
+	"in": {"🇮🇳", "Индия"},
 }
 
 var regionsOrder = [][]string{
 	{"cn", "ru"},
 	{"ir"},
-	{"eu_av"},
+	{"eu", "us"},
+	{"in", "tr"},
 }
 
 type regionHandler struct {
@@ -31,26 +36,22 @@ func NewRegionHandler(deps deps.Dependencies) regionHandler {
 }
 
 func (h regionHandler) Execute(bot bin.Interface, p *domain.Payload) error {
-	opts := []any{deps.ToForward(bot, p), types.DisableMentions}
+	controlMsg := i18n.ControlMessages[p.Account.Language]
+	keyboard := types.NewKeyboard()
 
-	var idx int
-	buttonRows := make([][]types.Button, len(regionsOrder)+1)
-	for _, rows := range regionsOrder {
-		for _, region := range rows {
+	for _, region := range regionsOrder {
+		buttons := make([]types.Button, len(region))
+		for i, region := range region {
 			regionName := regions[region][0] + " " + regions[region][1]
 			if region != "ru" {
 				regionName += " (soon)"
 			}
 
-			buttonRows[idx] = append(buttonRows[idx], types.Button{
-				Text: regionName,
-				Data: "region " + region,
-			})
+			buttons[i] = types.NewCallbackButton(regionName, "region "+region)
 		}
-		idx++
+		keyboard.NewRow(buttons...)
 	}
 
-	buttonRows = append(buttonRows, []types.Button{{Text: "◀️ Назад", Data: SETTINGS_CMD}})
-	opts = append(opts, &types.Keyboard{ButtonRows: buttonRows})
-	return bot.SendMessage(p.Message.Chat(), "Выберите регион:", opts...)
+	keyboard.NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, SETTINGS_CMD))
+	return bot.SendMessage(p.Message.Chat(), "Выберите регион:", keyboard)
 }

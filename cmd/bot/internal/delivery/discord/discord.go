@@ -48,8 +48,6 @@ func (s *delivery) Listen() error {
 }
 
 func (s *delivery) handler(session *discordgo.Session, message *discordgo.MessageCreate) {
-	return
-
 	messageID, _ := strconv.Atoi(message.ID)
 	guildID, _ := strconv.Atoi(message.GuildID)
 	channelID, _ := strconv.Atoi(message.ChannelID)

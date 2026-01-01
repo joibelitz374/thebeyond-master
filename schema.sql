@@ -24,6 +24,16 @@ SET row_security = off;
 CREATE SCHEMA public;
 
 
+--
+-- Name: access_status; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.access_status AS ENUM (
+    'available',
+    'unavailable'
+);
+
+
 SET default_table_access_method = heap;
 
 --
@@ -34,7 +44,7 @@ CREATE TABLE public.account (
     id integer NOT NULL,
     key_id text NOT NULL,
     short_id text NOT NULL,
-    subscription_expires_at timestamp with time zone DEFAULT (now() + '1 day'::interval),
+    subscription_expires_at timestamp with time zone,
     region text NOT NULL,
     language text DEFAULT ''::text NOT NULL,
     currency text DEFAULT ''::text NOT NULL,
@@ -45,7 +55,15 @@ CREATE TABLE public.account (
     promo text,
     discount integer DEFAULT 0,
     cluster_id smallint DEFAULT 1,
-    service_check_sent smallint DEFAULT 0
+    service_check_sent smallint DEFAULT 0,
+    tariff smallint DEFAULT 0 NOT NULL,
+    devices smallint DEFAULT 1,
+    used_uplink bigint DEFAULT 0 NOT NULL,
+    used_downlink bigint DEFAULT 0 NOT NULL,
+    freemium_status public.access_status DEFAULT 'unavailable'::public.access_status NOT NULL,
+    subscription_status public.access_status DEFAULT 'unavailable'::public.access_status NOT NULL,
+    is_disabled boolean DEFAULT false NOT NULL,
+    last_traffic_refresh_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 

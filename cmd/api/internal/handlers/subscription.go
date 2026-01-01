@@ -43,7 +43,7 @@ func (h subscription) Default(c fiber.Ctx) error {
 		expire = int(subscriptionExpiresAt.Unix())
 	}
 
-	h.setAppHeaders(c, expire)
+	h.setAppHeaders(c, expire, account.UsedUplink, account.UsedDownlink)
 
 	groupedNodes, err := h.xraymanagerRepo.GetGroupedNodes(xmdto.Region(account.Region))
 	if err != nil {
@@ -73,24 +73,35 @@ func (h subscription) Smart(c fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
 	defer cancel()
 
-	region := c.Params("region")
-	if region != "ru" && region != "ruwh" {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Region not found",
+	keyID := c.Params("key_id")
+	if keyID == "" {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"message": "Key ID is required",
 		})
 	}
 
-	account, err := h.accountService.GetByKeyID(ctx, c.Params("sub_id"))
+	account, err := h.accountService.GetByKeyID(ctx, keyID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return c.Status(http.StatusNotFound).JSON(fiber.Map{
-				"message": "Subscription not found",
+				"message": "Account not found",
 			})
 		} else {
 			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 				"message": "Internal server error",
 			})
 		}
+	}
+
+	region := c.Params("region")
+	if region == "" {
+		region = account.Region
+	}
+
+	if region != "ru" && region != "ruwh" {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Region not found",
+		})
 	}
 
 	expire := int(time.Now().Unix())
@@ -100,7 +111,7 @@ func (h subscription) Smart(c fiber.Ctx) error {
 	}
 
 	c.Set("Content-Type", "application/json")
-	h.setAppHeaders(c, expire)
+	h.setAppHeaders(c, expire, account.UsedUplink, account.UsedDownlink)
 
 	clientConfig := dto.XRayClientConfig{
 		Log: dto.Log{
@@ -331,12 +342,26 @@ func (h subscription) Smart(c fiber.Ctx) error {
 	return c.JSON(clientConfig)
 }
 
-func (h subscription) setAppHeaders(c fiber.Ctx, expire int) {
+const DecimalGB uint64 = 1_000_000_000
+
+const (
+	GiB uint64 = 1 << 30
+	TiB uint64 = 1 << 40
+)
+
+var limits = map[int]uint64{
+	10:   10 * GiB,
+	150:  150 * GiB,
+	400:  400 * GiB,
+	1000: 1 * TiB,
+}
+
+func (h subscription) setAppHeaders(c fiber.Ctx, expire int, usedUplink, usedDownlink int64) {
 	c.Set("Profile-Title", "base64:8J+SmyBUSEUgQkVZT05E")
 	c.Set("Profile-Update-Interval", "12")
 	c.Set("Profile-Web-Page-URL", "https://t.me/beyondsecurenews")
 	c.Set("Support-URL", "https://t.me/beyondsecurenews?direct")
 	c.Set("Notification-Subs-Expire", "1")
 	c.Set("Hide-Settings", "true")
-	c.Set("Subscription-Userinfo", fmt.Sprintf("expire=%v", expire))
+	c.Set("Subscription-Userinfo", fmt.Sprintf("upload=%d; download=%d; total=%d; expire=%v", usedUplink, usedDownlink, limits[10], expire))
 }

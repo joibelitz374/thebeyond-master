@@ -12,8 +12,7 @@ import (
 )
 
 const createPayment = `-- name: CreatePayment :exec
-INSERT INTO payment (account_id, amount, expires_at)
-VALUES($1, $2, $3)
+INSERT INTO payment (account_id, amount, expires_at) VALUES ($1, $2, $3)
 `
 
 type CreatePaymentParams struct {
@@ -38,10 +37,15 @@ func (q *Queries) DeletePayment(ctx context.Context, accountID int32) error {
 }
 
 const getPayments = `-- name: GetPayments :many
-SELECT amount, created_at, expires_at
-FROM payment
-WHERE account_id = $1
-AND expires_at > NOW()
+SELECT
+    amount,
+    created_at,
+    expires_at
+FROM
+    payment
+WHERE
+    account_id = $1
+    AND expires_at > NOW()
 `
 
 type GetPaymentsRow struct {

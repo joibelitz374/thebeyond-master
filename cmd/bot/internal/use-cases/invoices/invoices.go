@@ -3,6 +3,7 @@ package invoices
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -11,13 +12,15 @@ import (
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/promo"
-	"github.com/quickpowered/thebeyond-master/internal/repositories/subscriptions"
-	"github.com/quickpowered/thebeyond-master/internal/repositories/xraymanager"
+	ccurrency "github.com/quickpowered/thebeyond-master/configs/currency"
+	"github.com/quickpowered/thebeyond-master/internal/repositories/tariffs"
 	"github.com/quickpowered/thebeyond-master/internal/repositories/xraymanager/dto"
 	"github.com/quickpowered/thebeyond-master/internal/services/account"
 	"github.com/quickpowered/thebeyond-master/internal/services/payment"
+	"github.com/quickpowered/thebeyond-master/internal/services/subscription"
+	"github.com/quickpowered/thebeyond-master/internal/services/xraymanager"
 	"github.com/quickpowered/thebeyond-master/pkg/consts"
-	"github.com/quickpowered/thebeyond-master/pkg/email"
+	"github.com/quickpowered/thebeyond-master/pkg/utils"
 	"go.uber.org/zap"
 )
 
@@ -26,28 +29,28 @@ type UseCase interface {
 }
 
 type useCase struct {
-	accountService    account.Interface
-	paymentService    payment.Interface
-	promoUseCase      promo.UseCase
-	subscriptionsRepo subscriptions.Repository
-	xraymanagerRepo   xraymanager.Repository
-	logger            *zap.Logger
+	accountService      account.Interface
+	subscriptionService subscription.Interface
+	paymentService      payment.Interface
+	promoUseCase        promo.UseCase
+	tariffsRepo         tariffs.Repository
+	xraymanagerService  xraymanager.Interface
+	logger              *zap.Logger
 }
 
 func NewUseCase(
 	accountService account.Interface,
+	subscriptionService subscription.Interface,
 	paymentService payment.Interface,
 	promoUseCase promo.UseCase,
-	subscriptionsRepo subscriptions.Repository,
-	xraymanagerRepo xraymanager.Repository,
+	tariffsRepo tariffs.Repository,
+	xraymanagerService xraymanager.Interface,
 	logger *zap.Logger,
 ) useCase {
 	return useCase{
-		accountService,
-		paymentService,
-		promoUseCase,
-		subscriptionsRepo,
-		xraymanagerRepo,
+		accountService, subscriptionService,
+		paymentService, promoUseCase,
+		tariffsRepo, xraymanagerService,
 		logger,
 	}
 }
@@ -57,63 +60,61 @@ func (uc useCase) HandlePreCheckoutQuery(tgBot *bot.Bot, tgUpdate *models.Update
 	currency := tgUpdate.PreCheckoutQuery.Currency
 	payload := tgUpdate.PreCheckoutQuery.InvoicePayload
 
-	uc.logger.Debug("pre checkout query",
-		zap.String("currency", currency),
-		zap.String("payload", payload))
+	uc.logger.Debug("pre checkout query", zap.String("currency", currency), zap.String("payload", payload))
 
 	if currency != "XTR" {
-		uc.logger.Error("invalid currency",
-			zap.String("currency", currency),
-			zap.String("payload", payload))
+		uc.logger.Error("invalid currency", zap.String("currency", currency), zap.String("payload", payload))
 		return errors.New("invalid currency")
 	}
 
-	payloadParts := strings.Split(payload, ":")
-	if len(payloadParts) != 2 || payloadParts[0] != "d" {
-		uc.logger.Error("invalid payload",
-			zap.String("payload", payload),
-			zap.String("payload_parts", strings.Join(payloadParts, ",")))
+	tariffID, days, err := uc.getPayloadData(payload)
+	if err != nil {
+		uc.logger.Error("invalid subscription payload", zap.Int("days", days))
 		return errors.New("invalid payload")
 	}
 
-	days, err := strconv.Atoi(payloadParts[1])
-	if err != nil {
-		uc.logger.Error("invalid days",
-			zap.Error(err),
-			zap.String("days", payloadParts[1]))
-		return err
-	}
-
-	subscription := uc.subscriptionsRepo.GetByDays(days)
-	if subscription.Emoji == "" {
-		uc.logger.Error("invalid subscription",
-			zap.String("days", payloadParts[1]))
+	period, exists := uc.tariffsRepo.GetPeriod(days)
+	if !exists {
+		uc.logger.Error("invalid subscription period", zap.Int("days", days))
 		return errors.New("invalid subscription")
 	}
 
 	uc.logger.Debug("subscription found",
-		zap.String("days", payloadParts[1]),
-		zap.String("emoji", subscription.Emoji))
+		zap.Int("tariff_id", tariffID),
+		zap.Int("days", days),
+		zap.String("emoji", period.Emoji))
+
+	tariff, exists := uc.tariffsRepo.Get(tariffID)
+	if !exists {
+		uc.logger.Error("invalid tariff", zap.Int("tariff_id", tariffID))
+		return errors.New("invalid tariff")
+	}
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 20*time.Second)
 	defer cancel()
 
 	account, err := uc.accountService.Get(ctx, consts.PlatformTelegram, tgUserID)
 	if err != nil {
-		uc.logger.Error("get account failed", zap.Error(err),
-			zap.Int("user_id", tgUserID))
+		uc.logger.Error("get account failed", zap.Error(err), zap.Int("user_id", tgUserID))
 		return err
 	}
 
-	price := subscription.Prices["stars"]
+	finalPrice, extraDays := uc.tariffsRepo.CalculateRenewal(account, ccurrency.XTR, tariff, tariffID, days)
+	price := float64(finalPrice)
 	price = math.Round(price - price*float64(account.Discount)/100)
+
+	if err := uc.subscriptionService.SetTariff(ctx, account.ID, tariffID); err != nil {
+		uc.logger.Error("set tariff failed", zap.Error(err), zap.Int("account_id", account.ID))
+		return err
+	}
 
 	uc.logger.Debug("subscription price",
 		zap.Float64("price", price),
 		zap.Int("account_discount", account.Discount),
-		zap.Int("subscription_discount", subscription.Discount))
+		zap.Int("extra_days", extraDays))
 
-	paymentExpiresAt := time.Now().Add(time.Duration(days) * time.Hour * 24)
+	totalDays := days + extraDays
+	paymentExpiresAt := time.Now().Add(time.Duration(totalDays) * time.Hour * 24)
 	if err := uc.paymentService.Create(ctx, account.ID, int(price), paymentExpiresAt); err != nil {
 		uc.logger.Error("create payment failed", zap.Error(err),
 			zap.Int("account_id", account.ID),
@@ -127,19 +128,19 @@ func (uc useCase) HandlePreCheckoutQuery(tgBot *bot.Bot, tgUpdate *models.Update
 		zap.Float64("price", price),
 		zap.Time("payment_expires_at", paymentExpiresAt))
 
-	if account.SubscriptionExpiresAt == nil {
+	if !account.IsActive() {
 		uc.logger.Debug("account has no subscription expires at",
 			zap.Int("account_id", account.ID))
 
-		if err := uc.xraymanagerRepo.AddClient(ctx, dto.RegionRussia, account.KeyID, email.NewAccount(account.ID)); err != nil {
+		if err := uc.xraymanagerService.AddClient(ctx, dto.RegionRussia, account.KeyID, utils.NewEmail(account.ID)); err != nil {
 			uc.logger.Error("add user failed", zap.Error(err),
 				zap.Int("account_id", account.ID))
 			return err
 		}
 	}
 
-	duration := time.Duration(days) * time.Hour * 24
-	if err := uc.accountService.AddSubscriptionExpiresAt(ctx, account.ID, duration); err != nil {
+	duration := time.Duration(totalDays) * time.Hour * 24
+	if err := uc.subscriptionService.AddExpiresAt(ctx, account.ID, duration); err != nil {
 		uc.logger.Error("add subscription expires at failed", zap.Error(err),
 			zap.Int("account_id", account.ID),
 			zap.Duration("duration", duration))
@@ -150,7 +151,7 @@ func (uc useCase) HandlePreCheckoutQuery(tgBot *bot.Bot, tgUpdate *models.Update
 		zap.Int("account_id", account.ID),
 		zap.Duration("duration", duration))
 
-	if err := uc.accountService.ResetDiscount(ctx, account.ID); err != nil {
+	if err := uc.subscriptionService.ResetDiscount(ctx, account.ID); err != nil {
 		return err
 	}
 
@@ -160,4 +161,29 @@ func (uc useCase) HandlePreCheckoutQuery(tgBot *bot.Bot, tgUpdate *models.Update
 	})
 
 	return nil
+}
+
+func (uc useCase) getPayloadData(payload string) (tariffID, days int, err error) {
+	tariffID = 1
+	for _, part := range strings.Split(payload, ";") {
+		key, val, ok := strings.Cut(part, ":")
+		if !ok {
+			return tariffID, days, fmt.Errorf("invalid payload part: %s", part)
+		}
+
+		value, err := strconv.Atoi(val)
+		if err != nil {
+			return tariffID, days, err
+		}
+
+		switch key {
+		case "d":
+			days = value
+		case "t":
+			tariffID = value
+		default:
+			return tariffID, days, fmt.Errorf("unknown key: %s", part)
+		}
+	}
+	return
 }

@@ -1,7 +1,7 @@
-package email
+package utils
 
 import "fmt"
 
-func NewAccount(id int) string {
+func NewEmail(id int) string {
 	return fmt.Sprintf("id%d@account", id)
 }

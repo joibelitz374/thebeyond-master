@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -16,7 +17,6 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/telegram"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
-	"github.com/quickpowered/thebeyond-master/configs/language"
 	promoCfg "github.com/quickpowered/thebeyond-master/configs/promo"
 	sharedDomain "github.com/quickpowered/thebeyond-master/internal/domain"
 	"github.com/quickpowered/thebeyond-master/pkg/consts"
@@ -25,21 +25,19 @@ import (
 
 const PROMO_CMD = "promo"
 
-var promoNumberEmojis = []string{"🩵", "🩷", "💛"}
-
 type promoHandler struct {
 	deps.Dependencies
+	promoNumberEmojis []string
 }
 
 func NewPromoCmd(deps deps.Dependencies) promoHandler {
-	return promoHandler{deps}
+	promoNumberEmojis := []string{"🩵", "🩷", "💛"}
+	return promoHandler{deps, promoNumberEmojis}
 }
 
 func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
-	language := language.Language(p.Account.Language)
-	msg := i18n.PromoInfoMessages[language]
-	controlMsg := i18n.ControlMessages[language]
-	opts := []any{deps.ToForward(bot, p)}
+	msg := i18n.PromoInfoMessages[p.Account.Language]
+	controlMsg := i18n.ControlMessages[p.Account.Language]
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
 	defer cancel()
@@ -51,7 +49,6 @@ func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 			if err != nil {
 				return err
 			}
-
 			name = random
 		}
 
@@ -67,17 +64,18 @@ func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 			return err
 		}
 
+		shareURL := "https://t.me/share/url?url="
+		shareURL += url.QueryEscape("https://t.me/beyondsecurebot?start=" + promo.Name + "\nПодключайся и пользуйся VPN вместе со мной бесплатно!")
+
 		upperName := strings.ToUpper(promo.Name)
-		text := fmt.Sprintf("🗒 %s %s:\n\n⭐️ %s: %d\n💎 %s: %d%%\n\n📥 %s: https://t.me/beyondsecurebot?start=%s",
+		text := fmt.Sprintf("🗒 %s %s:\n\n⭐️ %s: %d\n💎 %s: %d%%",
 			msg.Instruction, upperName,
 			msg.Level, promo.Level,
-			msg.ClientDiscount, promoCfg.LevelDiscounts[promo.Level-1],
-			msg.Link, promo.Name)
+			msg.ClientDiscount, promoCfg.LevelDiscounts[promo.Level-1])
 		text += h.statisticPromo(promo, msg)
-		opts = append(opts, &types.Keyboard{ButtonRows: [][]types.Button{{
-			{Text: "◀️ " + controlMsg.Back, Data: PROMO_CMD},
-		}}})
-		return bot.SendMessage(p.Message.Chat(), text, opts...)
+		return bot.SendMessage(p.Message.Chat(), text, types.NewKeyboard().
+			NewRow(types.NewURLButton("Share", shareURL)).
+			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, PROMO_CMD)))
 	}
 
 	promos, err := h.PromoService.GetByCreator(ctx, p.Account.ID)
@@ -85,25 +83,18 @@ func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 		return err
 	}
 
-	buttonRows, idx := make([][]types.Button, len(promos)+2), 1
-	// buttonRows[0] = append(buttonRows[0], types.Button{Text: "⭐️ TOP", Data: "toppromo"})
-	for _, promo := range promos {
-		buttonRows[idx] = append(buttonRows[idx], types.Button{
-			Text: promoNumberEmojis[idx-1] + " " + strings.ToUpper(promo.Name),
-			Data: "promo " + promo.Name,
-		})
-		idx++
-	} // 💚💜
-
-	if len(promos) < 3 {
-		buttonRows = append(buttonRows, []types.Button{{Text: "🆕 " + msg.Create, Data: "promo random"}})
+	text := fmt.Sprintf("%s:\n\n🆘 %s\n\n🗒 %s: %d/3", msg.YourPromocodes, msg.WhatIsIt, msg.Created, len(promos))
+	keyboard := types.NewKeyboard()
+	for i, promo := range promos {
+		keyboard.NewRow(types.NewCallbackButton(h.promoNumberEmojis[i]+" "+strings.ToUpper(promo.Name), "promo "+promo.Name))
 	}
 
-	buttonRows = append(buttonRows, []types.Button{{Text: "◀️ " + controlMsg.Back, Data: MENU_CMD}})
-	opts = append(opts, &types.Keyboard{ButtonRows: buttonRows})
-	return bot.SendMessage(p.Message.Chat(), fmt.Sprintf("%s:\n\n🆘 %s\n\n🗒 %s: %d/3",
-		msg.YourPromocodes, msg.WhatIsIt,
-		msg.Created, len(promos)), opts...)
+	if len(promos) < 3 {
+		keyboard.NewRow(types.NewCallbackButton("🆕 "+msg.Create, "promo random"))
+	}
+
+	keyboard.NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, MENU_CMD))
+	return bot.SendMessage(p.Message.Chat(), text, keyboard)
 }
 
 func (h promoHandler) validateName(name string, msg i18n.PromoInfoLocale) error {

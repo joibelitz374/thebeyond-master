@@ -12,24 +12,22 @@ import (
 )
 
 const createAccount = `-- name: CreateAccount :one
-INSERT INTO account(key_id, short_id, subscription_expires_at, region, promo, discount)
-VALUES($1, $2, $3, $4, $5, $6) RETURNING id
+INSERT INTO account (key_id, short_id, region, promo, discount)
+VALUES ($1, $2, $3, $4, $5) RETURNING id
 `
 
 type CreateAccountParams struct {
-	KeyID                 string
-	ShortID               string
-	SubscriptionExpiresAt pgtype.Timestamptz
-	Region                string
-	Promo                 pgtype.Text
-	Discount              pgtype.Int4
+	KeyID    string
+	ShortID  string
+	Region   string
+	Promo    pgtype.Text
+	Discount pgtype.Int4
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (int32, error) {
 	row := q.db.QueryRow(ctx, createAccount,
 		arg.KeyID,
 		arg.ShortID,
-		arg.SubscriptionExpiresAt,
 		arg.Region,
 		arg.Promo,
 		arg.Discount,
@@ -40,7 +38,7 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (i
 }
 
 const createPlatformAccount = `-- name: CreatePlatformAccount :exec
-INSERT INTO platform_account(platform_id, external_account_id, fk_account_id)
+INSERT INTO platform_account (platform_id, external_account_id, fk_account_id)
 VALUES ($1, $2, $3)
 `
 
@@ -56,11 +54,15 @@ func (q *Queries) CreatePlatformAccount(ctx context.Context, arg CreatePlatformA
 }
 
 const findUsersForServiceCheck = `-- name: FindUsersForServiceCheck :many
-SELECT a.id, pa.external_account_id, a.language
-FROM account a
-JOIN platform_account pa ON pa.fk_account_id = a.id
-WHERE a.created_at <= NOW() - INTERVAL '5 minutes'
-  AND a.service_check_sent = 0
+SELECT
+    a.id,
+    pa.external_account_id,
+    a.language
+FROM account AS a
+INNER JOIN platform_account AS pa ON a.id = pa.fk_account_id
+WHERE
+    a.created_at <= NOW() - INTERVAL '5 minutes'
+    AND a.service_check_sent = 0
 `
 
 type FindUsersForServiceCheckRow struct {
@@ -95,14 +97,21 @@ SELECT
     cluster_id,
     key_id,
     short_id,
+    tariff,
+    discount,
+    promo,
+    freemium_status,
+    subscription_status,
+    subscription_expires_at,
+    devices,
+    used_uplink,
+    used_downlink,
+    protocol,
     region,
     language,
     currency,
-    protocol,
-    subscription_expires_at,
     last_key_refresh_at,
-    promo,
-    discount
+    last_traffic_refresh_at
 FROM account
 WHERE id = $1
 `
@@ -112,14 +121,21 @@ type GetAccountByIDRow struct {
 	ClusterID             pgtype.Int2
 	KeyID                 string
 	ShortID               string
+	Tariff                int16
+	Discount              pgtype.Int4
+	Promo                 pgtype.Text
+	FreemiumStatus        AccessStatus
+	SubscriptionStatus    AccessStatus
+	SubscriptionExpiresAt pgtype.Timestamptz
+	Devices               pgtype.Int2
+	UsedUplink            int64
+	UsedDownlink          int64
+	Protocol              string
 	Region                string
 	Language              string
 	Currency              string
-	Protocol              string
-	SubscriptionExpiresAt pgtype.Timestamptz
 	LastKeyRefreshAt      pgtype.Timestamptz
-	Promo                 pgtype.Text
-	Discount              pgtype.Int4
+	LastTrafficRefreshAt  pgtype.Timestamptz
 }
 
 func (q *Queries) GetAccountByID(ctx context.Context, id int32) (GetAccountByIDRow, error) {
@@ -130,14 +146,21 @@ func (q *Queries) GetAccountByID(ctx context.Context, id int32) (GetAccountByIDR
 		&i.ClusterID,
 		&i.KeyID,
 		&i.ShortID,
+		&i.Tariff,
+		&i.Discount,
+		&i.Promo,
+		&i.FreemiumStatus,
+		&i.SubscriptionStatus,
+		&i.SubscriptionExpiresAt,
+		&i.Devices,
+		&i.UsedUplink,
+		&i.UsedDownlink,
+		&i.Protocol,
 		&i.Region,
 		&i.Language,
 		&i.Currency,
-		&i.Protocol,
-		&i.SubscriptionExpiresAt,
 		&i.LastKeyRefreshAt,
-		&i.Promo,
-		&i.Discount,
+		&i.LastTrafficRefreshAt,
 	)
 	return i, err
 }
@@ -148,14 +171,21 @@ SELECT
     cluster_id,
     key_id,
     short_id,
+    tariff,
+    discount,
+    promo,
+    freemium_status,
+    subscription_status,
+    subscription_expires_at,
+    devices,
+    used_uplink,
+    used_downlink,
+    protocol,
     region,
     language,
     currency,
-    protocol,
-    subscription_expires_at,
     last_key_refresh_at,
-    promo,
-    discount
+    last_traffic_refresh_at
 FROM account
 WHERE key_id = $1
 `
@@ -165,14 +195,21 @@ type GetAccountByKeyIDRow struct {
 	ClusterID             pgtype.Int2
 	KeyID                 string
 	ShortID               string
+	Tariff                int16
+	Discount              pgtype.Int4
+	Promo                 pgtype.Text
+	FreemiumStatus        AccessStatus
+	SubscriptionStatus    AccessStatus
+	SubscriptionExpiresAt pgtype.Timestamptz
+	Devices               pgtype.Int2
+	UsedUplink            int64
+	UsedDownlink          int64
+	Protocol              string
 	Region                string
 	Language              string
 	Currency              string
-	Protocol              string
-	SubscriptionExpiresAt pgtype.Timestamptz
 	LastKeyRefreshAt      pgtype.Timestamptz
-	Promo                 pgtype.Text
-	Discount              pgtype.Int4
+	LastTrafficRefreshAt  pgtype.Timestamptz
 }
 
 func (q *Queries) GetAccountByKeyID(ctx context.Context, keyID string) (GetAccountByKeyIDRow, error) {
@@ -183,14 +220,21 @@ func (q *Queries) GetAccountByKeyID(ctx context.Context, keyID string) (GetAccou
 		&i.ClusterID,
 		&i.KeyID,
 		&i.ShortID,
+		&i.Tariff,
+		&i.Discount,
+		&i.Promo,
+		&i.FreemiumStatus,
+		&i.SubscriptionStatus,
+		&i.SubscriptionExpiresAt,
+		&i.Devices,
+		&i.UsedUplink,
+		&i.UsedDownlink,
+		&i.Protocol,
 		&i.Region,
 		&i.Language,
 		&i.Currency,
-		&i.Protocol,
-		&i.SubscriptionExpiresAt,
 		&i.LastKeyRefreshAt,
-		&i.Promo,
-		&i.Discount,
+		&i.LastTrafficRefreshAt,
 	)
 	return i, err
 }
@@ -198,8 +242,9 @@ func (q *Queries) GetAccountByKeyID(ctx context.Context, keyID string) (GetAccou
 const getAccountIDByPlatform = `-- name: GetAccountIDByPlatform :one
 SELECT fk_account_id
 FROM platform_account
-WHERE platform_id = $1
-AND external_account_id = $2
+WHERE
+    platform_id = $1
+    AND external_account_id = $2
 `
 
 type GetAccountIDByPlatformParams struct {
@@ -240,33 +285,6 @@ func (q *Queries) GetAllAccountsByPlatform(ctx context.Context, platformID int16
 	return items, nil
 }
 
-const getExpiredAccounts = `-- name: GetExpiredAccounts :many
-SELECT id
-FROM account
-WHERE subscription_expires_at < NOW()
-AND key_id <> ''
-`
-
-func (q *Queries) GetExpiredAccounts(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.Query(ctx, getExpiredAccounts)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []int32
-	for rows.Next() {
-		var id int32
-		if err := rows.Scan(&id); err != nil {
-			return nil, err
-		}
-		items = append(items, id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getPlatformUserID = `-- name: GetPlatformUserID :one
 SELECT external_account_id
 FROM platform_account
@@ -281,12 +299,26 @@ func (q *Queries) GetPlatformUserID(ctx context.Context, fkAccountID int32) (int
 }
 
 const markServiceCheckSent = `-- name: MarkServiceCheckSent :exec
-UPDATE account
-SET service_check_sent = 1
+UPDATE account SET service_check_sent = 1
 WHERE id = $1
 `
 
 func (q *Queries) MarkServiceCheckSent(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, markServiceCheckSent, id)
+	return err
+}
+
+const setTariff = `-- name: SetTariff :exec
+UPDATE account SET tariff = $1
+WHERE id = $2
+`
+
+type SetTariffParams struct {
+	Tariff int16
+	ID     int32
+}
+
+func (q *Queries) SetTariff(ctx context.Context, arg SetTariffParams) error {
+	_, err := q.db.Exec(ctx, setTariff, arg.Tariff, arg.ID)
 	return err
 }

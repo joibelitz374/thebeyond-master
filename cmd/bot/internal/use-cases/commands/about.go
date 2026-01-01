@@ -9,7 +9,6 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
-	"github.com/quickpowered/thebeyond-master/configs/language"
 )
 
 const ABOUT_CMD = "about"
@@ -24,7 +23,6 @@ func NewAboutHandler(deps deps.Dependencies) aboutHandler {
 	if path == "" {
 		path = "./assets/about.png"
 	}
-
 	return aboutHandler{deps, path}
 }
 
@@ -34,28 +32,17 @@ func (h aboutHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 		return err
 	}
 
-	language := language.Language(p.Account.Language)
-	msg := i18n.AboutMessages[language]
-	opts := []any{
-		deps.ToForward(bot, p),
-		h.buildKeyboard(msg, language),
+	msg := i18n.AboutMessages[p.Account.Language]
+	controlMsg := i18n.ControlMessages[p.Account.Language]
+
+	return bot.SendMessage(p.Message.Chat(), "",
 		types.NewAttachments().AddFile(bytes.NewReader(image)),
-	}
-
-	return bot.SendMessage(p.Message.Chat(), "", opts...)
-}
-
-func (h aboutHandler) buildKeyboard(msg i18n.AboutLocale, language language.Language) *types.Keyboard {
-	controlMsg := i18n.ControlMessages[language]
-	return &types.Keyboard{
-		ButtonRows: [][]types.Button{
-			{{Text: "📑 " + msg.TermsOfService, Data: "tos"}},
-			{{Text: "🛡 " + msg.PrivacyPolicy, Data: "privacy"}},
-			{{Text: "🛂 " + msg.RefundPolicy, Data: "refund"}},
-			// {{Text: "💳 Оплата и биллинг", Data: "billing"}},
-			// {{Text: "🆘 FAQ / Справка", Data: "faq"}},
-			{{Text: "☎️ " + msg.Support, URL: "https://t.me/beyondsecurenews?direct"}},
-			{{Text: "◀️ " + controlMsg.Back, Data: MENU_CMD}},
-		},
-	}
+		types.NewKeyboard().
+			NewRow(types.NewCallbackButton("📑 "+msg.TermsOfService, "tos")).
+			NewRow(types.NewCallbackButton("🛡 "+msg.PrivacyPolicy, "privacy")).
+			NewRow(types.NewCallbackButton("🛂 "+msg.RefundPolicy, "refund")).
+			// NewRow(types.NewCallbackButton("💳 "+msg.Billing, "billing")).
+			// NewRow(types.NewCallbackButton("🆘 "+msg.FAQ, "faq")).
+			NewRow(types.NewURLButton("☎️ "+msg.Support, "https://t.me/beyondsecurenews?direct")).
+			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, MENU_CMD)))
 }

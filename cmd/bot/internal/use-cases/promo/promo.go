@@ -14,10 +14,10 @@ import (
 	"github.com/quickpowered/thebeyond-master/configs/language"
 	promoCfg "github.com/quickpowered/thebeyond-master/configs/promo"
 	"github.com/quickpowered/thebeyond-master/internal/domain"
-	"github.com/quickpowered/thebeyond-master/internal/repositories/subscriptions"
 	"github.com/quickpowered/thebeyond-master/internal/services/account"
 	"github.com/quickpowered/thebeyond-master/internal/services/payment"
 	"github.com/quickpowered/thebeyond-master/internal/services/promo"
+	"github.com/quickpowered/thebeyond-master/internal/services/subscription"
 	"go.uber.org/zap"
 )
 
@@ -27,21 +27,21 @@ type UseCase interface {
 }
 
 type useCase struct {
-	accountService    account.Interface
-	paymentService    payment.Interface
-	promoService      promo.Interface
-	subscriptionsRepo subscriptions.Repository
-	logger            *zap.Logger
+	accountService      account.Interface
+	subscriptionService subscription.Interface
+	paymentService      payment.Interface
+	promoService        promo.Interface
+	logger              *zap.Logger
 }
 
 func NewUseCase(
 	accountService account.Interface,
+	subscriptionService subscription.Interface,
 	paymentService payment.Interface,
 	promoService promo.Interface,
-	subscriptionsRepo subscriptions.Repository,
 	logger *zap.Logger,
 ) useCase {
-	return useCase{accountService, paymentService, promoService, subscriptionsRepo, logger}
+	return useCase{accountService, subscriptionService, paymentService, promoService, logger}
 }
 
 func (uc useCase) Get(promoName string) (promo domain.Promo, discount int, err error) {
@@ -106,7 +106,7 @@ func (uc useCase) RegisterReferral(botAPI *bot.Bot, senderID, accountID int, pro
 	uc.logger.Debug("creator account found",
 		zap.Int("promo_creator", promo.Creator),
 		zap.Int("creator_id", creatorAccount.ID),
-		zap.String("creator_language", creatorAccount.Language))
+		zap.String("creator_language", string(creatorAccount.Language)))
 
 	if creatorAccount.ID == 0 {
 		uc.logger.Error("creator account not found",
@@ -135,7 +135,7 @@ func (uc useCase) RegisterReferral(botAPI *bot.Bot, senderID, accountID int, pro
 		defer cancel()
 
 		duration := time.Duration(reward.Days) * 24 * time.Hour
-		if err := uc.accountService.AddSubscriptionExpiresAt(ctx, promo.Creator, duration); err != nil {
+		if err := uc.subscriptionService.AddExpiresAt(ctx, promo.Creator, duration); err != nil {
 			uc.logger.Error("failed to add subscription expires at", zap.Error(err))
 			return err
 		}
@@ -146,7 +146,7 @@ func (uc useCase) RegisterReferral(botAPI *bot.Bot, senderID, accountID int, pro
 			ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 			defer cancel()
 
-			if err := uc.accountService.SetDiscount(ctx, promo.Creator, reward.Discount); err != nil {
+			if err := uc.subscriptionService.SetDiscount(ctx, promo.Creator, reward.Discount); err != nil {
 				uc.logger.Error("failed to set discount", zap.Error(err))
 				return err
 			}
@@ -215,7 +215,7 @@ func (uc useCase) upgradePromoLevel(
 		zap.String("name", promoName),
 		zap.Duration("duration", duration))
 
-	if err := uc.accountService.AddSubscriptionExpiresAt(ctx, promo.Creator, duration); err != nil {
+	if err := uc.subscriptionService.AddExpiresAt(ctx, promo.Creator, duration); err != nil {
 		uc.logger.Error("failed to add subscription expires at", zap.Error(err))
 		return err
 	}

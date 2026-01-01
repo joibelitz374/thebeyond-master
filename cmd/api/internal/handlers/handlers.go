@@ -65,7 +65,7 @@ func (h subscription) Get(c fiber.Ctx) error {
 			ID:        account.KeyID,
 			ExpiresAt: int(account.SubscriptionExpiresAt.UnixMilli()),
 		},
-		Language: account.Language,
-		Currency: account.Currency,
+		Language: string(account.Language),
+		Currency: string(account.Currency),
 	})
 }

@@ -53,6 +53,26 @@ const (
 	Marathi         Language = "mr"
 )
 
+var Targets = [][]string{
+	{"en", "de", "nl"},
+	{"sv", "no", "da"},
+	{"es", "fr"},
+	{"pt", "it"},
+	{"ru", "ua", "pl"},
+	{"cs", "bg", "sr"},
+	{"hr", "sk", "sl"},
+	{"lt", "lv"},
+	{"et", "fi"},
+	{"el", "ro", "hu"},
+	{"ar", "fa"},
+	{"tr", "he"},
+	{"zh", "ja", "ko"},
+	{"vi", "th", "id"},
+	{"ms", "tl"},
+	{"hi", "ur", "bn"},
+	{"ta", "te", "mr"},
+}
+
 var Languages = map[Language]configs.ItemInfo{
 	English:         {Flag: "🇺🇸", Emoji: "", Name: "English"},
 	Deutsch:         {Flag: "🇩🇪", Emoji: "", Name: "Deutsch"},

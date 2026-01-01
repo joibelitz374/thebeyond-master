@@ -9,7 +9,6 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
-	"github.com/quickpowered/thebeyond-master/configs/language"
 )
 
 const SETTINGS_CMD = "settings"
@@ -29,39 +28,29 @@ func NewSettingsHandler(deps deps.Dependencies) settingsHandler {
 }
 
 func (h settingsHandler) Execute(bot bin.Interface, p *domain.Payload) error {
+	msg := i18n.SettingsMessages[p.Account.Language]
+	controlMsg := i18n.ControlMessages[p.Account.Language]
+
 	image, err := os.ReadFile(h.path)
 	if err != nil {
 		return err
 	}
 
-	language := language.Language(p.Account.Language)
-	msg := i18n.SettingsMessages[language]
-	controlMsg := i18n.ControlMessages[language]
-	opts := []any{
-		deps.ToForward(bot, p),
-		h.buildKeyboard(msg, controlMsg),
+	return bot.SendMessage(p.Message.Chat(), "",
 		types.NewAttachments().AddFile(bytes.NewReader(image)),
-	}
-	return bot.SendMessage(p.Message.Chat(), "", opts...)
-}
-
-func (h settingsHandler) buildKeyboard(msg i18n.SettingsLocale, controlMsg i18n.ControlLocale) *types.Keyboard {
-	return &types.Keyboard{
-		ButtonRows: [][]types.Button{
-			// {{Text: "⭐️ " + msg.Custom, Data: "custom"}},
-			{
-				// {Text: "💟 " + msg.Region, Data: "region"},
-				// {Text: "🗺 " + msg.Locations, Data: "location"},
-			},
-			{
-				// {Text: "🧠 " + msg.Smart, Data: "mode smart"},
-				// {Text: "🏡 " + msg.Network, Data: "network"},
-			},
-			{
-				{Text: "💬 " + msg.Language, Data: "language"},
-				{Text: "🤑 " + msg.Currency, Data: "currency"},
-			},
-			{{Text: "◀️ " + controlMsg.Back, Data: MENU_CMD}},
-		},
-	}
+		types.NewKeyboard().
+			// NewRow(types.NewCallbackButton("⭐️ "+msg.Custom, "custom")).
+			// NewRow(
+			// 	types.NewCallbackButton("💟 "+msg.Region, "region"),
+			// 	types.NewCallbackButton("🗺 "+msg.Locations, "location"),
+			// ).
+			// NewRow(
+			// 	types.NewCallbackButton("🧠 "+msg.SMART, "mode smart"),
+			// 	types.NewCallbackButton("🏡 "+msg.Network, "network"),
+			// ).
+			NewRow(
+				types.NewCallbackButton("💬 "+msg.Language, LANGUAGE_CMD),
+				types.NewCallbackButton("🤑 "+msg.Currency, CURRENCY_CMD),
+			).
+			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, MENU_CMD)))
 }

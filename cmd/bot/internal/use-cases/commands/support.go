@@ -27,7 +27,6 @@ func (c *supportHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 		if err := bot.SendMessage(update.Chat{ID: 924536264}, fmt.Sprintf("У <a href=\"tg://user?id=%d\">пользователя</a> всё отлично!", p.Message.Sender())); err != nil {
 			return err
 		}
-
 		return bot.SendMessage(p.Message.Chat(), "Thank you for your feedback! ✌️😊")
 	}
 

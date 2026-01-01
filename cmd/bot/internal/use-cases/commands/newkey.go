@@ -10,9 +10,7 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
-	"github.com/quickpowered/thebeyond-master/configs/language"
-	"github.com/quickpowered/thebeyond-master/internal/repositories/xraymanager/dto"
-	"github.com/quickpowered/thebeyond-master/pkg/email"
+	"github.com/quickpowered/thebeyond-master/pkg/utils"
 	"go.uber.org/zap"
 )
 
@@ -27,48 +25,47 @@ func NewNewKeyHandler(deps deps.Dependencies) newKeyHandler {
 }
 
 func (h newKeyHandler) Execute(bot bin.Interface, p *domain.Payload) error {
-	language := language.Language(p.Account.Language)
-	msg := i18n.NewKeyMessages[language]
-	controlMsg := i18n.ControlMessages[language]
-	opts := []any{deps.ToForward(bot, p)}
+	msg := i18n.NewKeyMessages[p.Account.Language]
+	controlMsg := i18n.ControlMessages[p.Account.Language]
 
-	if len(p.Args) >= 2 {
-		if p.Args[1] == "confirm" {
-			if !p.Account.IsActive() {
-				return bot.SendMessage(p.Message.Chat(), "You don't have a subscription", opts...)
-			}
+	if len(p.Args) >= 2 && p.Args[1] == "confirm" {
+		return h.confirm(bot, p, msg, controlMsg)
+	}
 
-			ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
-			defer cancel()
+	return bot.SendMessage(p.Message.Chat(), msg.ConfirmPrompt, types.NewKeyboard().
+		NewRow(types.NewCallbackButton("🎾 Confirm", "newkey confirm")).
+		NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, MENU_CMD)))
+}
 
-			keyID, err := h.AccountService.RegenerateKey(ctx, p.Account.ID)
-			if err != nil {
-				return err
-			}
+func (h newKeyHandler) confirm(bot bin.Interface, p *domain.Payload, msg i18n.NewKeyLocale, controlMsg i18n.ControlLocale) error {
+	if !p.Account.IsActive() {
+		return bot.SendMessage(p.Message.Chat(), "You don't have a subscription", types.NewKeyboard().
+			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, MENU_CMD)))
+	}
 
-			for _, region := range []dto.Region{dto.RegionRussia} {
-				if err := h.XRayManagerRepo.RemoveClient(ctx, region, email.NewAccount(p.Account.ID)); err != nil {
-					log.Error("failed to remove client", zap.Error(err))
-				}
+	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
+	defer cancel()
 
-				if err := h.XRayManagerRepo.AddClient(ctx, region, keyID, email.NewAccount(p.Account.ID)); err != nil {
-					log.Error("failed to add client", zap.Error(err))
-				}
-			}
+	keyID, err := h.AccountService.RegenerateKey(ctx, p.Account.ID)
+	if err != nil {
+		return err
+	}
 
-			opts = append(opts, &types.Keyboard{ButtonRows: [][]types.Button{{
-				{Text: "◀️ " + controlMsg.Back, Data: MENU_CMD},
-			}}})
-			return bot.SendMessage(p.Message.Chat(), msg.SuccessMessage, opts...)
+	regions, err := h.SubscriptionService.GetRegions(p.Account.Region)
+	if err != nil {
+		return err
+	}
+
+	for _, region := range regions {
+		if err := h.XRayManagerService.RemoveClient(ctx, region, utils.NewEmail(p.Account.ID)); err != nil {
+			log.Error("failed to remove client", zap.Error(err))
+		}
+
+		if err := h.XRayManagerService.AddClient(ctx, region, keyID, utils.NewEmail(p.Account.ID)); err != nil {
+			return err
 		}
 	}
 
-	opts = append(opts, &types.Keyboard{
-		ButtonRows: [][]types.Button{
-			{{Text: "🎾 Confirm", Data: "newkey confirm"}},
-			{{Text: "◀️ " + controlMsg.Back, Data: MENU_CMD}},
-		},
-	})
-
-	return bot.SendMessage(p.Message.Chat(), msg.ConfirmPrompt, opts...)
+	return bot.SendMessage(p.Message.Chat(), msg.SuccessMessage, types.NewKeyboard().
+		NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, MENU_CMD)))
 }

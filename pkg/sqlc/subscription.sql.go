@@ -7,11 +7,15 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const addSubscriptionExpiresAt = `-- name: AddSubscriptionExpiresAt :exec
 UPDATE account
-SET subscription_expires_at = COALESCE(subscription_expires_at, NOW()) + make_interval(secs => $1)
+SET
+    subscription_expires_at
+    = coalesce(subscription_expires_at, now()) + make_interval(secs => $1)
 WHERE id = $2
 `
 
@@ -27,7 +31,11 @@ func (q *Queries) AddSubscriptionExpiresAt(ctx context.Context, arg AddSubscript
 
 const cancelSubscriptions = `-- name: CancelSubscriptions :exec
 UPDATE account
-SET subscription_expires_at = NULL
+SET
+    tariff = 0,
+    subscription_status = 'unavailable',
+    subscription_expires_at = NULL,
+    is_disabled = true
 WHERE id = $1
 `
 
@@ -36,9 +44,174 @@ func (q *Queries) CancelSubscriptions(ctx context.Context, id int32) error {
 	return err
 }
 
+const getAccountsToDisable = `-- name: GetAccountsToDisable :many
+SELECT id FROM (
+    SELECT
+        id,
+        subscription_expires_at,
+        is_disabled,
+        used_uplink + used_downlink AS used_bytes,
+        ((CASE
+            WHEN subscription_status = 'available'
+                THEN CASE tariff
+                    WHEN 1 THEN 150 WHEN 2 THEN 400 WHEN 4 THEN 5120
+                    ELSE 0
+                END
+            ELSE 0
+        END)
+        + CASE WHEN freemium_status = 'available' THEN 10 ELSE 0 END)
+        * 1024::BIGINT * 1024 * 1024 AS traffic_limit_bytes
+    FROM account
+) AS a
+WHERE NOT is_disabled AND ((
+    subscription_expires_at IS NOT NULL
+    AND subscription_expires_at < now()
+) OR (traffic_limit_bytes > 0 AND used_bytes >= traffic_limit_bytes))
+`
+
+func (q *Queries) GetAccountsToDisable(ctx context.Context) ([]int32, error) {
+	rows, err := q.db.Query(ctx, getAccountsToDisable)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var id int32
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAccountsToEnable = `-- name: GetAccountsToEnable :many
+SELECT id, key_id FROM (
+    SELECT
+        id,
+        key_id,
+        subscription_expires_at,
+        is_disabled,
+        used_uplink + used_downlink AS used_bytes,
+        (
+            (CASE
+                WHEN subscription_status = 'available'
+                    THEN CASE tariff
+                        WHEN 1 THEN 150 WHEN 2 THEN 400 WHEN 4 THEN 5120
+                        ELSE 0
+                    END
+                ELSE 0
+            END)
+            + CASE WHEN freemium_status = 'available' THEN 10 ELSE 0 END
+        ) * 1024::BIGINT * 1024 * 1024 AS traffic_limit_bytes
+    FROM account
+) AS a
+WHERE is_disabled
+  AND subscription_expires_at IS NOT NULL
+  AND subscription_expires_at >= now()
+  AND (traffic_limit_bytes = 0 OR used_bytes < traffic_limit_bytes)
+`
+
+type GetAccountsToEnableRow struct {
+	ID    int32
+	KeyID string
+}
+
+func (q *Queries) GetAccountsToEnable(ctx context.Context) ([]GetAccountsToEnableRow, error) {
+	rows, err := q.db.Query(ctx, getAccountsToEnable)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAccountsToEnableRow
+	for rows.Next() {
+		var i GetAccountsToEnableRow
+		if err := rows.Scan(&i.ID, &i.KeyID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getFremiumAccounts = `-- name: GetFremiumAccounts :many
+SELECT a.id, pa.external_account_id
+FROM platform_account pa
+JOIN account a ON a.id = pa.fk_account_id
+WHERE pa.platform_id = 0
+  AND a.freemium_status = 'available'
+`
+
+type GetFremiumAccountsRow struct {
+	ID                int32
+	ExternalAccountID int64
+}
+
+func (q *Queries) GetFremiumAccounts(ctx context.Context) ([]GetFremiumAccountsRow, error) {
+	rows, err := q.db.Query(ctx, getFremiumAccounts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFremiumAccountsRow
+	for rows.Next() {
+		var i GetFremiumAccountsRow
+		if err := rows.Scan(&i.ID, &i.ExternalAccountID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNeedRefreshTraffic = `-- name: GetNeedRefreshTraffic :many
+SELECT id FROM account WHERE last_traffic_refresh_at < NOW() - INTERVAL '30 days'
+`
+
+func (q *Queries) GetNeedRefreshTraffic(ctx context.Context) ([]int32, error) {
+	rows, err := q.db.Query(ctx, getNeedRefreshTraffic)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var id int32
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const removeFreemium = `-- name: RemoveFreemium :exec
+UPDATE account SET freemium_status = 'unavailable' WHERE id = $1
+`
+
+func (q *Queries) RemoveFreemium(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, removeFreemium, id)
+	return err
+}
+
 const removeSubscriptionExpiresAt = `-- name: RemoveSubscriptionExpiresAt :exec
 UPDATE account
-SET subscription_expires_at = COALESCE(subscription_expires_at, NOW()) - make_interval(secs => $1)
+SET
+    subscription_expires_at
+    = coalesce(subscription_expires_at, now()) - make_interval(secs => $1)
 WHERE id = $2
 `
 
@@ -49,5 +222,39 @@ type RemoveSubscriptionExpiresAtParams struct {
 
 func (q *Queries) RemoveSubscriptionExpiresAt(ctx context.Context, arg RemoveSubscriptionExpiresAtParams) error {
 	_, err := q.db.Exec(ctx, removeSubscriptionExpiresAt, arg.Secs, arg.ID)
+	return err
+}
+
+const resetLastTrafficRefreshAt = `-- name: ResetLastTrafficRefreshAt :exec
+UPDATE account SET last_traffic_refresh_at = NOW(),
+    used_uplink = 0, used_downlink = 0
+WHERE id = $1
+`
+
+func (q *Queries) ResetLastTrafficRefreshAt(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, resetLastTrafficRefreshAt, id)
+	return err
+}
+
+const setSubscriptionExpiresAt = `-- name: SetSubscriptionExpiresAt :exec
+UPDATE account SET subscription_expires_at = $1 WHERE id = $2
+`
+
+type SetSubscriptionExpiresAtParams struct {
+	SubscriptionExpiresAt pgtype.Timestamptz
+	ID                    int32
+}
+
+func (q *Queries) SetSubscriptionExpiresAt(ctx context.Context, arg SetSubscriptionExpiresAtParams) error {
+	_, err := q.db.Exec(ctx, setSubscriptionExpiresAt, arg.SubscriptionExpiresAt, arg.ID)
+	return err
+}
+
+const startFreemium = `-- name: StartFreemium :exec
+UPDATE account SET freemium_status = 'available' WHERE id = $1
+`
+
+func (q *Queries) StartFreemium(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, startFreemium, id)
 	return err
 }

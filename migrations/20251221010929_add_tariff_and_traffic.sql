@@ -1,0 +1,12 @@
+CREATE TYPE access_status AS ENUM ('available', 'unavailable');
+
+ALTER TABLE account
+ADD COLUMN tariff SMALLINT NOT NULL DEFAULT 0,
+ADD COLUMN devices SMALLINT DEFAULT 1,
+ADD COLUMN used_uplink BIGINT NOT NULL DEFAULT 0,
+ADD COLUMN used_downlink BIGINT NOT NULL DEFAULT 0,
+ADD COLUMN freemium_status ACCESS_STATUS NOT NULL DEFAULT 'unavailable',
+ADD COLUMN subscription_status ACCESS_STATUS NOT NULL DEFAULT 'unavailable',
+ADD COLUMN is_disabled BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN last_traffic_refresh_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+ALTER COLUMN subscription_expires_at DROP DEFAULT;

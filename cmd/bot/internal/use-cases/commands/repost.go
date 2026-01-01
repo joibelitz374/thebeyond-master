@@ -46,13 +46,14 @@ func (c *repostHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 		return err
 	}
 
-	var errors int
+	blockedCounters := 0
 	for _, accountID := range accounts {
 		if err := bot.(*telegram.Adapter).ForwardMessage(update.Chat{ID: accountID}, -1003309480333, messageID); err != nil {
-			fmt.Println("Repost error:", err)
-			errors++
+			if err.Error() == "Repost error: forbidden, Forbidden: bot was blocked by the user" {
+				blockedCounters++
+			}
 		}
 	}
 
-	return bot.SendMessage(p.Message.Chat(), fmt.Sprintf("Succesfully reposted! Errors: %d", errors))
+	return bot.SendMessage(p.Message.Chat(), fmt.Sprintf("Succesfully reposted!\nBlocked: %d", blockedCounters))
 }

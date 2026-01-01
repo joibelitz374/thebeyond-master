@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"time"
 
@@ -23,13 +22,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
-	cfg := zap.NewProductionConfig()
-	cfg.Level = zap.NewAtomicLevelAt(logger.LogLevel())
-
-	logger, err := cfg.Build()
-	if err != nil {
-		panic(err)
-	}
+	logger := logger.New(os.Getenv("ENV"), os.Getenv("LOG_LEVEL"))
 
 	pgPool, err := postgres.New(ctx, postgres.DSN())
 	if err != nil {
@@ -66,8 +59,9 @@ func main() {
 	}))
 
 	sub := app.Group("/sub")
-	sub.Get("/:sub_id", handlers.Default)
-	sub.Get("/:sub_id/smart/:region", handlers.Smart)
+	sub.Get("/:key_id", handlers.Default)
+	sub.Get("/:key_id/smart", handlers.Smart)
+	sub.Get("/:key_id/smart/:region", handlers.Smart)
 
 	api := app.Group("/api")
 	api.Use(authMiddleware.Init())
@@ -89,5 +83,7 @@ func main() {
 		config.CertKeyFile = certKeyFile
 	}
 
-	log.Fatalln(app.Listen(":"+port, config))
+	if err := app.Listen(":"+port, config); err != nil {
+		logger.Fatal("failed to listen", zap.Error(err))
+	}
 }

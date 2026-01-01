@@ -10,8 +10,7 @@ import (
 )
 
 const createPromo = `-- name: CreatePromo :exec
-INSERT INTO promo(name, creator)
-VALUES($1, $2)
+INSERT INTO promo (name, creator) VALUES ($1, $2)
 `
 
 type CreatePromoParams struct {
@@ -25,7 +24,11 @@ func (q *Queries) CreatePromo(ctx context.Context, arg CreatePromoParams) error 
 }
 
 const getPromo = `-- name: GetPromo :one
-SELECT name, creator, level, clients
+SELECT
+    name,
+    creator,
+    level,
+    clients
 FROM promo
 WHERE name = $1
 `
@@ -50,7 +53,11 @@ func (q *Queries) GetPromo(ctx context.Context, name string) (GetPromoRow, error
 }
 
 const getPromosByCreator = `-- name: GetPromosByCreator :many
-SELECT name, creator, level, clients
+SELECT
+    name,
+    creator,
+    level,
+    clients
 FROM promo
 WHERE creator = $1
 `
@@ -88,8 +95,7 @@ func (q *Queries) GetPromosByCreator(ctx context.Context, creator int32) ([]GetP
 }
 
 const increasePromoClients = `-- name: IncreasePromoClients :exec
-UPDATE promo
-SET clients = clients + 1
+UPDATE promo SET clients = clients + 1
 WHERE name = $1
 `
 
@@ -99,9 +105,7 @@ func (q *Queries) IncreasePromoClients(ctx context.Context, name string) error {
 }
 
 const upgradePromoLevel = `-- name: UpgradePromoLevel :exec
-UPDATE promo
-SET level = level + 1,
-clients = 0
+UPDATE promo SET level = level + 1, clients = 0
 WHERE name = $1
 `
 

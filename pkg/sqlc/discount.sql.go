@@ -12,8 +12,7 @@ import (
 )
 
 const resetDiscount = `-- name: ResetDiscount :exec
-UPDATE account
-SET discount = 0
+UPDATE account SET discount = 0
 WHERE id = $1
 `
 
@@ -23,8 +22,7 @@ func (q *Queries) ResetDiscount(ctx context.Context, id int32) error {
 }
 
 const setDiscount = `-- name: SetDiscount :exec
-UPDATE account
-SET discount = $1
+UPDATE account SET discount = $1
 WHERE id = $2
 `
 

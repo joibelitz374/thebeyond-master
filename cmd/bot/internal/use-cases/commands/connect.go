@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/domain"
@@ -8,139 +9,59 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
-	"github.com/quickpowered/thebeyond-master/configs/language"
+	"github.com/quickpowered/thebeyond-master/configs/application"
 )
 
 const CONNECT_CMD = "connect"
 
 type connectHandler struct {
 	deps.Dependencies
+	projectDomain string
 }
 
 func NewConnectHandler(deps deps.Dependencies) connectHandler {
-	return connectHandler{deps}
+	projectDomain := os.Getenv("PROJECT_DOMAIN")
+	return connectHandler{deps, projectDomain}
 }
 
 func (h connectHandler) Execute(bot bin.Interface, p *domain.Payload) error {
-	language := language.Language(p.Account.Language)
-	msg := i18n.ConnectMessages[language]
-	controlMsg := i18n.ControlMessages[language]
-	projectDomain := os.Getenv("PROJECT_DOMAIN")
-	subscriptionURL := "https://" + projectDomain + "/sub/" + p.Account.KeyID
-
+	msg := i18n.ConnectMessages[p.Account.Language]
+	controlMsg := i18n.ControlMessages[p.Account.Language]
 	if len(p.Args) > 1 {
 		return h.connectViaApp(bot, p, msg, controlMsg)
 	}
 
-	buttonRows := [][]types.Button{
-		{{
-			Text: "🎾 " + msg.IHave,
-			URL:  "https://" + projectDomain + "/sub/r?url=happ://add/" + subscriptionURL + "/smart/" + p.Account.Region,
-		}},
-		{{Text: "📥 " + msg.DownloadApp, Data: "connect download"}},
-		{{Text: "◀️ " + controlMsg.Back, Data: MENU_CMD}},
-	}
-
-	return bot.SendMessage(p.Message.Chat(), msg.DoYouHaveAnApp, &types.Keyboard{ButtonRows: buttonRows})
-}
-
-type DownloadURL struct {
-	Name string
-	URL  string
-}
-
-var downloadURLs = map[string][]DownloadURL{
-	"windows": {
-		{
-			Name: "x64 Installer",
-			URL:  "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/setup-Happ.x64.exe",
-		},
-	},
-	"linux": {
-		{
-			Name: "x64 Deb",
-			URL:  "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/Happ.linux.x64.deb",
-		},
-	},
-	"macos": {
-		{
-			Name: "App Store (Global)",
-			URL:  "https://apps.apple.com/us/app/happ-proxy-utility/id6504287215",
-		},
-		{
-			Name: "App Store (Rus)",
-			URL:  "https://apps.apple.com/ru/app/happ-proxy-utility-plus/id6746188973",
-		},
-		{
-			Name: "Universal (Dmg)",
-			URL:  "https://github.com/Happ-proxy/happ-desktop/releases/latest/download/Happ.macOS.universal.dmg",
-		},
-	},
-	"android": {
-		{
-			Name: "Google Play",
-			URL:  "https://play.google.com/store/apps/details?id=com.happproxy",
-		},
-		{
-			Name: "APK",
-			URL:  "https://github.com/Happ-proxy/happ-android/releases/latest/download/Happ.apk",
-		},
-	},
-	"ios": {
-		{
-			Name: "App Store (Global)",
-			URL:  "https://apps.apple.com/us/app/happ-proxy-utility/id6504287215",
-		},
-		{
-			Name: "App Store (Rus)",
-			URL:  "https://apps.apple.com/ru/app/happ-proxy-utility-plus/id6746188973",
-		},
-	},
-	"tv": {
-		{
-			Name: "Android TV",
-			URL:  "https://play.google.com/store/apps/details?id=com.happproxy",
-		},
-		{
-			Name: "Android APK",
-			URL:  "https://github.com/Happ-proxy/happ-android/releases/latest/download/Happ.apk",
-		},
-		{
-			Name: "Apple TV",
-			URL:  "https://apps.apple.com/us/app/happ-proxy-utility-for-tv/id6748297274",
-		},
-	},
+	subscriptionURL := fmt.Sprintf("https://%s/sub/%s/smart/%s", h.projectDomain, p.Account.KeyID, p.Account.Region)
+	redirectToAddURL := fmt.Sprintf("https://%s/sub/r?url=happ://add/%s", h.projectDomain, subscriptionURL)
+	return bot.SendMessage(p.Message.Chat(), msg.DoYouHaveAnApp,
+		types.NewKeyboard().
+			NewRow(types.NewURLButton("🎾 "+msg.IHave, redirectToAddURL)).
+			NewRow(types.NewCallbackButton("📥 "+msg.DownloadApp, "connect download")).
+			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, MENU_CMD)))
 }
 
 func (h connectHandler) connectViaApp(bot bin.Interface, p *domain.Payload, msg i18n.ConnectLocale, controlMsg i18n.ControlLocale) error {
-	switch device := p.Args[1]; device {
-	case "download":
-		return bot.SendMessage(p.Message.Chat(), msg.InstallationDevice, &types.Keyboard{
-			ButtonRows: [][]types.Button{
-				{{Text: "🖼 Windows", Data: "connect windows"}},
-				{{Text: "🐧 Linux", Data: "connect linux"}},
-				{{Text: "🙂 MacOS", Data: "connect macos"}},
-				{{Text: "🤖 Android", Data: "connect android"}},
-				{{Text: "🍎 iOS", Data: "connect ios"}},
-				{{Text: "🖥 TV", Data: "connect tv"}},
-				{{Text: "◀️ " + controlMsg.Back, Data: CONNECT_CMD}},
-			},
-		})
-	default:
-		urls, ok := downloadURLs[device]
-		if !ok {
-			return bot.SendMessage(p.Message.Chat(), "Device not found")
-		}
-
-		buttonRows := [][]types.Button{}
-		for _, url := range urls {
-			buttonRows = append(buttonRows, []types.Button{{Text: url.Name, URL: url.URL}})
-		}
-
-		buttonRows = append(buttonRows, []types.Button{{
-			Text: "◀️ " + controlMsg.Back,
-			Data: CONNECT_CMD + " download",
-		}})
-		return bot.SendMessage(p.Message.Chat(), msg.InstallationMethod, &types.Keyboard{ButtonRows: buttonRows})
+	if p.Args[1] == "download" {
+		return bot.SendMessage(p.Message.Chat(), msg.InstallationDevice, types.NewKeyboard().
+			NewRow(types.NewCallbackButton("🖼 Windows", "connect windows")).
+			NewRow(types.NewCallbackButton("🐧 Linux", "connect linux")).
+			NewRow(types.NewCallbackButton("🙂 MacOS", "connect macos")).
+			NewRow(types.NewCallbackButton("🤖 Android", "connect android")).
+			NewRow(types.NewCallbackButton("🍎 iOS", "connect ios")).
+			NewRow(types.NewCallbackButton("🖥 TV", "connect tv")).
+			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, CONNECT_CMD)))
 	}
+
+	urls, ok := application.URLs[p.Args[1]]
+	if !ok {
+		return bot.SendMessage(p.Message.Chat(), "Device not found")
+	}
+
+	keyboard := types.NewKeyboard()
+	for _, url := range urls {
+		keyboard.NewRow(types.NewURLButton(url.Name, url.URL))
+	}
+
+	keyboard.NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, CONNECT_CMD+" download"))
+	return bot.SendMessage(p.Message.Chat(), msg.InstallationMethod, keyboard)
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"sync"
 	"time"
@@ -12,33 +11,30 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
-	expireSubscriptions "github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/expire_subscriptions"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/invoices"
+	manageSubscriptions "github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/manage_subscriptions"
 	promoUC "github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/promo"
 	serviceCheck "github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/service_check"
 	"github.com/quickpowered/thebeyond-master/internal/repositories/db"
-	"github.com/quickpowered/thebeyond-master/internal/repositories/subscriptions"
+	"github.com/quickpowered/thebeyond-master/internal/repositories/tariffs"
 	"github.com/quickpowered/thebeyond-master/internal/repositories/web"
 	"github.com/quickpowered/thebeyond-master/internal/repositories/xraymanager"
 	"github.com/quickpowered/thebeyond-master/internal/services/account"
 	"github.com/quickpowered/thebeyond-master/internal/services/payment"
 	"github.com/quickpowered/thebeyond-master/internal/services/promo"
+	"github.com/quickpowered/thebeyond-master/internal/services/subscription"
+	"github.com/quickpowered/thebeyond-master/pkg/banner"
 	"github.com/quickpowered/thebeyond-master/pkg/logger"
 	"github.com/quickpowered/thebeyond-master/pkg/postgres"
+	"github.com/quickpowered/thebeyond-master/pkg/utils"
 	"go.uber.org/zap"
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), 20*time.Second)
 	defer cancel()
 
-	cfg := zap.NewProductionConfig()
-	cfg.Level = zap.NewAtomicLevelAt(logger.LogLevel())
-
-	logger, err := cfg.Build()
-	if err != nil {
-		panic(err)
-	}
+	logger := logger.New(os.Getenv("ENV"), os.Getenv("LOG_LEVEL"))
 
 	pgPool, err := postgres.New(ctx, postgres.DSN())
 	if err != nil {
@@ -47,22 +43,24 @@ func main() {
 	}
 
 	accountDB := db.NewAccount(pgPool)
+	subscriptionDB := db.NewSubscription(pgPool)
 	paymentDB := db.NewPayment(pgPool)
 	promoDB := db.NewPromo(pgPool, logger)
 	exchangeRatesRepo := web.NewExchangeRates()
 
-	subscriptionsPath := os.Getenv("SUBSCRIPTIONS_PATH")
-	if subscriptionsPath != "" {
-		subscriptionsPath = "/etc/thebeyond/subscriptions/subscriptions.yaml"
+	tariffsPath := os.Getenv("SUBSCRIPTIONS_PATH")
+	if tariffsPath != "" {
+		tariffsPath = "/etc/thebeyond/tariffs/tariffs.yaml"
 	}
 
-	subscriptionsRepo, err := subscriptions.New(subscriptionsPath, exchangeRatesRepo)
+	tariffsRepo, err := tariffs.New(tariffsPath, exchangeRatesRepo)
 	if err != nil {
 		logger.Error("failed to load subscriptions", zap.Error(err))
 		return
 	}
 
 	accountService := account.NewService(accountDB)
+	subscriptionService := subscription.NewService(subscriptionDB)
 	paymentService := payment.NewService(paymentDB)
 	promoService := promo.NewService(promoDB)
 
@@ -77,30 +75,48 @@ func main() {
 		return
 	}
 
-	deps := deps.NewDependencies(accountService, paymentService, promoService, subscriptionsRepo, xraymanagerRepo, logger)
-	promoUseCase := promoUC.NewUseCase(accountService, paymentService, promoService, subscriptionsRepo, logger)
-	invoicesUseCase := invoices.NewUseCase(accountService, paymentService, promoUseCase, subscriptionsRepo, xraymanagerRepo, logger)
+	deps := deps.NewDependencies(accountService, subscriptionService, paymentService, promoService, tariffsRepo, xraymanagerRepo, logger)
+	promoUseCase := promoUC.NewUseCase(accountService, subscriptionService, paymentService, promoService, logger)
+	invoicesUseCase := invoices.NewUseCase(accountService, subscriptionService, paymentService, promoUseCase, tariffsRepo, xraymanagerRepo, logger)
 	commandsUseCase := commands.NewUseCase(deps, promoUseCase)
 
-	expireSubscriptionsUseCase := expireSubscriptions.NewUseCase(accountService, xraymanagerRepo, logger)
+	manageSubscriptionsUseCase := manageSubscriptions.NewUseCase(accountService, subscriptionService, xraymanagerRepo, logger)
 	serviceCheckUseCase := serviceCheck.NewUseCase(accountService, logger)
 
 	tgBot := bot.New("telegram", os.Getenv("TG_TOKEN"))
 
-	interval := time.Duration(30) * time.Second
-	logger.Debug("starting expire subscriptions & questions...", zap.Duration("interval", interval))
+	interval := time.Duration(2) * time.Minute
+	logger.Debug("starting the automation process...",
+		zap.Duration("interval", interval),
+		zap.Strings("use-cases", []string{
+			"reset traffic",
+			"disable unsub",
+			"disable accounts",
+			"enable accounts",
+			"service check",
+		}))
 
-	wg := new(sync.WaitGroup)
-	wg.Go(func() {
-		for {
-			time.Sleep(interval)
-			ctx, cancel := context.WithTimeout(context.TODO(), interval)
-			expireSubscriptionsUseCase.Run(ctx)
-			serviceCheckUseCase.Run(ctx, tgBot)
-			cancel()
-		}
+	utils.RunPeriodic(context.TODO(), interval, "reset traffic", logger, func(ctx context.Context) error {
+		return manageSubscriptionsUseCase.ResetTraffic(ctx, tgBot)
 	})
 
+	utils.RunPeriodic(ctx, interval, "disable unsub", logger, func(ctx context.Context) error {
+		return manageSubscriptionsUseCase.DisableUnsub(ctx, tgBot)
+	})
+
+	utils.RunPeriodic(context.TODO(), interval, "disable accounts", logger, func(ctx context.Context) error {
+		return manageSubscriptionsUseCase.DisableAccounts(ctx, tgBot)
+	})
+
+	utils.RunPeriodic(ctx, interval, "enable accounts", logger, func(ctx context.Context) error {
+		return manageSubscriptionsUseCase.EnableAccounts(ctx, tgBot)
+	})
+
+	utils.RunPeriodic(ctx, interval, "service check", logger, func(ctx context.Context) error {
+		return serviceCheckUseCase.Run(ctx, tgBot)
+	})
+
+	wg := new(sync.WaitGroup)
 	for _, bot := range []bin.Interface{tgBot} {
 		wg.Go(func() {
 			if err := delivery.New(bot, commandsUseCase, invoicesUseCase, logger).Listen(); err != nil {
@@ -110,24 +126,7 @@ func main() {
 		})
 	}
 
-	startBanner()
+	banner.Display(os.Getenv("ENV"))
 
 	wg.Wait()
-}
-
-func startBanner() {
-	fmt.Println("╔═══════════════════════════════════════════════════════════════╗")
-	fmt.Println("║                                                               ║")
-	fmt.Println("║               🍿 BEYOND SECURE BOT LAUNCHED 🎮                ║")
-	fmt.Println("║                                                               ║")
-	fmt.Println("║  ╭──────────────────────────────────────────────────────────╮ ║")
-	fmt.Println("║  │  Status: ✓ Online and Ready                              │ ║")
-	fmt.Println("║  │  Mode: Production                                        │ ║")
-	fmt.Println("║  │  Services: Account, Payment                              │ ║")
-	fmt.Println("║  │  Modules: XRay, Tools                                    │ ║")
-	fmt.Println("║  ╰──────────────────────────────────────────────────────────╯ ║")
-	fmt.Println("║                                                               ║")
-	fmt.Println("║           Listening for incoming messages...                  ║")
-	fmt.Println("║                                                               ║")
-	fmt.Println("╚═══════════════════════════════════════════════════════════════╝")
 }

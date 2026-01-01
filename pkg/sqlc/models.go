@@ -5,8 +5,53 @@
 package sqlc
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type AccessStatus string
+
+const (
+	AccessStatusAvailable   AccessStatus = "available"
+	AccessStatusUnavailable AccessStatus = "unavailable"
+)
+
+func (e *AccessStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AccessStatus(s)
+	case string:
+		*e = AccessStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AccessStatus: %T", src)
+	}
+	return nil
+}
+
+type NullAccessStatus struct {
+	AccessStatus AccessStatus
+	Valid        bool // Valid is true if AccessStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAccessStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.AccessStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AccessStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAccessStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AccessStatus), nil
+}
 
 type Account struct {
 	ID                    int32
@@ -24,6 +69,14 @@ type Account struct {
 	Discount              pgtype.Int4
 	ClusterID             pgtype.Int2
 	ServiceCheckSent      pgtype.Int2
+	Tariff                int16
+	Devices               pgtype.Int2
+	UsedUplink            int64
+	UsedDownlink          int64
+	FreemiumStatus        AccessStatus
+	SubscriptionStatus    AccessStatus
+	IsDisabled            bool
+	LastTrafficRefreshAt  pgtype.Timestamptz
 }
 
 type Payment struct {

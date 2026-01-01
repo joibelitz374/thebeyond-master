@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -16,16 +15,10 @@ type AccountInterface interface {
 	GetByAccountID(ctx context.Context, accountID int) (domain.Account, error)
 	GetByKeyID(ctx context.Context, keyID string) (domain.Account, error)
 	GetPlatformUserID(ctx context.Context, accountID int) (int, error)
-	GetExpiredUsers(ctx context.Context) ([]int, error)
 	GetAllByPlatform(ctx context.Context, platform consts.Platform) ([]int, error)
 	FindUsersForServiceCheck(ctx context.Context) (accounts []domain.ServiceCheck, err error)
-	Create(ctx context.Context, platform consts.Platform, platformAccountID int, keyID, shortID string, expiresAt time.Time, promo *string, discount int) (int, error)
+	Create(ctx context.Context, platform consts.Platform, platformAccountID int, keyID, shortID string, promo *string, discount int) (int, error)
 	MarkServiceCheckSent(ctx context.Context, accountID int) error
-	AddSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error
-	RemoveSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error
-	CancelSubscriptions(ctx context.Context, accountID int) error
-	SetDiscount(ctx context.Context, accountID int, discount int) error
-	ResetDiscount(ctx context.Context, accountID int) error
 	RegenerateKey(ctx context.Context, accountID int, keyID string) error
 	SetRegion(ctx context.Context, accountID int, region string) error
 	SetLanguage(ctx context.Context, accountID int, language string) error
@@ -63,95 +56,25 @@ func (db accountDB) Get(ctx context.Context, platform consts.Platform, platformA
 
 	account, err := qtxn.GetAccountByID(ctx, int32(accountID))
 	if err != nil {
-		return domain.Account{}, nil
+		return domain.Account{}, err
 	}
 
-	var promo *string
-	if account.Promo.Valid {
-		promo = &account.Promo.String
-	}
-
-	return domain.Account{
-		ID:                    int(account.ID),
-		ClusterID:             int(account.ClusterID.Int16),
-		KeyID:                 account.KeyID,
-		ShortID:               account.ShortID,
-		Region:                account.Region,
-		Language:              account.Language,
-		Currency:              account.Currency,
-		Protocol:              account.Protocol,
-		SubscriptionExpiresAt: &account.SubscriptionExpiresAt.Time,
-		LastKeyRefreshAt:      &account.LastKeyRefreshAt.Time,
-		Promo:                 promo,
-		Discount:              int(account.Discount.Int32),
-	}, txn.Commit(ctx)
+	return AccountByIDToDomain(account), txn.Commit(ctx)
 }
 
 func (db accountDB) GetByAccountID(ctx context.Context, accountID int) (domain.Account, error) {
 	account, err := db.queries.GetAccountByID(ctx, int32(accountID))
-
-	var promo *string
-	if account.Promo.Valid {
-		promo = &account.Promo.String
-	}
-
-	return domain.Account{
-		ID:                    int(account.ID),
-		ClusterID:             int(account.ClusterID.Int16),
-		KeyID:                 account.KeyID,
-		ShortID:               account.ShortID,
-		Region:                account.Region,
-		Language:              account.Language,
-		Currency:              account.Currency,
-		Protocol:              account.Protocol,
-		SubscriptionExpiresAt: &account.SubscriptionExpiresAt.Time,
-		LastKeyRefreshAt:      &account.LastKeyRefreshAt.Time,
-		Promo:                 promo,
-		Discount:              int(account.Discount.Int32),
-	}, err
+	return AccountByIDToDomain(account), err
 }
 
 func (db accountDB) GetByKeyID(ctx context.Context, keyID string) (domain.Account, error) {
 	account, err := db.queries.GetAccountByKeyID(ctx, keyID)
-
-	var promo *string
-	if account.Promo.Valid {
-		promo = &account.Promo.String
-	}
-
-	return domain.Account{
-		ID:                    int(account.ID),
-		ClusterID:             int(account.ClusterID.Int16),
-		KeyID:                 account.KeyID,
-		ShortID:               account.ShortID,
-		Region:                account.Region,
-		Language:              account.Language,
-		Currency:              account.Currency,
-		Protocol:              account.Protocol,
-		SubscriptionExpiresAt: &account.SubscriptionExpiresAt.Time,
-		LastKeyRefreshAt:      &account.LastKeyRefreshAt.Time,
-		Promo:                 promo,
-		Discount:              int(account.Discount.Int32),
-	}, err
+	return AccountByKeyIDToDomain(account), err
 }
 
 func (db accountDB) GetPlatformUserID(ctx context.Context, accountID int) (int, error) {
 	externalAccountID, err := db.queries.GetPlatformUserID(ctx, int32(accountID))
 	return int(externalAccountID), err
-}
-
-func (db accountDB) GetExpiredUsers(ctx context.Context) ([]int, error) {
-	rows, err := db.queries.GetExpiredAccounts(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	accounts := make([]int, len(rows))
-	for i, row := range rows {
-		accounts[i] = int(row)
-	}
-
-	return accounts, nil
 }
 
 func (db accountDB) GetAllByPlatform(ctx context.Context, platform consts.Platform) (accounts []int, err error) {
@@ -186,7 +109,7 @@ func (db accountDB) FindUsersForServiceCheck(ctx context.Context) (accounts []do
 	return accounts, nil
 }
 
-func (db accountDB) Create(ctx context.Context, platform consts.Platform, platformAccountID int, keyID, shortID string, expiresAt time.Time, promo *string, discount int) (int, error) {
+func (db accountDB) Create(ctx context.Context, platform consts.Platform, platformAccountID int, keyID, shortID string, promo *string, discount int) (int, error) {
 	txn, err := db.pool.Begin(ctx)
 	if err != nil {
 		return 0, err
@@ -195,11 +118,10 @@ func (db accountDB) Create(ctx context.Context, platform consts.Platform, platfo
 	defer txn.Rollback(ctx)
 
 	createAccountParams := sqlc.CreateAccountParams{
-		KeyID:                 keyID,
-		ShortID:               shortID,
-		SubscriptionExpiresAt: pgtype.Timestamptz{Valid: true, Time: expiresAt},
-		Region:                "ru",
-		Discount:              pgtype.Int4{Valid: true, Int32: int32(discount)},
+		KeyID:    keyID,
+		ShortID:  shortID,
+		Region:   "ru",
+		Discount: pgtype.Int4{Valid: true, Int32: int32(discount)},
 	}
 	if promo != nil {
 		createAccountParams.Promo = pgtype.Text{Valid: true, String: *promo}
@@ -223,35 +145,6 @@ func (db accountDB) Create(ctx context.Context, platform consts.Platform, platfo
 
 func (db accountDB) MarkServiceCheckSent(ctx context.Context, accountID int) error {
 	return db.queries.MarkServiceCheckSent(ctx, int32(accountID))
-}
-
-func (db accountDB) AddSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error {
-	return db.queries.AddSubscriptionExpiresAt(ctx, sqlc.AddSubscriptionExpiresAtParams{
-		ID:   int32(accountID),
-		Secs: duration.Seconds(),
-	})
-}
-
-func (db accountDB) RemoveSubscriptionExpiresAt(ctx context.Context, accountID int, duration time.Duration) error {
-	return db.queries.RemoveSubscriptionExpiresAt(ctx, sqlc.RemoveSubscriptionExpiresAtParams{
-		ID:   int32(accountID),
-		Secs: duration.Seconds(),
-	})
-}
-
-func (db accountDB) CancelSubscriptions(ctx context.Context, accountID int) error {
-	return db.queries.CancelSubscriptions(ctx, int32(accountID))
-}
-
-func (db accountDB) SetDiscount(ctx context.Context, accountID int, discount int) error {
-	return db.queries.SetDiscount(ctx, sqlc.SetDiscountParams{
-		ID:       int32(accountID),
-		Discount: pgtype.Int4{Valid: true, Int32: int32(discount)},
-	})
-}
-
-func (db accountDB) ResetDiscount(ctx context.Context, accountID int) error {
-	return db.queries.ResetDiscount(ctx, int32(accountID))
 }
 
 func (db accountDB) RegenerateKey(ctx context.Context, accountID int, keyID string) error {

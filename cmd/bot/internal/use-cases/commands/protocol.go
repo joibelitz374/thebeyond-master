@@ -18,12 +18,10 @@ func NewProtocolHandler(deps deps.Dependencies) protocolHandler {
 }
 
 func (h protocolHandler) Execute(bot bin.Interface, p *domain.Payload) error {
-	opts := []any{deps.ToForward(bot, p), types.DisableMentions, &types.Keyboard{
-		ButtonRows: [][]types.Button{
-			{{Text: "🍿 VLESS+XHTTP+Reality", Data: "protocol vxr"}},
-			{{Text: "🎮 Hysteria 2", Data: "protocol hys2"}},
-		},
-	}}
-
-	return bot.SendMessage(p.Message.Chat(), "Choose protocol:", opts...)
+	text := "Выберите протокол:\n\n" +
+		"Amnezia WG (AWG) — усовершенствованная версия WireGuard. Это — быстрый и безопасный VPN. Ограничивается нами количеством устройств;\n\n" +
+		"XRay — усовершенствованная версия V2Ray с протоколами для регионов с наивысшей цензурой. Это — более медленный, но трудно обнаруживаемый регуляторами прокси. Ограничивается нами потребляемым трафиком;"
+	return bot.SendMessage(p.Message.Chat(), text, types.NewKeyboard().
+		NewRow(types.NewCallbackButton("🎮 Amnezia WG", "protocol awg")).
+		NewRow(types.NewCallbackButton("🍿 XRay", "protocol vxr")))
 }
