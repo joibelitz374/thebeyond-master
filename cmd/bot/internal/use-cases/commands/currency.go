@@ -9,6 +9,7 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
+	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/renew"
 	"github.com/quickpowered/thebeyond-master/configs"
 	"github.com/quickpowered/thebeyond-master/configs/currency"
 )
@@ -17,12 +18,12 @@ const CURRENCY_CMD = "currency"
 
 type currencyHandler struct {
 	deps.Dependencies
-	menuHandler Command
+	renewHandler Command
 }
 
 func NewCurrencyHandler(deps deps.Dependencies) currencyHandler {
-	menuHandler := NewMenuHandler(deps)
-	return currencyHandler{deps, menuHandler}
+	renewHandler := renew.NewHandler(deps)
+	return currencyHandler{deps, renewHandler}
 }
 
 func (h currencyHandler) Execute(bot bin.Interface, p *domain.Payload) error {
@@ -69,8 +70,8 @@ func (h currencyHandler) changeCurrency(bot bin.Interface, p *domain.Payload, ms
 	}
 
 	if isNewcomer {
-		p.Args = []string{LANGUAGE_CMD}
-		return h.menuHandler.Execute(bot, p)
+		p.Args = []string{renew.CMD, "check-subscription"}
+		return h.renewHandler.Execute(bot, p)
 	}
 
 	p.Args = []string{CURRENCY_CMD}
