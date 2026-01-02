@@ -15,6 +15,19 @@ import (
 	"github.com/quickpowered/thebeyond-master/pkg/utils"
 )
 
+const DecimalGB uint64 = 1_000_000_000
+
+const (
+	GiB uint64 = 1 << 30
+	TiB uint64 = 1 << 40
+)
+
+var limits = map[int]uint64{
+	1: 150 * GiB,
+	2: 400 * GiB,
+	3: 5 * TiB,
+}
+
 func (h subscription) Default(c fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
 	defer cancel()
@@ -43,7 +56,7 @@ func (h subscription) Default(c fiber.Ctx) error {
 		expire = int(subscriptionExpiresAt.Unix())
 	}
 
-	h.setAppHeaders(c, expire, account.UsedUplink, account.UsedDownlink)
+	h.setAppHeaders(c, account.Tariff, expire, account.FreemiumStatus, account.UsedUplink, account.UsedDownlink)
 
 	groupedNodes, err := h.xraymanagerRepo.GetGroupedNodes(xmdto.Region(account.Region))
 	if err != nil {
@@ -111,7 +124,7 @@ func (h subscription) Smart(c fiber.Ctx) error {
 	}
 
 	c.Set("Content-Type", "application/json")
-	h.setAppHeaders(c, expire, account.UsedUplink, account.UsedDownlink)
+	h.setAppHeaders(c, account.Tariff, expire, account.FreemiumStatus, account.UsedUplink, account.UsedDownlink)
 
 	clientConfig := dto.XRayClientConfig{
 		Log: dto.Log{
@@ -342,26 +355,27 @@ func (h subscription) Smart(c fiber.Ctx) error {
 	return c.JSON(clientConfig)
 }
 
-const DecimalGB uint64 = 1_000_000_000
-
-const (
-	GiB uint64 = 1 << 30
-	TiB uint64 = 1 << 40
-)
-
-var limits = map[int]uint64{
-	10:   10 * GiB,
-	150:  150 * GiB,
-	400:  400 * GiB,
-	1000: 1 * TiB,
-}
-
-func (h subscription) setAppHeaders(c fiber.Ctx, expire int, usedUplink, usedDownlink int64) {
+func (h subscription) setAppHeaders(c fiber.Ctx, tariff, expire int, freemiumStatus string, usedUplink, usedDownlink int64) {
 	c.Set("Profile-Title", "base64:8J+SmyBUSEUgQkVZT05E")
-	c.Set("Profile-Update-Interval", "12")
+	c.Set("Profile-Update-Interval", "3")
 	c.Set("Profile-Web-Page-URL", "https://t.me/beyondsecurenews")
 	c.Set("Support-URL", "https://t.me/beyondsecurenews?direct")
 	c.Set("Notification-Subs-Expire", "1")
 	c.Set("Hide-Settings", "true")
-	c.Set("Subscription-Userinfo", fmt.Sprintf("upload=%d; download=%d; total=%d; expire=%v", usedUplink, usedDownlink, limits[10], expire))
+
+	var maxTraffic uint64
+	if freemiumStatus == "available" {
+		maxTraffic += 10 * GiB
+	}
+
+	if tariff > 0 && tariff < 3 {
+		maxTraffic += limits[tariff]
+	}
+
+	if tariff == 3 {
+		maxTraffic = 0
+	}
+
+	c.Set("Subscription-Userinfo", fmt.Sprintf("upload=%d; download=%d; expire=%d; total=%v",
+		usedUplink, usedDownlink, expire, maxTraffic))
 }

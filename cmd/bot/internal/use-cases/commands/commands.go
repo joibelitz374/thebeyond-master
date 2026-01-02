@@ -30,9 +30,8 @@ type Command interface {
 
 type useCase struct {
 	deps.Dependencies
-	promoUseCase                 promo.UseCase
-	commands                     map[string]Command
-	commandsWithDeferredDeletion map[string]struct{}
+	promoUseCase promo.UseCase
+	commands     map[string]Command
 }
 
 func NewUseCase(deps_ deps.Dependencies, promoUseCase promo.UseCase) useCase {
@@ -57,14 +56,7 @@ func NewUseCase(deps_ deps.Dependencies, promoUseCase promo.UseCase) useCase {
 		REPOST_CMD:   NewRepostHandler(deps_),
 	}
 
-	commandsWithDeferredDeletion := map[string]struct{}{
-		renew.CMD:    {},
-		LANGUAGE_CMD: {},
-		CURRENCY_CMD: {},
-		PROMO_CMD:    {},
-	}
-
-	return useCase{deps_, promoUseCase, commands, commandsWithDeferredDeletion}
+	return useCase{deps_, promoUseCase, commands}
 }
 
 func (uc useCase) Run(bot bin.Interface, p *domain.Payload) (err error) {
@@ -113,13 +105,9 @@ func (uc useCase) Run(bot bin.Interface, p *domain.Payload) (err error) {
 		return bot.SendMessage(p.Message.Chat(), "Command not found", &types.Keyboard{ButtonRows: buttonRows})
 	}
 
-	if _, ok := uc.commandsWithDeferredDeletion[p.Args[0]]; !ok || (ok && len(p.Args) < 2) {
+	defer func() {
 		uc.deleteMessage(bot, p.Message.Chat(), p.Message.ID())
-	} else {
-		defer func() {
-			uc.deleteMessage(bot, p.Message.Chat(), p.Message.ID())
-		}()
-	}
+	}()
 
 	if err := cmd.Execute(bot, p); err != nil {
 		buttonRows := [][]types.Button{{{Text: "🔄 Menu", Data: MENU_CMD}}}
