@@ -37,7 +37,7 @@ SELECT id, key_id FROM (
             (CASE
                 WHEN subscription_status = 'available'
                     THEN CASE tariff
-                        WHEN 1 THEN 150 WHEN 2 THEN 400 WHEN 4 THEN 5120
+                        WHEN 1 THEN 150 WHEN 2 THEN 400 WHEN 3 THEN 5120
                         ELSE 0
                     END
                 ELSE 0
