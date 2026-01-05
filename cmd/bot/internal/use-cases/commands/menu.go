@@ -21,11 +21,11 @@ type menuHandler struct {
 
 func NewMenuHandler(deps deps.Dependencies) menuHandler {
 	return menuHandler{deps, map[int]string{
-		-1: "/assets/expired.png",
-		0:  "/assets/free.png",
-		1:  "/assets/personal.png",
-		2:  "/assets/home.png",
-		3:  "/assets/unlimited.png",
+		-1: "/shared/assets/expired.png",
+		0:  "/shared/assets/free.png",
+		1:  "/shared/assets/personal.png",
+		2:  "/shared/assets/home.png",
+		3:  "/shared/assets/unlimited.png",
 	}}
 }
 
