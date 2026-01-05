@@ -38,9 +38,9 @@ func (h aboutHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	return bot.SendMessage(p.Message.Chat(), "",
 		types.NewAttachments().AddFile(bytes.NewReader(image)),
 		types.NewKeyboard().
-			NewRow(types.NewCallbackButton("📑 "+msg.TermsOfService, "tos")).
-			NewRow(types.NewCallbackButton("🛡 "+msg.PrivacyPolicy, "privacy")).
-			NewRow(types.NewCallbackButton("🛂 "+msg.RefundPolicy, "refund")).
+			NewRow(types.NewCallbackButton("📑 "+msg.TermsOfService, TOS_CMD)).
+			NewRow(types.NewCallbackButton("🛡 "+msg.PrivacyPolicy, PRIVACY_CMD)).
+			NewRow(types.NewCallbackButton("🛂 "+msg.RefundPolicy, REFUND_CMD)).
 			// NewRow(types.NewCallbackButton("💳 "+msg.Billing, "billing")).
 			// NewRow(types.NewCallbackButton("🆘 "+msg.FAQ, "faq")).
 			NewRow(types.NewURLButton("☎️ "+msg.Support, "https://t.me/beyondsecurenews?direct")).

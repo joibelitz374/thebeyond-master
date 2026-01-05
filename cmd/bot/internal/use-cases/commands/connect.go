@@ -20,8 +20,7 @@ type connectHandler struct {
 }
 
 func NewConnectHandler(deps deps.Dependencies) connectHandler {
-	projectDomain := os.Getenv("PROJECT_DOMAIN")
-	return connectHandler{deps, projectDomain}
+	return connectHandler{deps, os.Getenv("PROJECT_DOMAIN")}
 }
 
 func (h connectHandler) Execute(bot bin.Interface, p *domain.Payload) error {
@@ -36,19 +35,19 @@ func (h connectHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	return bot.SendMessage(p.Message.Chat(), msg.DoYouHaveAnApp,
 		types.NewKeyboard().
 			NewRow(types.NewURLButton("🎾 "+msg.IHave, redirectToAddURL)).
-			NewRow(types.NewCallbackButton("📥 "+msg.DownloadApp, "connect download")).
+			NewRow(types.NewCallbackButton("📥 "+msg.DownloadApp, CONNECT_CMD+" download")).
 			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, MENU_CMD)))
 }
 
 func (h connectHandler) connectViaApp(bot bin.Interface, p *domain.Payload, msg i18n.ConnectLocale, controlMsg i18n.ControlLocale) error {
 	if p.Args[1] == "download" {
 		return bot.SendMessage(p.Message.Chat(), msg.InstallationDevice, types.NewKeyboard().
-			NewRow(types.NewCallbackButton("🖼 Windows", "connect windows")).
-			NewRow(types.NewCallbackButton("🐧 Linux", "connect linux")).
-			NewRow(types.NewCallbackButton("🙂 MacOS", "connect macos")).
-			NewRow(types.NewCallbackButton("🤖 Android", "connect android")).
-			NewRow(types.NewCallbackButton("🍎 iOS", "connect ios")).
-			NewRow(types.NewCallbackButton("🖥 TV", "connect tv")).
+			NewRow(types.NewCallbackButton("🖼 Windows", CONNECT_CMD+" windows")).
+			NewRow(types.NewCallbackButton("🐧 Linux", CONNECT_CMD+" linux")).
+			NewRow(types.NewCallbackButton("🙂 MacOS", CONNECT_CMD+" macos")).
+			NewRow(types.NewCallbackButton("🤖 Android", CONNECT_CMD+" android")).
+			NewRow(types.NewCallbackButton("🍎 iOS", CONNECT_CMD+" ios")).
+			NewRow(types.NewCallbackButton("🖥 TV", CONNECT_CMD+" tv")).
 			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, CONNECT_CMD)))
 	}
 

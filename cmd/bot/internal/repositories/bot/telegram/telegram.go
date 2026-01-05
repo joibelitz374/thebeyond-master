@@ -137,6 +137,17 @@ func (a *Adapter) SendInvoice(chatID update.ChatInterface, title, description, p
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
+	var replyMarkup models.ReplyMarkup
+
+	for _, param := range opts {
+		switch val := param.(type) {
+		case *types.Keyboard:
+			if val != nil {
+				replyMarkup = inlineKeyboardMarkup(val)
+			}
+		}
+	}
+
 	invoiceParams := &bot.SendInvoiceParams{
 		ChatID:          chatID.GetID(),
 		MessageThreadID: chatID.GetThreadID(),
@@ -145,8 +156,10 @@ func (a *Adapter) SendInvoice(chatID update.ChatInterface, title, description, p
 		Payload:         payload,
 		Currency:        currency,
 		Prices: []models.LabeledPrice{
-			{Label: "Stars", Amount: amount},
+			{Label: title, Amount: amount},
 		},
+		ProviderToken: "",
+		ReplyMarkup:   replyMarkup,
 	}
 
 	_, err := a.bot.SendInvoice(ctx, invoiceParams)

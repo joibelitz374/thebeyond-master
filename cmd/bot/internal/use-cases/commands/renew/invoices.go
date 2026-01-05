@@ -12,13 +12,14 @@ import (
 	"github.com/quickpowered/thebeyond-master/pkg/consts"
 )
 
-func (h handler) telegramInvoice(bot bin.Interface, p *domain.Payload, tariffID, days int, price float64, msg i18n.RenewLocale) error {
+func (h handler) telegramInvoice(bot bin.Interface, p *domain.Payload, tariffID, days int, price float64) error {
+	periodNamesMsg := i18n.PeriodNamesMessages[p.Account.Language]
 	controlMsg := i18n.ControlMessages[p.Account.Language]
 	invoiceMsg := i18n.InvoiceMessages[p.Account.Language]
 
 	if bot.GetPlatform() != consts.PlatformTelegram {
 		return bot.SendMessage(p.Message.Chat(), "This command is only available in Telegram", types.NewKeyboard().
-			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, fmt.Sprintf("renew %s", p.Args[1]))))
+			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, fmt.Sprintf("%s t:%d;d:-1", CMD, tariffID))))
 	}
 
 	tgBot, ok := bot.(*telegram.Adapter)
@@ -26,7 +27,9 @@ func (h handler) telegramInvoice(bot bin.Interface, p *domain.Payload, tariffID,
 		return errors.New("unable to obtain Telegram bot")
 	}
 
-	periodName := h.getTariffPeriodName(msg, days)
+	periodName := h.getTariffPeriodName(periodNamesMsg, days)
 	payload := fmt.Sprintf("d:%d;t:%d", days, tariffID)
-	return tgBot.SendInvoice(p.Message.Chat(), periodName, invoiceMsg.Invoice, payload, "XTR", int(price))
+	return tgBot.SendInvoice(p.Message.Chat(), periodName, invoiceMsg.Invoice, payload, "XTR", int(price), types.NewKeyboard().
+		NewRow(types.NewPayButton(fmt.Sprintf("Pay %d ⭐", int(price)))).
+		NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, fmt.Sprintf("%s t:%d;d:-1", CMD, tariffID))))
 }

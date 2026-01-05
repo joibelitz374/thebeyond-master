@@ -11,18 +11,26 @@ func inlineKeyboardMarkup(keyboard *types.Keyboard) *models.InlineKeyboardMarkup
 		for _, buttonRow := range keyboard.ButtonRows {
 			inlineKeyboardButtons = append(inlineKeyboardButtons, []models.InlineKeyboardButton{})
 			for _, button := range buttonRow {
+				inlineButton := models.InlineKeyboardButton{}
 				switch {
+				case button.Pay:
+					inlineButton = models.InlineKeyboardButton{
+						Text: button.Text,
+						Pay:  true,
+					}
 				case button.Data != "":
-					inlineKeyboardButtons[len(inlineKeyboardButtons)-1] = append(inlineKeyboardButtons[len(inlineKeyboardButtons)-1], models.InlineKeyboardButton{
+					inlineButton = models.InlineKeyboardButton{
 						Text:         button.Text,
 						CallbackData: button.Data,
-					})
+					}
 				case button.URL != "":
-					inlineKeyboardButtons[len(inlineKeyboardButtons)-1] = append(inlineKeyboardButtons[len(inlineKeyboardButtons)-1], models.InlineKeyboardButton{
+					inlineButton = models.InlineKeyboardButton{
 						Text: button.Text,
 						URL:  button.URL,
-					})
+					}
 				}
+				buttonsLength := len(inlineKeyboardButtons) - 1
+				inlineKeyboardButtons[buttonsLength] = append(inlineKeyboardButtons[buttonsLength], inlineButton)
 			}
 		}
 	}

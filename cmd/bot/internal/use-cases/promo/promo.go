@@ -15,7 +15,6 @@ import (
 	promoCfg "github.com/quickpowered/thebeyond-master/configs/promo"
 	"github.com/quickpowered/thebeyond-master/internal/domain"
 	"github.com/quickpowered/thebeyond-master/internal/services/account"
-	"github.com/quickpowered/thebeyond-master/internal/services/payment"
 	"github.com/quickpowered/thebeyond-master/internal/services/promo"
 	"github.com/quickpowered/thebeyond-master/internal/services/subscription"
 	"go.uber.org/zap"
@@ -29,7 +28,6 @@ type UseCase interface {
 type useCase struct {
 	accountService      account.Interface
 	subscriptionService subscription.Interface
-	paymentService      payment.Interface
 	promoService        promo.Interface
 	logger              *zap.Logger
 }
@@ -37,37 +35,35 @@ type useCase struct {
 func NewUseCase(
 	accountService account.Interface,
 	subscriptionService subscription.Interface,
-	paymentService payment.Interface,
 	promoService promo.Interface,
 	logger *zap.Logger,
-) useCase {
-	return useCase{accountService, subscriptionService, paymentService, promoService, logger}
+) UseCase {
+	return useCase{accountService, subscriptionService, promoService, logger}
 }
 
-func (uc useCase) Get(promoName string) (promo domain.Promo, discount int, err error) {
-	ctx, cancel := context.WithTimeout(context.TODO(), 20*time.Second)
+func (uc useCase) Get(promoName string) (domain.Promo, int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	uc.logger.Debug("getting promo",
 		zap.String("promo_name", promoName))
 
-	promo, err = uc.promoService.Get(ctx, promoName)
+	promo, err := uc.promoService.Get(ctx, promoName)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			uc.logger.Debug("promo not found",
-				zap.String("promo_name", promoName))
-			return promo, discount, nil
+			uc.logger.Debug("promo not found", zap.String("promo_name", promoName))
+			return domain.Promo{}, 0, nil
 		}
-		uc.logger.Error("failed to get promo", zap.Error(err))
-		return promo, discount, err
+
+		uc.logger.Error("failed to get promo", zap.String("name", promoName), zap.Error(err))
+		return domain.Promo{}, 0, err
 	}
 
 	uc.logger.Debug("promo found",
 		zap.String("promo_name", promo.Name),
 		zap.Int("promo_level", promo.Level),
 		zap.Int("promo_creator", promo.Creator),
-		zap.Int("promo_clients", promo.Clients),
-	)
+		zap.Int("promo_clients", promo.Clients))
 
 	return promo, promoCfg.LevelDiscounts[promo.Level-1], nil
 }
@@ -84,9 +80,7 @@ func (uc useCase) RegisterReferral(botAPI *bot.Bot, senderID, accountID int, pro
 		zap.Int("promo_clients", promo.Clients))
 
 	if err := uc.promoService.IncreaseClients(ctx, promo.Name); err != nil {
-		uc.logger.Error("failed to increase client",
-			zap.Error(err),
-			zap.String("promo_name", promo.Name))
+		uc.logger.Error("failed to increase client", zap.String("promo_name", promo.Name), zap.Error(err))
 		return err
 	}
 	promo.Clients++
@@ -97,9 +91,7 @@ func (uc useCase) RegisterReferral(botAPI *bot.Bot, senderID, accountID int, pro
 
 	creatorAccount, err := uc.accountService.GetByAccountID(ctx, promo.Creator)
 	if err != nil {
-		uc.logger.Error("failed to get creator account",
-			zap.Error(err),
-			zap.Int("promo_creator", promo.Creator))
+		uc.logger.Error("failed to get creator account", zap.Int("promo_creator", promo.Creator), zap.Error(err))
 		return err
 	}
 
@@ -109,8 +101,7 @@ func (uc useCase) RegisterReferral(botAPI *bot.Bot, senderID, accountID int, pro
 		zap.String("creator_language", string(creatorAccount.Language)))
 
 	if creatorAccount.ID == 0 {
-		uc.logger.Error("creator account not found",
-			zap.Int("promo_creator", promo.Creator))
+		uc.logger.Error("creator account not found", zap.Int("promo_creator", promo.Creator))
 		return errors.New("creator account not found")
 	}
 
@@ -128,30 +119,21 @@ func (uc useCase) RegisterReferral(botAPI *bot.Bot, senderID, accountID int, pro
 		senderID, promoMsg.NewClient,
 		promoMsg.AttractedClients, promo.Clients)
 
-	reward, ok := promoGoals.ClientRewards[promo.Clients]
-
-	if ok {
-		ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
-		defer cancel()
-
+	reward, hasReward := promoGoals.ClientRewards[promo.Clients]
+	if hasReward {
 		duration := time.Duration(reward.Days) * 24 * time.Hour
 		if err := uc.subscriptionService.AddExpiresAt(ctx, promo.Creator, duration); err != nil {
 			uc.logger.Error("failed to add subscription expires at", zap.Error(err))
-			return err
+		} else {
+			text += fmt.Sprintf("\n%s: %d", promoMsg.ReceivedDays, reward.Days)
 		}
 
-		text += fmt.Sprintf("\n%s: %d", promoMsg.ReceivedDays, reward.Days)
-
 		if reward.Discount > 0 {
-			ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
-			defer cancel()
-
 			if err := uc.subscriptionService.SetDiscount(ctx, promo.Creator, reward.Discount); err != nil {
 				uc.logger.Error("failed to set discount", zap.Error(err))
-				return err
+			} else {
+				text += fmt.Sprintf("\n%s: %d%%", promoMsg.Discount, reward.Discount)
 			}
-
-			text += fmt.Sprintf("\n%s: %d%%", promoMsg.Discount, reward.Discount)
 		}
 	}
 
@@ -170,17 +152,11 @@ func (uc useCase) RegisterReferral(botAPI *bot.Bot, senderID, accountID int, pro
 		return err
 	}
 
-	uc.logger.Debug("promo level check",
-		zap.Int("clients", promo.Clients),
-		zap.Int("clients_target", promoGoals.ClientTargets[len(promoGoals.ClientTargets)-1]))
+	clientsTarget := promoGoals.ClientTargets[len(promoGoals.ClientTargets)-1]
+	uc.logger.Debug("promo level check", zap.Int("clients", promo.Clients), zap.Int("clients_target", clientsTarget))
 
-	if promo.Level != 2 &&
-		promo.Clients >= promoGoals.ClientTargets[len(promoGoals.ClientTargets)-1] {
-		if err := uc.upgradePromoLevel(
-			botAPI, promo.Name,
-			externalAccountID,
-			promoGoals.ReferralBonusDays,
-			promo, promoMsg); err != nil {
+	if promo.Level < 2 && promo.Clients >= clientsTarget {
+		if err := uc.upgradePromoLevel(botAPI, promo.Name, externalAccountID, promoGoals.ReferralBonusDays, promo, promoMsg); err != nil {
 			uc.logger.Error("failed to upgrade promo level", zap.Error(err))
 			return err
 		}

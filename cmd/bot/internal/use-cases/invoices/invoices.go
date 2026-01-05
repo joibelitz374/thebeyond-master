@@ -3,10 +3,7 @@ package invoices
 import (
 	"context"
 	"errors"
-	"fmt"
 	"math"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-telegram/bot"
@@ -25,7 +22,7 @@ import (
 )
 
 type UseCase interface {
-	HandlePreCheckoutQuery(botAPI *bot.Bot, tgUpdate *models.Update) error
+	HandlePreCheckoutQuery(botAPI *bot.Bot, preCheckoutQuery *models.PreCheckoutQuery) error
 }
 
 type useCase struct {
@@ -55,19 +52,21 @@ func NewUseCase(
 	}
 }
 
-func (uc useCase) HandlePreCheckoutQuery(tgBot *bot.Bot, tgUpdate *models.Update) error {
-	tgUserID := int(tgUpdate.PreCheckoutQuery.From.ID)
-	currency := tgUpdate.PreCheckoutQuery.Currency
-	payload := tgUpdate.PreCheckoutQuery.InvoicePayload
+func (uc useCase) HandlePreCheckoutQuery(tgBot *bot.Bot, preCheckoutQuery *models.PreCheckoutQuery) error {
+	tgUserID := int(preCheckoutQuery.From.ID)
+	currency := preCheckoutQuery.Currency
+	payload := preCheckoutQuery.InvoicePayload
 
-	uc.logger.Debug("pre checkout query", zap.String("currency", currency), zap.String("payload", payload))
+	uc.logger.Info("pre checkout query",
+		zap.String("currency", currency),
+		zap.String("payload", payload))
 
 	if currency != "XTR" {
 		uc.logger.Error("invalid currency", zap.String("currency", currency), zap.String("payload", payload))
 		return errors.New("invalid currency")
 	}
 
-	tariffID, days, err := uc.getPayloadData(payload)
+	tariffID, days, err := utils.GetTariffPayloadData(payload)
 	if err != nil {
 		uc.logger.Error("invalid subscription payload", zap.Int("days", days))
 		return errors.New("invalid payload")
@@ -131,7 +130,6 @@ func (uc useCase) HandlePreCheckoutQuery(tgBot *bot.Bot, tgUpdate *models.Update
 	if !account.IsActive() {
 		uc.logger.Debug("account has no subscription expires at",
 			zap.Int("account_id", account.ID))
-
 		if err := uc.xraymanagerService.AddClient(ctx, dto.RegionRussia, account.KeyID, utils.NewEmail(account.ID)); err != nil {
 			uc.logger.Error("add user failed", zap.Error(err),
 				zap.Int("account_id", account.ID))
@@ -156,34 +154,9 @@ func (uc useCase) HandlePreCheckoutQuery(tgBot *bot.Bot, tgUpdate *models.Update
 	}
 
 	tgBot.AnswerPreCheckoutQuery(ctx, &bot.AnswerPreCheckoutQueryParams{
-		PreCheckoutQueryID: tgUpdate.PreCheckoutQuery.ID,
+		PreCheckoutQueryID: preCheckoutQuery.ID,
 		OK:                 true,
 	})
 
 	return nil
-}
-
-func (uc useCase) getPayloadData(payload string) (tariffID, days int, err error) {
-	tariffID = 1
-	for _, part := range strings.Split(payload, ";") {
-		key, val, ok := strings.Cut(part, ":")
-		if !ok {
-			return tariffID, days, fmt.Errorf("invalid payload part: %s", part)
-		}
-
-		value, err := strconv.Atoi(val)
-		if err != nil {
-			return tariffID, days, err
-		}
-
-		switch key {
-		case "d":
-			days = value
-		case "t":
-			tariffID = value
-		default:
-			return tariffID, days, fmt.Errorf("unknown key: %s", part)
-		}
-	}
-	return
 }

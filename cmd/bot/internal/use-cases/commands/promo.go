@@ -31,8 +31,7 @@ type promoHandler struct {
 }
 
 func NewPromoCmd(deps deps.Dependencies) promoHandler {
-	promoNumberEmojis := []string{"🩵", "🩷", "💛"}
-	return promoHandler{deps, promoNumberEmojis}
+	return promoHandler{deps, []string{"💚", "🩷", "💛"}}
 }
 
 func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
@@ -68,7 +67,7 @@ func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 		shareURL += url.QueryEscape("https://t.me/beyondsecurebot?start=" + promo.Name + "\nПодключайся и пользуйся VPN вместе со мной бесплатно!")
 
 		upperName := strings.ToUpper(promo.Name)
-		text := fmt.Sprintf("🗒 %s %s:\n\n⭐️ %s: %d\n💎 %s: %d%%",
+		text := fmt.Sprintf("🗒 %s <b>%s</b>:\n\n⭐️ <b>%s</b>: %d\n💎 <b>%s</b>: %d%%",
 			msg.Instruction, upperName,
 			msg.Level, promo.Level,
 			msg.ClientDiscount, promoCfg.LevelDiscounts[promo.Level-1])
@@ -83,14 +82,14 @@ func (h promoHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 		return err
 	}
 
-	text := fmt.Sprintf("%s:\n\n🆘 %s\n\n🗒 %s: %d/3", msg.YourPromocodes, msg.WhatIsIt, msg.Created, len(promos))
+	text := fmt.Sprintf("%s:\n\n🆘 %s\n\n🗒 <b>%s</b>: %d/3", msg.YourPromocodes, msg.WhatIsIt, msg.Created, len(promos))
 	keyboard := types.NewKeyboard()
 	for i, promo := range promos {
-		keyboard.NewRow(types.NewCallbackButton(h.promoNumberEmojis[i]+" "+strings.ToUpper(promo.Name), "promo "+promo.Name))
+		keyboard.NewRow(types.NewCallbackButton(h.promoNumberEmojis[i]+" "+strings.ToUpper(promo.Name), PROMO_CMD+" "+promo.Name))
 	}
 
 	if len(promos) < 3 {
-		keyboard.NewRow(types.NewCallbackButton("🆕 "+msg.Create, "promo random"))
+		keyboard.NewRow(types.NewCallbackButton("🆕 "+msg.Create, PROMO_CMD+" random"))
 	}
 
 	keyboard.NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, MENU_CMD))
@@ -149,7 +148,7 @@ func (h promoHandler) statisticPromo(promo sharedDomain.Promo, msg i18n.PromoInf
 	text := ""
 	promoRewards := promoCfg.RewardLevels[promo.Level]
 
-	text += fmt.Sprintf("\n\n%s:", msg.PromocodeClients)
+	text += fmt.Sprintf("\n\n<b>%s</b>:", msg.PromocodeClients)
 	for _, count := range promoRewards.ClientTargets {
 		text += formatAchievement(count, promo.Clients, promoRewards.ClientRewards[count], msg)
 	}

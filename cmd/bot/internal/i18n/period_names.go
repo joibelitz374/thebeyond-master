@@ -2,7 +2,7 @@ package i18n
 
 import "github.com/quickpowered/thebeyond-master/configs/language"
 
-type RenewLocale struct {
+type PeriodNamesLocale struct {
 	Question  string
 	ThreeDays string
 	Week      string
@@ -14,7 +14,7 @@ type RenewLocale struct {
 	TwoYears  string
 }
 
-var RenewMessages = map[language.Language]RenewLocale{
+var PeriodNamesMessages = map[language.Language]PeriodNamesLocale{
 	language.English: {
 		Question:  "How long should I extend my subscription for?",
 		ThreeDays: "Three days",

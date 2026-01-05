@@ -11,54 +11,68 @@ import (
 	"github.com/quickpowered/thebeyond-master/internal/domain"
 )
 
-func (h handler) showPeriods(bot bin.Interface, p *sharedDomain.Payload, tariff domain.Tariff, tariffID int, msg i18n.RenewLocale) error {
+func (h handler) showPeriods(bot bin.Interface, p *sharedDomain.Payload, tariffID int, tariff domain.Tariff) error {
+	periodsMsg := i18n.PeriodsMessages[p.Account.Language]
+	periodNamesMsg := i18n.PeriodNamesMessages[p.Account.Language]
+	accountMsg := i18n.AccountMessages[p.Account.Language]
 	controlMsg := i18n.ControlMessages[p.Account.Language]
 	periodTargets := h.TariffsRepo.GetPeriodTargets()
+
 	keyboard := types.NewKeyboard()
-	for _, days := range periodTargets {
-		period, exists := h.TariffsRepo.GetPeriod(days)
-		if !exists {
-			continue
-		}
-
-		var label string
-		totalPrice, extraDays := h.TariffsRepo.CalculateRenewal(p.Account, p.Account.Currency, tariff, tariffID, days)
-		currencySymbol := currency.Currencies[p.Account.Currency].Emoji
-		if p.Account.IsActive() && p.Account.Tariff != tariffID {
-			if totalPrice == 0 {
-				totalTotalDays := days + extraDays
-				label = fmt.Sprintf("%s %d дн.", period.Emoji, totalTotalDays)
-			} else {
-				label = fmt.Sprintf("%s %s — %.2f%s", period.Emoji, h.getTariffPeriodName(msg, days), totalPrice, currencySymbol)
+	for _, row := range periodTargets {
+		buttonRows := []types.Button{}
+		for _, days := range row {
+			period, exists := h.TariffsRepo.GetPeriod(days)
+			if !exists {
+				continue
 			}
-		} else {
-			label = fmt.Sprintf(
-				"%s %s — %.2f%s", period.Emoji,
-				h.getTariffPeriodName(msg, days+extraDays),
-				totalPrice, currencySymbol,
-			)
-		}
 
-		keyboard.NewRow(types.NewCallbackButton(label, fmt.Sprintf("renew %s %d", p.Args[1], days)))
+			totalPrice, extraDays := h.TariffsRepo.CalculateRenewal(p.Account, p.Account.Currency, tariff, tariffID, days)
+			currencySymbol := currency.Currencies[p.Account.Currency].Emoji
+			buttonRows = append(buttonRows, types.NewCallbackButton(fmt.Sprintf(
+				"%s %s — %.2f%s", period.Emoji,
+				h.getTariffPeriodName(periodNamesMsg, days+extraDays),
+				totalPrice, currencySymbol,
+			), fmt.Sprintf("%s t:%d;d:%d", CMD, tariffID, days)))
+		}
+		keyboard.NewRow(buttonRows...)
 	}
 
-	keyboard.NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, CMD))
+	keyboard.NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, fmt.Sprintf("%s t:%d", CMD, tariffID)))
 
-	text := "Выберите срок подписки:\n\n"
+	text := periodsMsg.SelectPeriod + ":\n"
 	var traffic string
 	switch {
 	case tariff.Traffic >= 5000:
-		traffic = "Безлимит"
+		traffic = periodsMsg.Unlimited
 	case tariff.Traffic >= 1000:
-		traffic = fmt.Sprintf("%d TB/мес.", tariff.Traffic/1000)
+		traffic = fmt.Sprintf("%d TB/%s", tariff.Traffic/1000, accountMsg.MonthShort)
 	default:
-		traffic = fmt.Sprintf("%d GB/мес.", tariff.Traffic)
+		traffic = fmt.Sprintf("%d GB/%s", tariff.Traffic, accountMsg.MonthShort)
 	}
 
-	text += fmt.Sprintf("🚌 Трафик: %s", traffic)
-	if tariff.Devices > 0 {
-		text += fmt.Sprintf("\n🗺 Подключений: %d", tariff.Devices)
-	}
-
+	text += fmt.Sprintf("🚌 <b>"+periodsMsg.Traffic+"</b>: %s", traffic)
 	return bot.SendMessage(p.Message.Chat(), text, keyboard)
+}
+
+func (h handler) getTariffPeriodName(msg i18n.PeriodNamesLocale, days int) (title string) {
+	switch days {
+	case 7:
+		title = msg.Week
+	case 14:
+		title = msg.TwoWeeks
+	case 30:
+		title = msg.Month
+	case 90:
+		title = msg.Season
+	case 180:
+		title = msg.HalfYear
+	case 365:
+		title = msg.Year
+	case 730:
+		title = msg.TwoYears
+	default:
+		title = fmt.Sprintf("%d дн.", days)
+	}
+	return title
 }

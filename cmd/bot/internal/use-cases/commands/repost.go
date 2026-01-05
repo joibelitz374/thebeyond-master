@@ -12,6 +12,7 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types/update"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
 	"github.com/quickpowered/thebeyond-master/pkg/consts"
+	"go.uber.org/zap"
 )
 
 const REPOST_CMD = "repost"
@@ -49,9 +50,8 @@ func (c *repostHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	blockedCounters := 0
 	for _, accountID := range accounts {
 		if err := bot.(*telegram.Adapter).ForwardMessage(update.Chat{ID: accountID}, -1003309480333, messageID); err != nil {
-			if err.Error() == "Repost error: forbidden, Forbidden: bot was blocked by the user" {
-				blockedCounters++
-			}
+			c.Logger.Error("failed to forward message", zap.Error(err), zap.Int("account_id", accountID))
+			blockedCounters++
 		}
 	}
 

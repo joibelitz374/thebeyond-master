@@ -6,6 +6,7 @@ import (
 
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/domain"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/i18n"
+	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/interfaces"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
@@ -17,7 +18,7 @@ const LANGUAGE_CMD = "language"
 
 type languageHandler struct {
 	deps.Dependencies
-	currencyHandler Command
+	currencyHandler interfaces.Command
 }
 
 func NewLanguageHandler(deps deps.Dependencies) languageHandler {

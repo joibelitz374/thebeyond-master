@@ -19,7 +19,7 @@ func NewNetworkHandler(deps deps.Dependencies) networkHandler {
 
 func (h networkHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	return bot.SendMessage(p.Message.Chat(), "Выберите тип сети:", types.NewKeyboard().
-		NewRow(types.NewCallbackButton("🏡 Домашняя", "network home")).
-		NewRow(types.NewCallbackButton("🚌 Мобильная", "network mobile")).
+		NewRow(types.NewCallbackButton("🏡 Домашняя", NETWORK_CMD+" home")).
+		NewRow(types.NewCallbackButton("🚌 Мобильная", NETWORK_CMD+" mobile")).
 		NewRow(types.NewCallbackButton("◀️ Назад", SETTINGS_CMD)))
 }

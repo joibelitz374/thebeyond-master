@@ -25,7 +25,7 @@ func (h handler) checkSubscription(bot bin.Interface, p *domain.Payload) error {
 		return fmt.Errorf("failed to cast bot to telegram adapter")
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), 40*time.Second) // Increased overall timeout
+	ctx, cancel := context.WithTimeout(context.TODO(), 40*time.Second)
 	defer cancel()
 
 	member, err := tgBot.GetAPI().(*telegramsdk.Bot).GetChatMember(ctx, &telegramsdk.GetChatMemberParams{
@@ -41,16 +41,14 @@ func (h handler) checkSubscription(bot bin.Interface, p *domain.Payload) error {
 			return err
 		}
 
-		keyboard := types.NewKeyboard().
-			NewRow(types.NewCallbackButton("🔄 "+freemiumMsg.Check, "renew check-subscription")).
-			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, CMD))
-		return bot.SendMessage(p.Message.Chat(), "🆓 "+freemiumMsg.SubscriberBonus, keyboard)
+		return bot.SendMessage(p.Message.Chat(), "🆓 "+freemiumMsg.SubscriberBonus, types.NewKeyboard().
+			NewRow(types.NewCallbackButton("🔄 "+freemiumMsg.Check, CMD+" check-subscription")).
+			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, CMD)))
 	}
 
 	if p.Account.FreemiumStatus == "available" {
-		return bot.SendMessage(p.Message.Chat(), "❎ "+freemiumMsg.TariffAlreadyActive, &types.Keyboard{
-			ButtonRows: [][]types.Button{{{Text: "🔄 Menu", Data: "start"}}},
-		})
+		return bot.SendMessage(p.Message.Chat(), "❎ "+freemiumMsg.TariffAlreadyActive, types.NewKeyboard().
+			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, CMD)))
 	}
 
 	regions, err := h.SubscriptionService.GetRegions(p.Account.Region)
@@ -88,6 +86,6 @@ func (h handler) checkSubscription(bot bin.Interface, p *domain.Payload) error {
 		return err
 	}
 
-	return bot.SendMessage(p.Message.Chat(), "❇️ "+freemiumMsg.ThanksForSubscription, types.NewKeyboard().
-		NewRow(types.NewCallbackButton("🔄 Menu", "start")))
+	return bot.SendMessage(p.Message.Chat(), freemiumMsg.ThanksForSubscription, types.NewKeyboard().
+		NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, CMD)))
 }

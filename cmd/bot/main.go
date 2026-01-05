@@ -76,7 +76,7 @@ func main() {
 	}
 
 	deps := deps.NewDependencies(accountService, subscriptionService, paymentService, promoService, tariffsRepo, xraymanagerRepo, logger)
-	promoUseCase := promoUC.NewUseCase(accountService, subscriptionService, paymentService, promoService, logger)
+	promoUseCase := promoUC.NewUseCase(accountService, subscriptionService, promoService, logger)
 	invoicesUseCase := invoices.NewUseCase(accountService, subscriptionService, paymentService, promoUseCase, tariffsRepo, xraymanagerRepo, logger)
 	commandsUseCase := commands.NewUseCase(deps, promoUseCase)
 
@@ -84,17 +84,8 @@ func main() {
 	serviceCheckUseCase := serviceCheck.NewUseCase(accountService, logger)
 
 	tgBot := bot.New("telegram", os.Getenv("TG_TOKEN"))
-
-	interval := time.Duration(2) * time.Minute
-	logger.Debug("starting the automation process...",
-		zap.Duration("interval", interval),
-		zap.Strings("use-cases", []string{
-			"reset traffic",
-			"disable unsub",
-			"disable accounts",
-			"enable accounts",
-			"service check",
-		}))
+	interval := time.Duration(30) * time.Minute
+	logger.Debug("starting the automation process...")
 
 	utils.RunPeriodic(context.TODO(), interval, "reset traffic", logger, func(ctx context.Context) error {
 		return manageSubscriptionsUseCase.ResetTraffic(ctx, tgBot)
@@ -108,11 +99,11 @@ func main() {
 		return manageSubscriptionsUseCase.DisableAccounts(ctx, tgBot)
 	})
 
-	utils.RunPeriodic(ctx, interval, "enable accounts", logger, func(ctx context.Context) error {
+	utils.RunPeriodic(ctx, time.Duration(10)*time.Minute, "enable accounts", logger, func(ctx context.Context) error {
 		return manageSubscriptionsUseCase.EnableAccounts(ctx, tgBot)
 	})
 
-	utils.RunPeriodic(ctx, interval, "service check", logger, func(ctx context.Context) error {
+	utils.RunPeriodic(ctx, time.Duration(2)*time.Minute, "service check", logger, func(ctx context.Context) error {
 		return serviceCheckUseCase.Run(ctx, tgBot)
 	})
 

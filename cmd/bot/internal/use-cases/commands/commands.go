@@ -9,13 +9,13 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/domain"
+	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/interfaces"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
-	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types/update"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/deps"
+	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/middlewares"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/commands/renew"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/use-cases/promo"
-	"go.uber.org/zap"
 )
 
 const START_CMD = "start"
@@ -24,48 +24,44 @@ type UseCase interface {
 	Run(bot bin.Interface, payload *domain.Payload) error
 }
 
-type Command interface {
-	Execute(bot bin.Interface, payload *domain.Payload) error
-}
-
 type useCase struct {
 	deps.Dependencies
 	promoUseCase promo.UseCase
-	commands     map[string]Command
+	commands     map[string]interfaces.Command
 }
 
 func NewUseCase(deps_ deps.Dependencies, promoUseCase promo.UseCase) useCase {
-	commands := map[string]Command{
-		MENU_CMD:     NewMenuHandler(deps_),
-		ABOUT_CMD:    NewAboutHandler(deps_),
-		SETTINGS_CMD: NewSettingsHandler(deps_),
-		TOS_CMD:      NewTosHandler(deps_),
-		PRIVACY_CMD:  NewPrivacyHandler(deps_),
-		REFUND_CMD:   NewRefundHandler(deps_),
-		CONNECT_CMD:  NewConnectHandler(deps_),
-		PROMO_CMD:    NewPromoCmd(deps_),
-		renew.CMD:    renew.NewHandler(deps_),
-		NEWKEY_CMD:   NewNewKeyHandler(deps_),
-		REGION_CMD:   NewRegionHandler(deps_),
+	wrap := func(cmd interfaces.Command, name string) interfaces.Command {
+		return middlewares.WithLogging(middlewares.WithDeletion(cmd, deps_.Logger), deps_.Logger, name)
+	}
+
+	commands := map[string]interfaces.Command{
+		MENU_CMD:     wrap(NewMenuHandler(deps_), MENU_CMD),
+		ABOUT_CMD:    wrap(NewAboutHandler(deps_), ABOUT_CMD),
+		SETTINGS_CMD: wrap(NewSettingsHandler(deps_), SETTINGS_CMD),
+		TOS_CMD:      wrap(NewTosHandler(deps_), TOS_CMD),
+		PRIVACY_CMD:  wrap(NewPrivacyHandler(deps_), PRIVACY_CMD),
+		REFUND_CMD:   wrap(NewRefundHandler(deps_), REFUND_CMD),
+		CONNECT_CMD:  wrap(NewConnectHandler(deps_), CONNECT_CMD),
+		PROMO_CMD:    wrap(NewPromoCmd(deps_), PROMO_CMD),
+		renew.CMD:    wrap(renew.NewHandler(deps_), renew.CMD),
+		NEWKEY_CMD:   wrap(NewNewKeyHandler(deps_), NEWKEY_CMD),
+		REGION_CMD:   wrap(NewRegionHandler(deps_), REGION_CMD),
 		// NETWORK_CMD:  NewNetworkHandler(deps_),
-		LANGUAGE_CMD: NewLanguageHandler(deps_),
-		CURRENCY_CMD: NewCurrencyHandler(deps_),
+		LANGUAGE_CMD: wrap(NewLanguageHandler(deps_), LANGUAGE_CMD),
+		CURRENCY_CMD: wrap(NewCurrencyHandler(deps_), CURRENCY_CMD),
 		// PULL_CMD:       NewPullHandler(deps_),
-		PROTOCOL_CMD: NewProtocolHandler(deps_),
-		SUPPORT_CMD:  NewSupportHandler(deps_),
-		REPOST_CMD:   NewRepostHandler(deps_),
+		PROTOCOL_CMD: wrap(NewProtocolHandler(deps_), PROTOCOL_CMD),
+		SUPPORT_CMD:  wrap(NewSupportHandler(deps_), SUPPORT_CMD),
+		REPOST_CMD:   wrap(NewRepostHandler(deps_), REPOST_CMD),
 	}
 
 	return useCase{deps_, promoUseCase, commands}
 }
 
 func (uc useCase) Run(bot bin.Interface, p *domain.Payload) (err error) {
-	text := p.Message.Text()
-	if len(text) == 0 {
-		return nil
-	}
-
-	if len(text) == 0 {
+	text := strings.TrimSpace(p.Message.Text())
+	if text == "" {
 		return nil
 	}
 
@@ -73,8 +69,12 @@ func (uc useCase) Run(bot bin.Interface, p *domain.Payload) (err error) {
 		text = text[1:]
 	}
 
-	p.Args = strings.Split(text, " ")
-	p.Args[0] = strings.ToLower(p.Args[0])
+	p.Args = strings.Fields(text)
+	if len(p.Args) == 0 {
+		return nil
+	}
+
+	cmdName := strings.ToLower(p.Args[0])
 
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
@@ -94,39 +94,21 @@ func (uc useCase) Run(bot bin.Interface, p *domain.Payload) (err error) {
 
 	switch {
 	case p.Account.Language == "":
-		p.Args[0] = LANGUAGE_CMD
+		cmdName = LANGUAGE_CMD
 	case p.Account.Currency == "":
-		p.Args[0] = CURRENCY_CMD
+		cmdName = CURRENCY_CMD
 	}
 
-	cmd, ok := uc.commands[p.Args[0]]
+	cmd, ok := uc.commands[cmdName]
 	if !ok {
-		buttonRows := [][]types.Button{{{Text: "🔄 Menu", Data: MENU_CMD}}}
-		return bot.SendMessage(p.Message.Chat(), "Command not found", &types.Keyboard{ButtonRows: buttonRows})
+		return bot.SendMessage(p.Message.Chat(), "Command not found", types.NewKeyboard().
+			NewRow(types.NewCallbackButton("🔄 Menu", MENU_CMD)))
 	}
-
-	defer func() {
-		uc.deleteMessage(bot, p.Message.Chat(), p.Message.ID())
-	}()
 
 	if err := cmd.Execute(bot, p); err != nil {
-		buttonRows := [][]types.Button{{{Text: "🔄 Menu", Data: MENU_CMD}}}
-		uc.Logger.Error("Internal command error", zap.Error(err))
-		return bot.SendMessage(p.Message.Chat(), "Internal error", &types.Keyboard{ButtonRows: buttonRows})
+		return bot.SendMessage(p.Message.Chat(), "Internal error", types.NewKeyboard().
+			NewRow(types.NewCallbackButton("🔄 Menu", MENU_CMD)))
 	}
 
-	uc.Logger.Info("command executed",
-		zap.Int("sender", p.Message.Sender()),
-		zap.Int("message_id", p.Message.ID()),
-		zap.String("command", p.Args[0]),
-		zap.String("args", strings.Join(p.Args[1:], " ")))
-
-	return nil
-}
-
-func (uc useCase) deleteMessage(bot bin.Interface, chat update.ChatInterface, messageID int) error {
-	if err := bot.DeleteMessage(chat, messageID); err != nil {
-		uc.Logger.Error("failed to delete message", zap.Error(err))
-	}
 	return nil
 }

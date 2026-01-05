@@ -15,6 +15,11 @@ func (k *Keyboard) NewRow(buttons ...Button) *Keyboard {
 
 type Button struct {
 	Text, Data, URL string
+	Pay             bool
+}
+
+func NewPayButton(text string) Button {
+	return Button{Text: text, Pay: true}
 }
 
 func NewCallbackButton(text, data string) Button {

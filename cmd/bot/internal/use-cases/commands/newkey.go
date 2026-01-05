@@ -33,8 +33,10 @@ func (h newKeyHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	}
 
 	return bot.SendMessage(p.Message.Chat(), msg.ConfirmPrompt, types.NewKeyboard().
-		NewRow(types.NewCallbackButton("🎾 Confirm", "newkey confirm")).
-		NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, MENU_CMD)))
+		NewRow(
+			types.NewCallbackButton("◀️ "+controlMsg.Back, MENU_CMD),
+			types.NewCallbackButton("🎾 Confirm", NEWKEY_CMD+" confirm"),
+		))
 }
 
 func (h newKeyHandler) confirm(bot bin.Interface, p *domain.Payload, msg i18n.NewKeyLocale, controlMsg i18n.ControlLocale) error {

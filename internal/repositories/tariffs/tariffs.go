@@ -3,7 +3,6 @@ package tariffs
 import (
 	"fmt"
 	"math"
-	"sort"
 	"time"
 
 	"github.com/quickpowered/thebeyond-master/configs/currency"
@@ -18,7 +17,7 @@ type Repository interface {
 	Get(id int) (domain.Tariff, bool)
 	GetPeriod(days int) (domain.Period, bool)
 	GetTargets() []int
-	GetPeriodTargets() []int
+	GetPeriodTargets() [][]int
 	CalculateRenewal(account domain.Account, currency currency.Currency, targetTarrif domain.Tariff, targetTarrifID, days int) (finalPrice float64, extraDays int)
 }
 
@@ -27,7 +26,7 @@ type repository struct {
 	Tariffs        map[int]domain.Tariff
 	Periods        map[int]domain.Period
 	tarrifsTargets []int
-	periodsTargets []int
+	periodsTargets [][]int
 	exchangeRates  web.ExchangeRatesInterface
 }
 
@@ -55,15 +54,7 @@ func New(path string, exchangeRates web.ExchangeRatesInterface) (*repository, er
 	for i := range repository.Tariffs {
 		repository.tarrifsTargets[i] = i
 	}
-
-	repository.periodsTargets = make([]int, 0, len(repository.Periods))
-	for days := range repository.Periods {
-		repository.periodsTargets = append(repository.periodsTargets, days)
-	}
-
-	sort.Slice(repository.periodsTargets, func(i, j int) bool {
-		return repository.periodsTargets[i] < repository.periodsTargets[j]
-	})
+	repository.periodsTargets = cfg.PeriodsTargets
 
 	return repository, nil
 }
@@ -82,7 +73,7 @@ func (r *repository) GetTargets() []int {
 	return r.tarrifsTargets
 }
 
-func (r *repository) GetPeriodTargets() []int {
+func (r *repository) GetPeriodTargets() [][]int {
 	return r.periodsTargets
 }
 

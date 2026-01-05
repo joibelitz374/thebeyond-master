@@ -14,6 +14,10 @@ import (
 )
 
 func (h handler) upgradeTariff(bot bin.Interface, p *sharedDomain.Payload, tariffID int, tariff domain.Tariff, days int) error {
+	tariffNamesMsg := i18n.TariffNamesMessages[p.Account.Language]
+	tariffChangeMsg := i18n.TariffChangeMessages[p.Account.Language]
+	controlMsg := i18n.ControlMessages[p.Account.Language]
+
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
@@ -28,9 +32,7 @@ func (h handler) upgradeTariff(bot bin.Interface, p *sharedDomain.Payload, tarif
 		return bot.SendMessage(p.Message.Chat(), "Failed to extend subscription")
 	}
 
-	tariffsMsg := i18n.TariffsMessages[p.Account.Language]
-	return bot.SendMessage(p.Message.Chat(), fmt.Sprintf("🆙 Тариф изменён на %s %s (+%d дн.)",
-		tariff.Emoji, tariffsMsg[tariffID], days),
-		types.NewKeyboard().
-			NewRow(types.NewCallbackButton("🔄 Menu", "start")))
+	text := fmt.Sprintf("🆙 "+tariffChangeMsg.TariffChangedTo+" %s %s (+%d "+tariffChangeMsg.DaysShort+")", tariff.Emoji, tariffNamesMsg[tariffID], days)
+	return bot.SendMessage(p.Message.Chat(), text, types.NewKeyboard().
+		NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, CMD)))
 }

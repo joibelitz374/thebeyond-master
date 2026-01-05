@@ -11,7 +11,7 @@ SELECT id FROM (
         ((CASE
             WHEN subscription_status = 'available'
                 THEN CASE tariff
-                    WHEN 1 THEN 150 WHEN 2 THEN 400 WHEN 3 THEN 5120
+                    WHEN 1 THEN 150 WHEN 2 THEN 400 WHEN 3 THEN 12800
                     ELSE 0
                 END
             ELSE 0
@@ -22,7 +22,7 @@ SELECT id FROM (
 ) AS a
 WHERE NOT is_disabled AND ((
     subscription_expires_at IS NOT NULL
-    AND subscription_expires_at < now()
+    AND subscription_expires_at < NOW()
 ) OR (traffic_limit_bytes > 0 AND used_bytes >= traffic_limit_bytes));
 
 -- name: GetAccountsToEnable :many
@@ -33,22 +33,21 @@ SELECT id, key_id FROM (
         subscription_expires_at,
         is_disabled,
         used_uplink + used_downlink AS used_bytes,
-        (
-            (CASE
-                WHEN subscription_status = 'available'
-                    THEN CASE tariff
-                        WHEN 1 THEN 150 WHEN 2 THEN 400 WHEN 3 THEN 5120
-                        ELSE 0
-                    END
-                ELSE 0
-            END)
-            + CASE WHEN freemium_status = 'available' THEN 10 ELSE 0 END
-        ) * 1024::BIGINT * 1024 * 1024 AS traffic_limit_bytes
+        ((CASE
+            WHEN subscription_status = 'available'
+                THEN CASE tariff
+                    WHEN 1 THEN 150 WHEN 2 THEN 400 WHEN 3 THEN 12800
+                    ELSE 0
+                END
+            ELSE 0
+        END)
+        + CASE WHEN freemium_status = 'available' THEN 10 ELSE 0 END)
+        * 1024::BIGINT * 1024 * 1024 AS traffic_limit_bytes
     FROM account
 ) AS a
 WHERE is_disabled
   AND subscription_expires_at IS NOT NULL
-  AND subscription_expires_at >= now()
+  AND subscription_expires_at >= NOW()
   AND (traffic_limit_bytes = 0 OR used_bytes < traffic_limit_bytes);
 
 -- name: ResetLastTrafficRefreshAt :exec

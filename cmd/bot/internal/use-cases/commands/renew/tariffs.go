@@ -8,41 +8,63 @@ import (
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/repositories/bot/bin"
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/types"
 	"github.com/quickpowered/thebeyond-master/configs/currency"
-	"github.com/quickpowered/thebeyond-master/configs/language"
+	sharedDomain "github.com/quickpowered/thebeyond-master/internal/domain"
+	"github.com/quickpowered/thebeyond-master/pkg/utils"
 )
 
-func (h handler) showTariffs(bot bin.Interface, p *domain.Payload) error {
-	selectTariffsMsg := i18n.SelectTariffsMessages[p.Account.Language]
-	return bot.SendMessage(p.Message.Chat(), selectTariffsMsg.SelectTariff+":", h.listOfTariffs(p.Account.Language, p.Account.Currency, selectTariffsMsg))
-}
+func (h handler) showTariffs(bot bin.Interface, p *domain.Payload, tariffID int, tariff sharedDomain.Tariff) error {
+	accountsMsg := i18n.AccountMessages[p.Account.Language]
+	tariffsMsg := i18n.TariffsMessages[p.Account.Language]
+	tariffNamesMsg := i18n.TariffNamesMessages[p.Account.Language]
+	freemiumMsg := i18n.TelegramChannelBonusMessages[p.Account.Language]
+	controlMsg := i18n.ControlMessages[p.Account.Language]
 
-func (h handler) listOfTariffs(language language.Language, acurrency currency.Currency, selectTariffsMsg i18n.SelectTariffsLocale) *types.Keyboard {
-	tariffsMsg := i18n.TariffsMessages[language]
-	controlMsg := i18n.ControlMessages[language]
+	days := 30
+	currencySymbol := currency.Currencies[p.Account.Currency].Emoji
 	keyboard := types.NewKeyboard()
 
-	for _, id := range h.TariffsRepo.GetTargets() {
-		tariff, ok := h.TariffsRepo.Get(id)
-		if !ok {
-			continue
-		}
-
-		var label string
-		if id == 0 {
-			label += tariff.Emoji + " " + selectTariffsMsg.Free
+	totalPrice, extraDays := h.TariffsRepo.CalculateRenewal(p.Account, p.Account.Currency, tariff, tariffID, days)
+	if tariffID == 0 {
+		keyboard.NewRow(types.NewCallbackButton("🔄 "+freemiumMsg.Check, fmt.Sprintf("%s check-subscription", CMD)))
+	} else {
+		if totalPrice == 0 && p.Account.Tariff != tariffID {
+			totalDays := days + extraDays
+			keyboard.NewRow(types.NewCallbackButton(fmt.Sprintf("🆙 %d %s", totalDays, tariffsMsg.DaysShort), fmt.Sprintf("%s t:%d;d:%d", CMD, tariffID, totalDays)))
 		} else {
-			currencySymbol := currency.Currencies[acurrency].Emoji
-			label += fmt.Sprintf("%s %s — %.2f%s",
-				tariff.Emoji, tariffsMsg[id],
-				tariff.Prices[acurrency], currencySymbol)
-			if tariff.Discount != "" {
-				label += " (" + tariff.Discount + ")"
-			}
+			keyboard.NewRow(types.NewCallbackButton("🛍 "+tariffsMsg.Buy, fmt.Sprintf("%s t:%d;d:-1", CMD, tariffID)))
 		}
-
-		keyboard.NewRow(types.NewCallbackButton(label, fmt.Sprintf("renew %d", id)))
 	}
 
+	keyboard.NewRow(h.tariffsPagination(tariffID)...)
 	keyboard.NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, "start"))
-	return keyboard
+
+	text := "🗒 <b>" + tariffsMsg.Tariff + "</b>: " + tariffNamesMsg[tariffID] + "\n"
+	if tariffID == 0 {
+		text += "❇️ <b>" + tariffsMsg.ConditionPrefix + "</b>: " + tariffsMsg.SubscribePre + " <b><a href=\"https://t.me/beyondsecurenews\">" + tariffsMsg.NewsChannelLabel + "</a></b>\n"
+	} else if totalPrice != 0 {
+		text += fmt.Sprintf("💶 <b>"+tariffsMsg.Price+"</b>: %.2f%s\n", totalPrice, currencySymbol)
+	}
+
+	var maxTraffic string
+	if tariffID != 3 {
+		maxTraffic = fmt.Sprintf("%d GB/%s", tariff.Traffic, accountsMsg.MonthShort)
+		text += "🚌 <b>" + tariffsMsg.Traffic + "</b>: " + maxTraffic + "\n"
+	}
+
+	return bot.SendMessage(p.Message.Chat(), text, keyboard)
+}
+
+func (h handler) tariffsPagination(tariffID int) []types.Button {
+	rows := []types.Button{}
+	if tariffID > 0 {
+		rows = append(rows, types.NewCallbackButton("◀️", fmt.Sprintf("%s t:%d", CMD, tariffID-1)))
+	}
+
+	rows = append(rows, types.NewCallbackButton(utils.ToKeycap(tariffID+1), fmt.Sprintf("%s t:%d", CMD, tariffID)))
+
+	if tariffID < 3 {
+		rows = append(rows, types.NewCallbackButton("▶️", fmt.Sprintf("%s t:%d", CMD, tariffID+1)))
+	}
+
+	return rows
 }

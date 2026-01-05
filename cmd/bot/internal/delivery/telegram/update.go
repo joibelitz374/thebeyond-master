@@ -24,7 +24,7 @@ func (s *delivery) parseUpdate(ctx context.Context, tgBot *bot.Bot, update *mode
 	switch {
 	case update.PreCheckoutQuery != nil:
 		parsed.typ = models.ChatTypePrivate
-		if err := s.invoices.HandlePreCheckoutQuery(tgBot, update); err != nil {
+		if err := s.invoices.HandlePreCheckoutQuery(tgBot, update.PreCheckoutQuery); err != nil {
 			s.Logger.Error("pre checkout query failed", zap.Error(err))
 		}
 		return nil, false

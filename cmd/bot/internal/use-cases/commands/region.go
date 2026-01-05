@@ -47,7 +47,7 @@ func (h regionHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 				regionName += " (soon)"
 			}
 
-			buttons[i] = types.NewCallbackButton(regionName, "region "+region)
+			buttons[i] = types.NewCallbackButton(regionName, REGION_CMD+" "+region)
 		}
 		keyboard.NewRow(buttons...)
 	}
