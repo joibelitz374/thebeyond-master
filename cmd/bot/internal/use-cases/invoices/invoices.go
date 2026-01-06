@@ -66,7 +66,7 @@ func (uc useCase) HandlePreCheckoutQuery(tgBot *bot.Bot, preCheckoutQuery *model
 		return errors.New("invalid currency")
 	}
 
-	tariffID, days, err := utils.GetTariffPayloadData(payload)
+	tariffID, days, _, err := utils.GetTariffPayloadData(payload)
 	if err != nil {
 		uc.logger.Error("invalid subscription payload", zap.Int("days", days))
 		return errors.New("invalid payload")

@@ -30,7 +30,7 @@ func (h handler) Execute(bot bin.Interface, p *domain.Payload) (err error) {
 
 	controlMsg := i18n.ControlMessages[p.Account.Language]
 
-	tariffID, days, err := utils.GetTariffPayloadData(p.Args[1])
+	tariffID, days, isUpgrade, err := utils.GetTariffPayloadData(p.Args[1])
 	if err != nil {
 		return bot.SendMessage(p.Message.Chat(), "Invalid payload", types.NewKeyboard().
 			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, CMD)))
@@ -40,6 +40,10 @@ func (h handler) Execute(bot bin.Interface, p *domain.Payload) (err error) {
 	if !ok {
 		return bot.SendMessage(p.Message.Chat(), "No tariff found", types.NewKeyboard().
 			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, CMD)))
+	}
+
+	if isUpgrade {
+		return h.upgradeTariff(bot, p, tariffID, tariff, days)
 	}
 
 	if tariffID != 0 && days != 0 {

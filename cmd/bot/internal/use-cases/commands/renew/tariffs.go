@@ -29,7 +29,7 @@ func (h handler) showTariffs(bot bin.Interface, p *domain.Payload, tariffID int,
 	} else {
 		if totalPrice == 0 && p.Account.Tariff != tariffID {
 			totalDays := days + extraDays
-			keyboard.NewRow(types.NewCallbackButton(fmt.Sprintf("🆙 %d %s", totalDays, tariffsMsg.DaysShort), fmt.Sprintf("%s t:%d;d:%d", CMD, tariffID, totalDays)))
+			keyboard.NewRow(types.NewCallbackButton(fmt.Sprintf("🆙 %d %s", totalDays, tariffsMsg.DaysShort), fmt.Sprintf("%s t:%d;d:%d;u:1", CMD, tariffID, totalDays)))
 		} else {
 			keyboard.NewRow(types.NewCallbackButton("🛍 "+tariffsMsg.Buy, fmt.Sprintf("%s t:%d;d:-1", CMD, tariffID)))
 		}

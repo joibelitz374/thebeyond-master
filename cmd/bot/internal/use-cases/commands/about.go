@@ -33,7 +33,6 @@ func (h aboutHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	}
 
 	msg := i18n.AboutMessages[p.Account.Language]
-	controlMsg := i18n.ControlMessages[p.Account.Language]
 
 	return bot.SendMessage(p.Message.Chat(), "",
 		types.NewAttachments().AddFile(bytes.NewReader(image)),
@@ -43,6 +42,5 @@ func (h aboutHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 			NewRow(types.NewCallbackButton("🛂 "+msg.RefundPolicy, REFUND_CMD)).
 			// NewRow(types.NewCallbackButton("💳 "+msg.Billing, "billing")).
 			// NewRow(types.NewCallbackButton("🆘 "+msg.FAQ, "faq")).
-			NewRow(types.NewURLButton("☎️ "+msg.Support, "https://t.me/beyondsecurenews?direct")).
-			NewRow(types.NewCallbackButton("◀️ "+controlMsg.Back, MENU_CMD)))
+			NewRow(types.NewURLButton("☎️ "+msg.Support, "https://t.me/beyondsecurenews?direct")))
 }
