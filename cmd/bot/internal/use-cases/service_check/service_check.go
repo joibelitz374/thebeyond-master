@@ -67,6 +67,7 @@ func (uc *UseCase) QueryServiceCheck(ctx context.Context, tgBot bin.Interface, a
 			zap.Int("chat_id", account.ExternalAccountID),
 			zap.Int("account_id", account.ID),
 		)
+		return err
 	}
 
 	uc.logger.Info("service check message sent successfully",

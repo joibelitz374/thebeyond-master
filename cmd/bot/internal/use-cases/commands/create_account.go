@@ -15,6 +15,7 @@ import (
 	"github.com/quickpowered/thebeyond-master/configs/language"
 	sharedDomain "github.com/quickpowered/thebeyond-master/internal/domain"
 	"github.com/quickpowered/thebeyond-master/pkg/consts"
+	"github.com/quickpowered/thebeyond-master/pkg/utils"
 	"go.uber.org/zap"
 )
 
@@ -57,6 +58,22 @@ func (uc useCase) createAccount(bot bin.Interface, platform consts.Platform, p *
 			zap.Int("discount", discount),
 			zap.Error(err))
 		return err
+	}
+
+	regions, err := uc.SubscriptionService.GetRegions(p.Account.Region)
+	if err != nil {
+		uc.Logger.Error("failed to get regions for xray registration",
+			zap.Int("account_id", newAccountID),
+			zap.Error(err))
+	} else {
+		for _, region := range regions {
+			if err := uc.XRayManagerService.AddClient(ctx, region, keyID, utils.NewEmail(newAccountID)); err != nil {
+				uc.Logger.Error("failed to add client to xray",
+					zap.Int("account_id", newAccountID),
+					zap.String("region", string(region)),
+					zap.Error(err))
+			}
+		}
 	}
 
 	uc.Logger.Info("account created successfully",

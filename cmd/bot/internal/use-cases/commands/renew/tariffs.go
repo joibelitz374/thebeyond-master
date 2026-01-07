@@ -54,16 +54,31 @@ func (h handler) showTariffs(bot bin.Interface, p *domain.Payload, tariffID int,
 	return bot.SendMessage(p.Message.Chat(), text, keyboard)
 }
 
+var tariffDisplayOrder = []int{0, 3, 2, 1}
+
+func getTariffDisplayIndex(tariffID int) int {
+	for i, id := range tariffDisplayOrder {
+		if id == tariffID {
+			return i
+		}
+	}
+	return 0
+}
+
 func (h handler) tariffsPagination(tariffID int) []types.Button {
 	rows := []types.Button{}
-	if tariffID > 0 {
-		rows = append(rows, types.NewCallbackButton("◀️", fmt.Sprintf("%s t:%d", CMD, tariffID-1)))
+	displayIndex := getTariffDisplayIndex(tariffID)
+
+	if displayIndex > 0 {
+		prevTariffID := tariffDisplayOrder[displayIndex-1]
+		rows = append(rows, types.NewCallbackButton("◀️", fmt.Sprintf("%s t:%d", CMD, prevTariffID)))
 	}
 
-	rows = append(rows, types.NewCallbackButton(utils.ToKeycap(tariffID+1), fmt.Sprintf("%s t:%d", CMD, tariffID)))
+	rows = append(rows, types.NewCallbackButton(utils.ToKeycap(displayIndex+1), fmt.Sprintf("%s t:%d", CMD, tariffID)))
 
-	if tariffID < 3 {
-		rows = append(rows, types.NewCallbackButton("▶️", fmt.Sprintf("%s t:%d", CMD, tariffID+1)))
+	if displayIndex < len(tariffDisplayOrder)-1 {
+		nextTariffID := tariffDisplayOrder[displayIndex+1]
+		rows = append(rows, types.NewCallbackButton("▶️", fmt.Sprintf("%s t:%d", CMD, nextTariffID)))
 	}
 
 	return rows

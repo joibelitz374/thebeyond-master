@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/quickpowered/thebeyond-master/cmd/bot/internal/domain"
@@ -50,6 +51,11 @@ func (c *repostHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	blockedCounters := 0
 	for _, accountID := range accounts {
 		if err := bot.(*telegram.Adapter).ForwardMessage(update.Chat{ID: accountID}, -1003309480333, messageID); err != nil {
+			if strings.Contains(err.Error(), "too many requests") {
+				time.Sleep(15 * time.Second)
+				continue
+			}
+
 			c.Logger.Error("failed to forward message", zap.Error(err), zap.Int("account_id", accountID))
 			blockedCounters++
 		}
