@@ -24,11 +24,15 @@ func NewUseCase(accountService account.Interface, logger *zap.Logger) *UseCase {
 }
 
 func (uc *UseCase) Run(ctx context.Context, tgBot bin.Interface) error {
+	uc.logger.Debug("starting Run for service checks")
+
 	accounts, err := uc.accountService.FindUsersForServiceCheck(ctx)
 	if err != nil {
 		uc.logger.Error("failed to find users for service check", zap.Error(err))
 		return err
 	}
+
+	uc.logger.Debug("found accounts for service check", zap.Int("count", len(accounts)))
 
 	for _, account := range accounts {
 		if err := uc.QueryServiceCheck(ctx, tgBot, account); err != nil {
@@ -37,10 +41,24 @@ func (uc *UseCase) Run(ctx context.Context, tgBot bin.Interface) error {
 		}
 	}
 
+	uc.logger.Debug("completed Run for service checks")
 	return nil
 }
 
 func (uc *UseCase) QueryServiceCheck(ctx context.Context, tgBot bin.Interface, account domain.ServiceCheck) error {
+	uc.logger.Debug("starting QueryServiceCheck",
+		zap.Int("account_id", account.ID),
+		zap.Int("external_account_id", account.ExternalAccountID),
+		zap.String("raw_language", account.Language),
+	)
+
+	accountLanguage := strings.ToLower(strings.TrimSpace(account.Language))
+	if accountLanguage == "" {
+		accountLanguage = "en"
+	}
+
+	msg := i18n.ServiceCheckMessages[language.Language(accountLanguage)]
+
 	if err := uc.accountService.MarkServiceCheckSent(ctx, account.ID); err != nil {
 		uc.logger.Error("failed to mark service check as sent",
 			zap.Error(err),
@@ -49,12 +67,6 @@ func (uc *UseCase) QueryServiceCheck(ctx context.Context, tgBot bin.Interface, a
 		return err
 	}
 
-	accountLanguage := strings.ToLower(strings.TrimSpace(account.Language))
-	if accountLanguage == "" {
-		accountLanguage = "en"
-	}
-
-	msg := i18n.ServiceCheckMessages[language.Language(accountLanguage)]
 	if err := tgBot.SendMessage(update.Chat{ID: account.ExternalAccountID}, msg.ServiceWorking, &types.Keyboard{
 		ButtonRows: [][]types.Button{
 			{{Text: msg.YesEverythingFine, Data: "support ok"}},
@@ -76,5 +88,6 @@ func (uc *UseCase) QueryServiceCheck(ctx context.Context, tgBot bin.Interface, a
 		zap.String("language", accountLanguage),
 	)
 
+	uc.logger.Debug("completed QueryServiceCheck", zap.Int("account_id", account.ID))
 	return nil
 }

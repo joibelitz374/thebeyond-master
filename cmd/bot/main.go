@@ -87,25 +87,25 @@ func main() {
 	interval := time.Duration(30) * time.Minute
 	logger.Debug("starting the automation process...")
 
-	utils.RunPeriodic(context.TODO(), interval, "reset traffic", logger, func(ctx context.Context) error {
+	utils.RunPeriodic(context.Background(), interval, "reset traffic", logger, func(ctx context.Context) error {
 		return manageSubscriptionsUseCase.ResetTraffic(ctx, tgBot)
-	})
+	}, true)
 
-	utils.RunPeriodic(ctx, interval, "disable unsub", logger, func(ctx context.Context) error {
+	utils.RunPeriodic(context.Background(), interval, "disable unsub", logger, func(ctx context.Context) error {
 		return manageSubscriptionsUseCase.DisableUnsub(ctx, tgBot)
-	})
+	}, true)
 
-	utils.RunPeriodic(context.TODO(), interval, "disable accounts", logger, func(ctx context.Context) error {
+	utils.RunPeriodic(context.Background(), interval, "disable accounts", logger, func(ctx context.Context) error {
 		return manageSubscriptionsUseCase.DisableAccounts(ctx, tgBot)
-	})
+	}, true)
 
-	utils.RunPeriodic(ctx, time.Duration(10)*time.Minute, "enable accounts", logger, func(ctx context.Context) error {
+	utils.RunPeriodic(context.Background(), time.Duration(10)*time.Minute, "enable accounts", logger, func(ctx context.Context) error {
 		return manageSubscriptionsUseCase.EnableAccounts(ctx, tgBot)
-	})
+	}, true)
 
-	utils.RunPeriodic(ctx, time.Duration(2)*time.Minute, "service check", logger, func(ctx context.Context) error {
+	utils.RunPeriodic(context.Background(), time.Duration(2)*time.Minute, "service check", logger, func(ctx context.Context) error {
 		return serviceCheckUseCase.Run(ctx, tgBot)
-	})
+	}, true)
 
 	wg := new(sync.WaitGroup)
 	for _, bot := range []bin.Interface{tgBot} {
