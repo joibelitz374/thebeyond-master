@@ -9,7 +9,6 @@ type AboutLocale struct {
 	Billing        string
 	FAQ            string
 	Support        string
-	Back           string
 }
 
 var AboutMessages = map[language.Language]AboutLocale{

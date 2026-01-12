@@ -31,6 +31,8 @@ func NewMenuHandler(deps deps.Dependencies) menuHandler {
 
 func (h menuHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 	msg := i18n.AccountMessages[p.Account.Language]
+	aboutMsg := i18n.AboutMessages[p.Account.Language]
+
 	var tariffImagePath string
 	if p.Account.IsActive() {
 		tariffImagePath = h.tariffImagePaths[p.Account.Tariff]
@@ -55,6 +57,8 @@ func (h menuHandler) Execute(bot bin.Interface, p *domain.Payload) error {
 				types.NewURLButton("📢 "+msg.News, "https://t.me/beyondsecurenews"),
 				types.NewURLButton("💬 "+msg.Reviews, "https://t.me/thebeyondreviews"),
 			).
+			NewRow(types.NewURLButton("☎️ "+aboutMsg.Support, "https://t.me/beyondsecurenews?direct")).
+			NewRow(types.NewCallbackButton("ℹ️ "+msg.AboutServiceAndTerms, ABOUT_CMD)).
 			NewRow(types.NewCallbackButton("🌈 "+msg.FREEDAYS+" 🔥", PROMO_CMD)).
 			NewRow(types.NewCallbackButton("💊 "+msg.Settings, SETTINGS_CMD)))
 }
