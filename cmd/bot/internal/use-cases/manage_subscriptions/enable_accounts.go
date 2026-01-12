@@ -25,6 +25,10 @@ func (uc *UseCase) EnableAccounts(ctx context.Context, bot bin.Interface) error 
 				zap.String("key_id", account.KeyID))
 		}
 
+		if err := uc.subscriptionService.EnableAccount(ctx, account.ID); err != nil {
+			uc.logger.Error("failed to update is_disabled in DB", zap.Error(err), zap.Int("account_id", account.ID))
+		}
+
 		uc.logger.Info("enabled subscription",
 			zap.Int("account_id", account.ID),
 			zap.String("key_id", account.KeyID),

@@ -50,6 +50,9 @@ WHERE is_disabled
   AND subscription_expires_at >= NOW()
   AND (traffic_limit_bytes = 0 OR used_bytes < traffic_limit_bytes);
 
+-- name: EnableAccount :exec
+UPDATE account  SET is_disabled = false  WHERE id = $1;
+
 -- name: ResetLastTrafficRefreshAt :exec
 UPDATE account SET last_traffic_refresh_at = NOW(),
     used_uplink = 0, used_downlink = 0

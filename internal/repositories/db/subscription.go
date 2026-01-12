@@ -14,6 +14,7 @@ type SubscriptionInterface interface {
 	GetNeedRefreshTraffic(ctx context.Context) ([]int, error)
 	GetAccountsToDisable(ctx context.Context) ([]int, error)
 	GetAccountsToEnable(ctx context.Context) ([]domain.Account, error)
+	EnableAccount(ctx context.Context, accountID int) error
 	ResetLastTrafficRefreshAt(ctx context.Context, accountID int) error
 	GetFremiumAccounts(ctx context.Context) ([]domain.ExternalAccount, error)
 	StartFreemium(ctx context.Context, accountID int) error
@@ -79,6 +80,10 @@ func (db subscriptionDB) GetAccountsToEnable(ctx context.Context) ([]domain.Acco
 	}
 
 	return accounts, nil
+}
+
+func (db subscriptionDB) EnableAccount(ctx context.Context, accountID int) error {
+	return db.queries.EnableAccount(ctx, int32(accountID))
 }
 
 func (db subscriptionDB) ResetLastTrafficRefreshAt(ctx context.Context, accountID int) error {

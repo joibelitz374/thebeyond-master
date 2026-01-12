@@ -14,6 +14,7 @@ type Interface interface {
 	GetNeedRefreshTraffic(ctx context.Context) ([]int, error)
 	GetAccountsToDisable(ctx context.Context) ([]int, error)
 	GetAccountsToEnable(ctx context.Context) ([]domain.Account, error)
+	EnableAccount(ctx context.Context, accountID int) error
 	GetRegions(region string) ([]dto.Region, error)
 	ResetLastTrafficRefreshAt(ctx context.Context, accountID int) error
 	GetFremiumAccounts(ctx context.Context) ([]domain.ExternalAccount, error)
@@ -57,6 +58,10 @@ func (s service) GetRegions(region string) ([]dto.Region, error) {
 		return nil, errors.New("region not found")
 	}
 	return regions, nil
+}
+
+func (s service) EnableAccount(ctx context.Context, accountID int) error {
+	return s.repo.EnableAccount(ctx, accountID)
 }
 
 func (s service) ResetLastTrafficRefreshAt(ctx context.Context, accountID int) error {
